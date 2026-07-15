@@ -1,0 +1,12 @@
+include LICENSE
+include README.md
+include CHANGELOG.md
+include CITATION.cff
+include pyproject.toml
+recursive-include mesie *.py
+recursive-include data *.py
+recursive-include data/reference *.json
+recursive-include data/benchmarks *.json
+recursive-exclude * __pycache__
+recursive-exclude * *.py[cod]
+recursive-exclude tests *

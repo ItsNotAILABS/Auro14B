@@ -1,0 +1,25 @@
+{
+  "kind": "local-api",
+  "description": "Local REST or gRPC API scaffold",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "api/server.py",
+    "api/routes.py"
+  ],
+  "optional_artifacts": [
+    "api/openapi.yaml",
+    "Dockerfile",
+    "tests/test_api.py"
+  ],
+  "template_vars": {
+    "entry_point": "api/server.py",
+    "build_cmd": "pip install -r requirements.txt",
+    "serve_cmd": "python api/server.py"
+  }
+}

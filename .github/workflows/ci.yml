@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,full]"
+
+      - name: Run tests
+        run: pytest --cov=mesie --cov-report=term-missing
+
+      - name: Run verification engines
+        run: pytest tests/test_verification_engines.py -v
+
+  verify:
+    name: Verification & Attestation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,full]"
+
+      - name: Run auto-validation agent
+        run: python -c "
+          from mesie.engines.auto_validation_agent import run_auto_validation
+          import json
+          verdict = run_auto_validation(seed=42, scalability_nodes=[100, 1000, 5000, 10000], n_reproducibility_seeds=100)
+          print('=== MESIE Auto-Validation Report ===')
+          print(f'Overall Pass: {verdict.overall_pass}')
+          print(f'Pass Rate: {verdict.pass_rate:.1%}')
+          print(f'Hardware Contract Valid: {verdict.hardware_contract_valid}')
+          print(f'Scalability Proven (10K nodes): {verdict.scalability_proven}')
+          print(f'Attestation Chain Valid: {verdict.attestation_chain_valid}')
+          print(f'Reproducibility Proven: {verdict.reproducibility_proven}')
+          print(f'Deterministic Hash: {verdict.deterministic_hash}')
+          print(f'Execution Time: {verdict.execution_time_s:.2f}s')
+          print(f'Total Checks: {verdict.total_checks}')
+          print(f'Passed: {verdict.passed_checks}/{verdict.total_checks}')
+          assert verdict.overall_pass, f'Verification failed: {verdict.failed_checks} checks failed'
+          "
+
+      - name: Run 10K-node scalability proof
+        run: python -c "
+          from mesie.engines.scalability_engine import ScalabilityEngine
+          engine = ScalabilityEngine()
+          result = engine.stress_test(n_nodes=10000, n_operations=50000, seed=42)
+          print(f'10K Node Stress Test:')
+          print(f'  Nodes: {result.n_nodes}')
+          print(f'  Ops/sec: {result.operations_per_sec:,.0f}')
+          print(f'  Mean latency: {result.latency_mean_ms:.4f} ms')
+          print(f'  P99 latency: {result.latency_p99_ms:.4f} ms')
+          print(f'  Scaling class: {result.scaling_class}')
+          print(f'  Checksum: {result.checksum}')
+          assert result.all_nodes_healthy
+          assert result.latency_mean_ms < 1.0
+          "
+
+  build:
+    name: Build package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.13"
+
+      - name: Install build dependencies
+        run: python -m pip install --upgrade pip build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check distribution
+        run: |
+          pip install twine
+          twine check dist/*

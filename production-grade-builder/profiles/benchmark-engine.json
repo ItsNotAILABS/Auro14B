@@ -1,0 +1,25 @@
+{
+  "kind": "benchmark-engine",
+  "description": "Performance and correctness benchmark suite",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "benchmarks/run.py",
+    "benchmarks/config.json"
+  ],
+  "optional_artifacts": [
+    "benchmarks/results/",
+    "benchmarks/baselines.json",
+    "visualize.py"
+  ],
+  "template_vars": {
+    "entry_point": "benchmarks/run.py",
+    "build_cmd": null,
+    "serve_cmd": null
+  }
+}

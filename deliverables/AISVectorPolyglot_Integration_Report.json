@@ -1,0 +1,243 @@
+{
+  "suite": "AISVectorPolyglot",
+  "health": {
+    "runtimes": {
+      "python": {
+        "runtime": "python",
+        "mode": "native",
+        "available": true
+      },
+      "rust": {
+        "runtime": "rust",
+        "mode": "fallback",
+        "available": false
+      },
+      "julia": {
+        "runtime": "julia",
+        "mode": "fallback",
+        "available": false
+      },
+      "motoko": {
+        "runtime": "motoko",
+        "mode": "fallback",
+        "available": false
+      },
+      "typescript": {
+        "runtime": "typescript",
+        "mode": "native",
+        "available": true
+      }
+    },
+    "vector_indexed": 0
+  },
+  "integration": {
+    "passed": 20,
+    "failed": 0,
+    "total": 20,
+    "runtime_ms": 16326.966000022367,
+    "outcomes": [
+      {
+        "id": "I01",
+        "name": "Suite health all runtimes",
+        "category": "core",
+        "passed": true,
+        "latency_ms": 6790.286300005391,
+        "error": ""
+      },
+      {
+        "id": "I02",
+        "name": "Python validate",
+        "category": "python",
+        "passed": true,
+        "latency_ms": 0.5991000216454268,
+        "error": ""
+      },
+      {
+        "id": "I03",
+        "name": "TypeScript validate",
+        "category": "typescript",
+        "passed": true,
+        "latency_ms": 0.17790007404983044,
+        "error": ""
+      },
+      {
+        "id": "I04",
+        "name": "Motoko validate mirror",
+        "category": "motoko",
+        "passed": true,
+        "latency_ms": 0.02559996210038662,
+        "error": ""
+      },
+      {
+        "id": "I05",
+        "name": "Rust validate",
+        "category": "rust",
+        "passed": true,
+        "latency_ms": 0.11519994586706161,
+        "error": ""
+      },
+      {
+        "id": "I06",
+        "name": "Julia validate",
+        "category": "julia",
+        "passed": true,
+        "latency_ms": 3401.5212000813335,
+        "error": ""
+      },
+      {
+        "id": "I07",
+        "name": "Python match",
+        "category": "python",
+        "passed": true,
+        "latency_ms": 0.7319999858736992,
+        "error": ""
+      },
+      {
+        "id": "I08",
+        "name": "Rust match",
+        "category": "rust",
+        "passed": true,
+        "latency_ms": 0.1604999415576458,
+        "error": ""
+      },
+      {
+        "id": "I09",
+        "name": "TypeScript match",
+        "category": "typescript",
+        "passed": true,
+        "latency_ms": 0.05259993486106396,
+        "error": ""
+      },
+      {
+        "id": "I10",
+        "name": "Cross-runtime parity matrix",
+        "category": "parity",
+        "passed": true,
+        "latency_ms": 6089.964400045574,
+        "error": ""
+      },
+      {
+        "id": "I11",
+        "name": "Python embed vector",
+        "category": "vector",
+        "passed": true,
+        "latency_ms": 0.2709000837057829,
+        "error": ""
+      },
+      {
+        "id": "I12",
+        "name": "Vector bridge index corpus",
+        "category": "vector",
+        "passed": true,
+        "latency_ms": 34.059999976307154,
+        "error": ""
+      },
+      {
+        "id": "I13",
+        "name": "Vector ANN query",
+        "category": "vector",
+        "passed": true,
+        "latency_ms": 3.5795001313090324,
+        "error": ""
+      },
+      {
+        "id": "I14",
+        "name": "Fingerprint hits",
+        "category": "vector",
+        "passed": true,
+        "latency_ms": 4.270500037819147,
+        "error": ""
+      },
+      {
+        "id": "I15",
+        "name": "AIS connector process",
+        "category": "ais",
+        "passed": true,
+        "latency_ms": 0.5749999545514584,
+        "error": ""
+      },
+      {
+        "id": "I16",
+        "name": "Third-party OpenAI tools schema",
+        "category": "third_party",
+        "passed": true,
+        "latency_ms": 0.00690016895532608,
+        "error": ""
+      },
+      {
+        "id": "I17",
+        "name": "Third-party validate tool invoke",
+        "category": "third_party",
+        "passed": true,
+        "latency_ms": 0.21239998750388622,
+        "error": ""
+      },
+      {
+        "id": "I18",
+        "name": "Third-party embed tool invoke",
+        "category": "third_party",
+        "passed": true,
+        "latency_ms": 0.11479994282126427,
+        "error": ""
+      },
+      {
+        "id": "I19",
+        "name": "Internal bus polyglot engine",
+        "category": "bus",
+        "passed": true,
+        "latency_ms": 0.20650005899369717,
+        "error": ""
+      },
+      {
+        "id": "I20",
+        "name": "Routing table completeness",
+        "category": "core",
+        "passed": true,
+        "latency_ms": 0.00519980676472187,
+        "error": ""
+      }
+    ]
+  },
+  "parity": {
+    "results": {
+      "python": {
+        "ok": true,
+        "score": 0.7865570343487016,
+        "mode": "native",
+        "latency_ms": 0.26880018413066864
+      },
+      "rust": {
+        "ok": true,
+        "score": 0.8269924115820174,
+        "mode": "fallback",
+        "latency_ms": 0.04910002462565899
+      },
+      "julia": {
+        "ok": true,
+        "score": 0.8269924115820174,
+        "mode": "fallback",
+        "latency_ms": 3243.631700053811
+      },
+      "motoko": {
+        "ok": true,
+        "score": 0.8269924115820174,
+        "mode": "fallback",
+        "latency_ms": 0.12810016050934792
+      },
+      "typescript": {
+        "ok": true,
+        "score": 0.8327490948269058,
+        "mode": "native",
+        "latency_ms": 0.028799986466765404
+      }
+    },
+    "score_spread": 0.04619206047820423,
+    "parity_ok": true
+  },
+  "vector_query_ms": 3.3565000630915165,
+  "third_party_tools": [
+    "mesie_validate_spectrum",
+    "mesie_match_spectra",
+    "mesie_embed_spectrum"
+  ]
+}

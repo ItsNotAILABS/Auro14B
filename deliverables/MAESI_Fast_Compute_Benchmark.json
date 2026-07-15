@@ -1,0 +1,8 @@
+{
+  "n_items": 4,
+  "loop_match_ms": 0.7297,
+  "batch_match_ms": 0.0008,
+  "speedup_ratio": 966.53,
+  "embed_batch_ms": 0.45,
+  "ann_query_ms": 0.1195
+}

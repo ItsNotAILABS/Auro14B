@@ -1,0 +1,25 @@
+{
+  "kind": "dashboard",
+  "description": "Monitoring or analytics dashboard",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "dashboard/index.html",
+    "dashboard/config.json"
+  ],
+  "optional_artifacts": [
+    "dashboard/styles/",
+    "dashboard/scripts/",
+    "dashboard/data/"
+  ],
+  "template_vars": {
+    "entry_point": "dashboard/index.html",
+    "build_cmd": null,
+    "serve_cmd": "python -m http.server 8000 -d dashboard"
+  }
+}

@@ -1,0 +1,518 @@
+{
+  "suite": "MESIE Chaos + Technical \u2014 50 Major Tests",
+  "n_tests": 50,
+  "passed": 50,
+  "failed": 0,
+  "success_rate_pct": 100.0,
+  "chaos": {
+    "passed": 25,
+    "total": 25
+  },
+  "technical": {
+    "passed": 25,
+    "total": 25
+  },
+  "total_runtime_ms": 465.83,
+  "outcomes": [
+    {
+      "id": "C01",
+      "name": "Noisy vibration match resilience",
+      "lane": "chaos",
+      "domain": "robustness",
+      "passed": true,
+      "latency_ms": 0.447,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C02",
+      "name": "Flatline spectrum validation",
+      "lane": "chaos",
+      "domain": "edge_case",
+      "passed": true,
+      "latency_ms": 0.102,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C03",
+      "name": "Amplitude spike self-match",
+      "lane": "chaos",
+      "domain": "edge_case",
+      "passed": true,
+      "latency_ms": 0.183,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C04",
+      "name": "Bus reject empty validate payload",
+      "lane": "chaos",
+      "domain": "fault_injection",
+      "passed": true,
+      "latency_ms": 0.091,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C05",
+      "name": "Bus unknown engine graceful fail",
+      "lane": "chaos",
+      "domain": "fault_injection",
+      "passed": true,
+      "latency_ms": 0.076,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C06",
+      "name": "Rank empty candidate pool",
+      "lane": "chaos",
+      "domain": "edge_case",
+      "passed": true,
+      "latency_ms": 0.005,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C07",
+      "name": "Rank single candidate",
+      "lane": "chaos",
+      "domain": "edge_case",
+      "passed": true,
+      "latency_ms": 0.274,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C08",
+      "name": "Fingerprint noisy neighbor retrieval",
+      "lane": "chaos",
+      "domain": "retrieval",
+      "passed": true,
+      "latency_ms": 31.011,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C09",
+      "name": "Octopus cycle under cross-domain noise",
+      "lane": "chaos",
+      "domain": "orchestration",
+      "passed": true,
+      "latency_ms": 1.587,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C10",
+      "name": "Anomaly adapter outlier separation",
+      "lane": "chaos",
+      "domain": "control",
+      "passed": true,
+      "latency_ms": 0.262,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C11",
+      "name": "Embed tiny 4-point spectrum",
+      "lane": "chaos",
+      "domain": "scale",
+      "passed": true,
+      "latency_ms": 0.101,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C12",
+      "name": "Match 2048-point spectrum",
+      "lane": "chaos",
+      "domain": "scale",
+      "passed": true,
+      "latency_ms": 0.287,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C13",
+      "name": "Seed-stable noisy match band",
+      "lane": "chaos",
+      "domain": "determinism",
+      "passed": true,
+      "latency_ms": 1.069,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C14",
+      "name": "MAESI query under noise SLA",
+      "lane": "chaos",
+      "domain": "sla",
+      "passed": true,
+      "latency_ms": 13.584,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C15",
+      "name": "TF salient under seismic noise",
+      "lane": "chaos",
+      "domain": "signal",
+      "passed": true,
+      "latency_ms": 2.951,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C16",
+      "name": "Bus match stress 20 rounds",
+      "lane": "chaos",
+      "domain": "stress",
+      "passed": true,
+      "latency_ms": 4.925,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C17",
+      "name": "Multi-component self-match",
+      "lane": "chaos",
+      "domain": "structure",
+      "passed": true,
+      "latency_ms": 0.2,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C18",
+      "name": "Rank corpus after heavy perturbation",
+      "lane": "chaos",
+      "domain": "retrieval",
+      "passed": true,
+      "latency_ms": 0.844,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C19",
+      "name": "Fingerprint bus index+query",
+      "lane": "chaos",
+      "domain": "bus",
+      "passed": true,
+      "latency_ms": 12.716,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C20",
+      "name": "Octopus engine roster integrity",
+      "lane": "chaos",
+      "domain": "orchestration",
+      "passed": true,
+      "latency_ms": 0.037,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C21",
+      "name": "Micro-amplitude validation tolerance",
+      "lane": "chaos",
+      "domain": "edge_case",
+      "passed": true,
+      "latency_ms": 0.057,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C22",
+      "name": "Anomaly baseline vs noisy self",
+      "lane": "chaos",
+      "domain": "control",
+      "passed": true,
+      "latency_ms": 0.243,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C23",
+      "name": "Fingerprint repeated noisy queries",
+      "lane": "chaos",
+      "domain": "stress",
+      "passed": true,
+      "latency_ms": 74.755,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C24",
+      "name": "Control engine low-sim commands",
+      "lane": "chaos",
+      "domain": "control",
+      "passed": true,
+      "latency_ms": 0.054,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "C25",
+      "name": "MAESI fast compute speedup under load",
+      "lane": "chaos",
+      "domain": "performance",
+      "passed": true,
+      "latency_ms": 153.672,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "T01",
+      "name": "Technical: STFT Spectrogram",
+      "lane": "technical",
+      "domain": "time_frequency",
+      "passed": true,
+      "latency_ms": 0.298,
+      "detail": "STFT Spectrogram",
+      "error": null
+    },
+    {
+      "id": "T02",
+      "name": "Technical: Salient TF Peaks",
+      "lane": "technical",
+      "domain": "signal_processing",
+      "passed": true,
+      "latency_ms": 2.898,
+      "detail": "Salient TF Peaks",
+      "error": null
+    },
+    {
+      "id": "T03",
+      "name": "Technical: LSH Spectral Hash",
+      "lane": "technical",
+      "domain": "ann_retrieval",
+      "passed": true,
+      "latency_ms": 0.137,
+      "detail": "LSH Spectral Hash",
+      "error": null
+    },
+    {
+      "id": "T04",
+      "name": "Technical: ANN Cosine Rerank",
+      "lane": "technical",
+      "domain": "ann_retrieval",
+      "passed": true,
+      "latency_ms": 0.067,
+      "detail": "ANN Cosine Rerank",
+      "error": null
+    },
+    {
+      "id": "T05",
+      "name": "Technical: Pump Vibration Baseline",
+      "lane": "technical",
+      "domain": "robotics",
+      "passed": true,
+      "latency_ms": 0.002,
+      "detail": "Pump Vibration Baseline",
+      "error": null
+    },
+    {
+      "id": "T06",
+      "name": "Technical: Anomaly vs Baseline",
+      "lane": "technical",
+      "domain": "robotics",
+      "passed": true,
+      "latency_ms": 0.179,
+      "detail": "Anomaly vs Baseline",
+      "error": null
+    },
+    {
+      "id": "T07",
+      "name": "Technical: Schumann Eco-Hz",
+      "lane": "technical",
+      "domain": "power_systems",
+      "passed": true,
+      "latency_ms": 0.316,
+      "detail": "Schumann Eco-Hz",
+      "error": null
+    },
+    {
+      "id": "T08",
+      "name": "Technical: EM Band Ladder",
+      "lane": "technical",
+      "domain": "power_systems",
+      "passed": true,
+      "latency_ms": 0.023,
+      "detail": "EM Band Ladder",
+      "error": null
+    },
+    {
+      "id": "T09",
+      "name": "Technical: LEO Contact Window",
+      "lane": "technical",
+      "domain": "orbital_mechanics",
+      "passed": true,
+      "latency_ms": 0.01,
+      "detail": "LEO Contact Window",
+      "error": null
+    },
+    {
+      "id": "T10",
+      "name": "Technical: Orbital Edge Gate",
+      "lane": "technical",
+      "domain": "orbital_mechanics",
+      "passed": true,
+      "latency_ms": 0.001,
+      "detail": "Orbital Edge Gate",
+      "error": null
+    },
+    {
+      "id": "T11",
+      "name": "Technical: Earthquake PSD Anchor",
+      "lane": "technical",
+      "domain": "seismic",
+      "passed": true,
+      "latency_ms": 0.0,
+      "detail": "Earthquake PSD Anchor",
+      "error": null
+    },
+    {
+      "id": "T12",
+      "name": "Technical: RotDNN Orientation",
+      "lane": "technical",
+      "domain": "seismic",
+      "passed": true,
+      "latency_ms": 0.001,
+      "detail": "RotDNN Orientation",
+      "error": null
+    },
+    {
+      "id": "T13",
+      "name": "Technical: Structural FAS",
+      "lane": "technical",
+      "domain": "structural",
+      "passed": true,
+      "latency_ms": 0.001,
+      "detail": "Structural FAS",
+      "error": null
+    },
+    {
+      "id": "T14",
+      "name": "Technical: Spectral Vectorizer",
+      "lane": "technical",
+      "domain": "spectral_ml",
+      "passed": true,
+      "latency_ms": 0.081,
+      "detail": "Spectral Vectorizer",
+      "error": null
+    },
+    {
+      "id": "T15",
+      "name": "Technical: Fingerprint Pipeline",
+      "lane": "technical",
+      "domain": "spectral_ml",
+      "passed": true,
+      "latency_ms": 22.187,
+      "detail": "Fingerprint Pipeline",
+      "error": null
+    },
+    {
+      "id": "T16",
+      "name": "Technical: Octopus Multi-Arm Control",
+      "lane": "technical",
+      "domain": "robotics",
+      "passed": true,
+      "latency_ms": 0.077,
+      "detail": "Octopus Multi-Arm Control",
+      "error": null
+    },
+    {
+      "id": "T17",
+      "name": "Technical: Internal API Bus",
+      "lane": "technical",
+      "domain": "signal_processing",
+      "passed": true,
+      "latency_ms": 0.035,
+      "detail": "Internal API Bus",
+      "error": null
+    },
+    {
+      "id": "T18",
+      "name": "Technical: Cross-Domain Transfer",
+      "lane": "technical",
+      "domain": "spectral_ml",
+      "passed": true,
+      "latency_ms": 2.603,
+      "detail": "Cross-Domain Transfer",
+      "error": null
+    },
+    {
+      "id": "T19",
+      "name": "Technical: Intelligence Protocol",
+      "lane": "technical",
+      "domain": "spectral_ml",
+      "passed": true,
+      "latency_ms": 0.206,
+      "detail": "Intelligence Protocol",
+      "error": null
+    },
+    {
+      "id": "T20",
+      "name": "Technical: Hz Virtual Chip",
+      "lane": "technical",
+      "domain": "power_systems",
+      "passed": true,
+      "latency_ms": 120.658,
+      "detail": "Hz Virtual Chip",
+      "error": null
+    },
+    {
+      "id": "T21",
+      "name": "TF\u2192Salient integration chain",
+      "lane": "technical",
+      "domain": "time_frequency",
+      "passed": true,
+      "latency_ms": 2.939,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "T22",
+      "name": "Research knowledge ANN hit",
+      "lane": "technical",
+      "domain": "ann_retrieval",
+      "passed": true,
+      "latency_ms": 0.024,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "T23",
+      "name": "Technical matrix projection",
+      "lane": "technical",
+      "domain": "spectral_ml",
+      "passed": true,
+      "latency_ms": 0.006,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "T24",
+      "name": "Multi-domain technical coverage",
+      "lane": "technical",
+      "domain": "architecture",
+      "passed": true,
+      "latency_ms": 0.003,
+      "detail": "ok",
+      "error": null
+    },
+    {
+      "id": "T25",
+      "name": "MAESI full stack query",
+      "lane": "technical",
+      "domain": "product",
+      "passed": true,
+      "latency_ms": 13.49,
+      "detail": "ok",
+      "error": null
+    }
+  ]
+}

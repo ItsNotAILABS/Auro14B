@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Production-Grade Deliverable Registry",
+  "description": "Schema for registering production-grade deliverables in the MESIE ecosystem",
+  "type": "object",
+  "required": ["registry_version", "deliverables"],
+  "properties": {
+    "registry_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/deliverable_entry"
+      }
+    }
+  },
+  "definitions": {
+    "deliverable_entry": {
+      "type": "object",
+      "required": ["name", "version", "kind", "author", "created", "quality_pass", "checksum"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "static-app",
+            "python-service",
+            "node-service",
+            "benchmark-engine",
+            "local-api",
+            "ci-workflow",
+            "dataset",
+            "manifest",
+            "proof-pack",
+            "research-packet",
+            "dashboard",
+            "docs",
+            "deploy-scaffold",
+            "repo-surface"
+          ]
+        },
+        "author": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "quality_pass": {
+          "type": "boolean"
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "path": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "engine": "MESIE / MAESI",
+  "method": "monte_carlo",
+  "trials_per_use_case": 500,
+  "total_trials": 5000,
+  "generated_at": "2026-06-06T21:15:23Z",
+  "elapsed_s": 5.37,
+  "overall_success_rate": 1.0,
+  "enterprise_grade": true,
+  "use_cases": [
+    {
+      "id": "mfg_predictive",
+      "name": "Predictive Maintenance",
+      "industry": "Manufacturing",
+      "description": "Detect pump/machine drift from vibration spectra.",
+      "success_metric": "top_match_sim >= 0.5",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 0.225,
+        "std_latency_ms": 0.027,
+        "p95_latency_ms": 0.253,
+        "mean_score": 0.9782,
+        "std_score": 0.0466,
+        "p5_score": 0.9001,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "energy_grid",
+      "name": "Grid & Power Monitoring",
+      "industry": "Energy",
+      "description": "Schumann/EM band fingerprint stability under noise.",
+      "success_metric": "validation_level >= 4",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 0.16,
+        "std_latency_ms": 0.078,
+        "p95_latency_ms": 0.193,
+        "mean_score": 6.0,
+        "std_score": 0.0,
+        "p5_score": 6.0,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "aerospace_orbital",
+      "name": "Satellite Ops & Orbital",
+      "industry": "Aerospace",
+      "description": "Orbital-edge style spectral gate + seismic anchor coupling.",
+      "success_metric": "match_score >= 0.6",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 0.369,
+        "std_latency_ms": 0.076,
+        "p95_latency_ms": 0.408,
+        "mean_score": 0.8601,
+        "std_score": 0.0203,
+        "p5_score": 0.7971,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "insurance_seismic",
+      "name": "Catastrophe / Seismic Risk",
+      "industry": "Insurance",
+      "description": "Cross-match earthquake vs structural references.",
+      "success_metric": "match_score >= 0.55",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 0.366,
+        "std_latency_ms": 0.052,
+        "p95_latency_ms": 0.433,
+        "mean_score": 0.6351,
+        "std_score": 0.002,
+        "p5_score": 0.632,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "structural_civil",
+      "name": "Structural / Civil Engineering",
+      "industry": "Construction",
+      "description": "FAS structural spectrum ranking under perturbation.",
+      "success_metric": "rank_top3_self_or_structural",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 1.406,
+        "std_latency_ms": 0.164,
+        "p95_latency_ms": 1.519,
+        "mean_score": 0.846,
+        "std_score": 0.0024,
+        "p5_score": 0.8419,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "health_device",
+      "name": "Medical Device Monitoring",
+      "industry": "Healthcare",
+      "description": "Anomaly separation on biosignal-like spectra.",
+      "success_metric": "anomaly_detects_outlier",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 0.568,
+        "std_latency_ms": 0.067,
+        "p95_latency_ms": 0.632,
+        "mean_score": 74.4288,
+        "std_score": 6.4887,
+        "p5_score": 51.453,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "robotics_fleet",
+      "name": "Autonomous Robotics Fleet",
+      "industry": "Robotics",
+      "description": "Fast ANN neighbor lookup for fleet state.",
+      "success_metric": "query_ms < 50 and sim > 0.4",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 0.22,
+        "std_latency_ms": 0.012,
+        "p95_latency_ms": 0.236,
+        "mean_score": 0.9597,
+        "std_score": 0.0664,
+        "p5_score": 0.8293,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "telecom_compliance",
+      "name": "Telecom Spectrum Compliance",
+      "industry": "Telecom",
+      "description": "EM band library embedding + research hit.",
+      "success_metric": "research_hit_found",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 0.019,
+        "std_latency_ms": 0.002,
+        "p95_latency_ms": 0.024,
+        "mean_score": 2.0,
+        "std_score": 0.0,
+        "p5_score": 2.0,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "rd_lab",
+      "name": "R&D Spectral Lab",
+      "industry": "Research",
+      "description": "Benchmark sample classification via ranking.",
+      "success_metric": "rank_score >= 0.45",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 1.371,
+        "std_latency_ms": 0.061,
+        "p95_latency_ms": 1.459,
+        "mean_score": 0.7364,
+        "std_score": 0.0404,
+        "p5_score": 0.676,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    },
+    {
+      "id": "ai_copilot_rag",
+      "name": "AI Agent Spectral Memory",
+      "industry": "Enterprise AI",
+      "description": "MAESI query with knowledge + fingerprint ANN.",
+      "success_metric": "neighbors >= 1 and latency < 100ms",
+      "monte_carlo": {
+        "n_trials": 500,
+        "success_rate": 1.0,
+        "mean_latency_ms": 5.985,
+        "std_latency_ms": 1.682,
+        "p95_latency_ms": 6.153,
+        "mean_score": 1.0,
+        "std_score": 0.0,
+        "p5_score": 1.0,
+        "failures": 0,
+        "sample_failure_details": []
+      }
+    }
+  ]
+}

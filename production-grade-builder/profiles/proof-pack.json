@@ -1,0 +1,24 @@
+{
+  "kind": "proof-pack",
+  "description": "Verification and proof artifacts",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "proofs/evidence.json"
+  ],
+  "optional_artifacts": [
+    "proofs/logs/",
+    "proofs/screenshots/",
+    "proofs/checksums.sha256"
+  ],
+  "template_vars": {
+    "entry_point": "proofs/evidence.json",
+    "build_cmd": null,
+    "serve_cmd": null
+  }
+}

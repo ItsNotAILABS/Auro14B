@@ -1,0 +1,25 @@
+{
+  "kind": "deploy-scaffold",
+  "description": "Deployment and infrastructure template",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "deploy/config.json"
+  ],
+  "optional_artifacts": [
+    "deploy/Dockerfile",
+    "deploy/docker-compose.yml",
+    "deploy/terraform/",
+    "deploy/scripts/"
+  ],
+  "template_vars": {
+    "entry_point": "deploy/config.json",
+    "build_cmd": null,
+    "serve_cmd": null
+  }
+}

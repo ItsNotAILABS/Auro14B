@@ -1,0 +1,15 @@
+name = "mesie-api"
+main = "src/index.ts"
+compatibility_date = "2024-08-01"
+
+# Set after first deploy: wrangler secret put MESIE_API_KEY
+# [vars]
+# MESIE_PUBLIC = "true"
+
+# Optional: bind R2 for large corpora (create bucket in dashboard first)
+# [[r2_buckets]]
+# binding = "MESIE_DATA"
+# bucket_name = "mesie-datasets"
+
+[observability]
+enabled = true

@@ -1,0 +1,471 @@
+{
+  "brand": "SOLUS",
+  "vitals": {
+    "organism": "maesi-sdk-organism",
+    "caretakers": [
+      "solus-logic-prover",
+      "solus-pattern-forge"
+    ],
+    "heartbeats": 1,
+    "sdk_health": "thriving",
+    "sovereign": true,
+    "uptime_ms": 0.02
+  },
+  "logic_prover": {
+    "ok": true,
+    "data": {
+      "theorem": "forall x in spectra: embed(x) enables match(x, corpus)",
+      "complexity": {
+        "raw_score": 6.08,
+        "normalized": 0.5482,
+        "level": "intermediate",
+        "factors": {
+          "advanced_symbols": 1,
+          "operators": 0,
+          "nested_groups": 2,
+          "length": 54
+        }
+      },
+      "chain": [
+        {
+          "step": 1,
+          "phase": "hypothesis",
+          "method": "direct",
+          "description": "Step 1: Apply direct in hypothesis phase",
+          "confidence": 0.95,
+          "engine": "solus-local"
+        },
+        {
+          "step": 2,
+          "phase": "hypothesis",
+          "method": "contradiction",
+          "description": "Step 2: Apply contradiction in hypothesis phase",
+          "confidence": 0.8628,
+          "engine": "solus-local"
+        },
+        {
+          "step": 3,
+          "phase": "setup",
+          "method": "induction",
+          "description": "Step 3: Apply induction in setup phase",
+          "confidence": 0.7837,
+          "engine": "solus-local"
+        },
+        {
+          "step": 4,
+          "phase": "core-argument",
+          "method": "contrapositive",
+          "description": "Step 4: Apply contrapositive in core-argument phase",
+          "confidence": 0.7118,
+          "engine": "solus-local"
+        },
+        {
+          "step": 5,
+          "phase": "verification",
+          "method": "construction",
+          "description": "Step 5: Apply construction in verification phase",
+          "confidence": 0.6464,
+          "engine": "solus-local"
+        },
+        {
+          "step": 6,
+          "phase": "conclusion",
+          "method": "exhaustion",
+          "description": "Step 6: Apply exhaustion in conclusion phase",
+          "confidence": 0.5871,
+          "engine": "solus-local"
+        }
+      ],
+      "total_steps": 6,
+      "average_confidence": 0.757,
+      "estimated_time_ms": 2871,
+      "engine": "solus-local"
+    },
+    "heart": {
+      "bpm": 687.29,
+      "coherence": 0.9206,
+      "sdk_health": "thriving",
+      "brand": "SOLUS",
+      "caretaker": "solus-logic-prover",
+      "pulse_count": 2,
+      "heartbeat_ms": 873,
+      "phi": 1.618033988749895,
+      "sovereign": true
+    },
+    "brain": {
+      "conclusion": "logic_proof: moderate signal \u2014 monitor via mini heart",
+      "confidence": 0.6813,
+      "evidence": [
+        "mid-range confidence band"
+      ]
+    }
+  },
+  "pattern_forge": {
+    "ok": true,
+    "data": {
+      "n": 32,
+      "sqrt_n": 5.6569,
+      "signal_count": 29,
+      "signal_ratio": 0.9062,
+      "depths": [
+        {
+          "index": 0,
+          "raw": 0.0063,
+          "normalized": 0.0032,
+          "z_score": -3.0899,
+          "phi_depth": 1.9097,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 1,
+          "raw": 0.0236,
+          "normalized": 0.0118,
+          "z_score": -2.7754,
+          "phi_depth": 1.7153,
+          "is_signal": "True",
+          "classification": "strong"
+        },
+        {
+          "index": 2,
+          "raw": 0.0723,
+          "normalized": 0.0362,
+          "z_score": -1.8897,
+          "phi_depth": 1.1679,
+          "is_signal": "True",
+          "classification": "signal"
+        },
+        {
+          "index": 3,
+          "raw": 0.1814,
+          "normalized": 0.0909,
+          "z_score": 0.0981,
+          "phi_depth": 0.0606,
+          "is_signal": "False",
+          "classification": "noise"
+        },
+        {
+          "index": 4,
+          "raw": 0.3738,
+          "normalized": 0.1873,
+          "z_score": 3.6007,
+          "phi_depth": 2.2253,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 5,
+          "raw": 0.632,
+          "normalized": 0.3166,
+          "z_score": 8.3003,
+          "phi_depth": 5.1299,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 6,
+          "raw": 0.8766,
+          "normalized": 0.4391,
+          "z_score": 12.7538,
+          "phi_depth": 7.8823,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 7,
+          "raw": 0.9977,
+          "normalized": 0.4998,
+          "z_score": 14.9577,
+          "phi_depth": 9.2443,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 8,
+          "raw": 0.9316,
+          "normalized": 0.4667,
+          "z_score": 13.7554,
+          "phi_depth": 8.5013,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 9,
+          "raw": 0.7138,
+          "normalized": 0.3576,
+          "z_score": 9.7899,
+          "phi_depth": 6.0505,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 10,
+          "raw": 0.4487,
+          "normalized": 0.2248,
+          "z_score": 4.9643,
+          "phi_depth": 3.0681,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 11,
+          "raw": 0.2315,
+          "normalized": 0.116,
+          "z_score": 1.0088,
+          "phi_depth": 0.6235,
+          "is_signal": "False",
+          "classification": "noise"
+        },
+        {
+          "index": 12,
+          "raw": 0.098,
+          "normalized": 0.0491,
+          "z_score": -1.4217,
+          "phi_depth": 0.8787,
+          "is_signal": "False",
+          "classification": "noise"
+        },
+        {
+          "index": 13,
+          "raw": 0.034,
+          "normalized": 0.017,
+          "z_score": -2.5859,
+          "phi_depth": 1.5982,
+          "is_signal": "True",
+          "classification": "signal"
+        },
+        {
+          "index": 14,
+          "raw": 0.0097,
+          "normalized": 0.0049,
+          "z_score": -3.0287,
+          "phi_depth": 1.8719,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 15,
+          "raw": 0.0023,
+          "normalized": 0.0011,
+          "z_score": -3.1639,
+          "phi_depth": 1.9554,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 16,
+          "raw": 0.0004,
+          "normalized": 0.0002,
+          "z_score": -3.1973,
+          "phi_depth": 1.976,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 17,
+          "raw": 0.0001,
+          "normalized": 0.0,
+          "z_score": -3.2039,
+          "phi_depth": 1.9801,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 18,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.205,
+          "phi_depth": 1.9808,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 19,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 20,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 21,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 22,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 23,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 24,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 25,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 26,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 27,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 28,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 29,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 30,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        },
+        {
+          "index": 31,
+          "raw": 0.0,
+          "normalized": 0.0,
+          "z_score": -3.2052,
+          "phi_depth": 1.9809,
+          "is_signal": "True",
+          "classification": "extreme"
+        }
+      ],
+      "engine": "solus-local"
+    },
+    "heart": {
+      "bpm": 687.29,
+      "coherence": 0.969,
+      "sdk_health": "thriving",
+      "brand": "SOLUS",
+      "caretaker": "solus-pattern-forge",
+      "pulse_count": 2,
+      "heartbeat_ms": 873,
+      "phi": 1.618033988749895,
+      "sovereign": true
+    },
+    "brain": {
+      "conclusion": "pattern_xray: strong local signal \u2014 caretaker approves",
+      "confidence": 0.5601,
+      "evidence": [
+        "high composite confidence"
+      ]
+    }
+  },
+  "maesi_organism": {
+    "organism": "maesi-sdk-organism",
+    "sdk_health": "thriving",
+    "sovereign": true,
+    "brand": "SOLUS",
+    "heartbeat_ms": 873,
+    "logic_caretaker": {
+      "ok": true,
+      "brain": {
+        "conclusion": "logic_proof: strong local signal \u2014 caretaker approves",
+        "confidence": 0.5349,
+        "evidence": [
+          "high composite confidence"
+        ]
+      },
+      "heart": {
+        "bpm": 687.29,
+        "coherence": 0.9808,
+        "sdk_health": "thriving",
+        "brand": "SOLUS",
+        "caretaker": "solus-logic-prover",
+        "pulse_count": 2,
+        "heartbeat_ms": 873,
+        "phi": 1.618033988749895,
+        "sovereign": true
+      }
+    },
+    "pattern_caretaker": {
+      "ok": true,
+      "brain": {
+        "conclusion": "pattern_xray: weak signal \u2014 invoke helper caretaker",
+        "confidence": 0.2,
+        "evidence": [
+          "low confidence; escalate locally"
+        ]
+      },
+      "heart": {
+        "bpm": 687.29,
+        "coherence": 0.6176,
+        "sdk_health": "stable",
+        "brand": "SOLUS",
+        "caretaker": "solus-pattern-forge",
+        "pulse_count": 2,
+        "heartbeat_ms": 873,
+        "phi": 1.618033988749895,
+        "sovereign": true
+      },
+      "signal_ratio": 0.2
+    }
+  }
+}

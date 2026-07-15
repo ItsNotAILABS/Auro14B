@@ -1,0 +1,24 @@
+{
+  "kind": "static-app",
+  "description": "Static HTML/JS/CSS application",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "index.html"
+  ],
+  "optional_artifacts": [
+    "styles/main.css",
+    "scripts/main.js",
+    "assets/"
+  ],
+  "template_vars": {
+    "entry_point": "index.html",
+    "build_cmd": null,
+    "serve_cmd": "python -m http.server 8000"
+  }
+}

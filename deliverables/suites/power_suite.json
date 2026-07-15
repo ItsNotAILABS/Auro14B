@@ -1,0 +1,117 @@
+{
+  "domain": "power",
+  "title": "Power, Schumann & electromagnetic ladder",
+  "records_used": [
+    "schumann_resonances",
+    "electromagnetic_bands"
+  ],
+  "reasoning": {
+    "ok": true,
+    "engine": "intelligence",
+    "action": "reason",
+    "data": {
+      "conclusion": "normal_operation",
+      "confidence": 0.7,
+      "evidence": [
+        "High-attention regions detected at bins: [35, 36, 37, 38, 39]"
+      ]
+    },
+    "error": null
+  },
+  "matches": [
+    {
+      "candidate_id": "power_schumann",
+      "score": 1.0
+    },
+    {
+      "candidate_id": "power_em_bands",
+      "score": 0.6366
+    },
+    {
+      "candidate_id": "ref-vibration-monitor-001",
+      "score": 0.6083
+    }
+  ],
+  "metrics": {
+    "schumann_modes": 7,
+    "validation_level": 6
+  },
+  "control_commands": [],
+  "logic_rules_fired": 0,
+  "plain_conclusion": "Power/eco-Hz: Schumann 7 modes embedded; Hz-ladder tiers 0-4 characterized. Intelligence: normal_operation. Best spectral neighbor: power_schumann. Record valid=True. Match score=1.000. Control issued ['none']. Logic fired 0 rule(s). Intelligence says normal_operation. Workflow complete=True.",
+  "power_data": {
+    "hz_ladder_tiers": [
+      {
+        "tier": 0,
+        "name": "ELF/Schumann",
+        "center_Hz": 7.83,
+        "max_data_rate_Mbps": 0.0,
+        "latency_ms": 133.0
+      },
+      {
+        "tier": 1,
+        "name": "VLF",
+        "center_Hz": 15000.0,
+        "max_data_rate_Mbps": 0.0,
+        "latency_ms": 50.0
+      },
+      {
+        "tier": 2,
+        "name": "HF",
+        "center_Hz": 14000000.0,
+        "max_data_rate_Mbps": 0.06,
+        "latency_ms": 10.0
+      },
+      {
+        "tier": 3,
+        "name": "UHF/Terrestrial",
+        "center_Hz": 1575420000.0,
+        "max_data_rate_Mbps": 100.0,
+        "latency_ms": 1.0
+      },
+      {
+        "tier": 4,
+        "name": "SHF/Satellite",
+        "center_Hz": 14000000000.0,
+        "max_data_rate_Mbps": 1000.0,
+        "latency_ms": 5.0
+      }
+    ],
+    "schumann_peak_hz": [
+      7.83,
+      14.3,
+      20.8
+    ],
+    "geophysical_refs": [
+      {
+        "name": "earth_rotation",
+        "Hz": 1.1574e-05
+      },
+      {
+        "name": "chandler_wobble",
+        "Hz": 2.6718e-08
+      },
+      {
+        "name": "free_core_nutation",
+        "Hz": 2.7154e-08
+      },
+      {
+        "name": "solar_tide_S2",
+        "Hz": 2.3148e-05
+      },
+      {
+        "name": "lunar_tide_M2",
+        "Hz": 2.2362e-05
+      }
+    ],
+    "libraries_loaded": [
+      "atmospheric_absorption",
+      "electromagnetic_bands",
+      "hydrogen_spectrum",
+      "satellite_frequencies",
+      "schumann_resonances"
+    ]
+  },
+  "orbital_data": {},
+  "elapsed_ms": 5.5945999920368195
+}

@@ -1,0 +1,1038 @@
+{
+  "model": {
+    "orbital_period_days": 16.4,
+    "long_cycle_days": 50.0,
+    "edge_threshold": 0.72,
+    "anchor": "earthquake_psd_reference"
+  },
+  "history_summary": {
+    "days": 50,
+    "orbital_edge_days": 7,
+    "mean_eq_match_edge": 0.8070476756412107,
+    "mean_eq_match_normal": 0.8670606589208301,
+    "mean_anomaly_edge": 2.982925456757023,
+    "mean_anomaly_normal": 2.6878397473667865
+  },
+  "forward_model": {
+    "match_trend_slope_per_day": 0.00045061585992577156,
+    "match_trend_intercept": 0.8701495456897901,
+    "predicted_orbital_edge_days": [
+      4,
+      5,
+      6,
+      19,
+      20,
+      21
+    ],
+    "alert_days_anomaly_elevated": []
+  },
+  "recognition_rules": {
+    "edge_detected_when": "orbital phase gate >= threshold (short + long harmonic)",
+    "coupling_weak_when": "earthquake_match drops > 0.1 below 50-day mean",
+    "forward_alert_when": "forecast day is orbital edge AND anomaly > 1.5x normal baseline"
+  },
+  "history": [
+    {
+      "day_offset": -50,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8693689427311561,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8693689427311561,
+      "anomaly_score": 2.0109687925146766,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -49,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8689226766582827,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8689226766582827,
+      "anomaly_score": 2.522533318842488,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -48,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8684858925200972,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8684858925200972,
+      "anomaly_score": 3.0272801873142106,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -47,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8680652813799994,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8680652813799994,
+      "anomaly_score": 3.5171607604975503,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -46,
+      "phase": "history",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8584542307567868,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8584542307567868,
+      "anomaly_score": 3.0959310430846227,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -45,
+      "phase": "history",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8007711438046257,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8007711438046257,
+      "anomaly_score": 3.25452791622019,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -44,
+      "phase": "history",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.796274848777771,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.796274848777771,
+      "anomaly_score": 2.9987868448243145,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -43,
+      "phase": "history",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.7945267883401866,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.7945267883401866,
+      "anomaly_score": 3.230372316989113,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -42,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8664101514253278,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8664101514253278,
+      "anomaly_score": 5.481943535541066,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -41,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8662023376190184,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8662023376190184,
+      "anomaly_score": 5.732881887762264,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -40,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8660439079142332,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8660439079142332,
+      "anomaly_score": 5.924833561115793,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -39,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8659370590090092,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8659370590090092,
+      "anomaly_score": 6.054606831854701,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -38,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8658832647203728,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8658832647203728,
+      "anomaly_score": 6.1200393082249285,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -37,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8658832647203728,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8658832647203728,
+      "anomaly_score": 6.1200393082249285,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -36,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8659370590090092,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8659370590090092,
+      "anomaly_score": 6.054606831854701,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -35,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8660439079142332,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8660439079142332,
+      "anomaly_score": 5.924833561115793,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -34,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8662023376190184,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8662023376190184,
+      "anomaly_score": 5.732881887762264,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -33,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8664101514253278,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8664101514253278,
+      "anomaly_score": 5.481943535541066,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -32,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8666644471631919,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8666644471631919,
+      "anomaly_score": 5.176178886629912,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -31,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8669616413282116,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8669616413282116,
+      "anomaly_score": 4.820638618728229,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -30,
+      "phase": "history",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8025892383017018,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8025892383017018,
+      "anomaly_score": 2.6221075647510825,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -29,
+      "phase": "history",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.7930619693554918,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.7930619693554918,
+      "anomaly_score": 2.6420190225887845,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -28,
+      "phase": "history",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8036555101519122,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8036555101519122,
+      "anomaly_score": 3.0367334888410555,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -27,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8684858925200972,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8684858925200972,
+      "anomaly_score": 3.0272801873142106,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -26,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8689226766582827,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8689226766582827,
+      "anomaly_score": 2.522533318842488,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": -25,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8693689427311561,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8693689427311561,
+      "anomaly_score": 2.0109687925146766,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -24,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.868913556163965,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.868913556163965,
+      "anomaly_score": 1.50068440988494,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -23,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8684662488299179,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8684662488299179,
+      "anomaly_score": 0.9996975377344934,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -22,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8680340078191485,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8680340078191485,
+      "anomaly_score": 0.5158205680567342,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -21,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.867623545591666,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.867623545591666,
+      "anomaly_score": 0.05654354428479883,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -20,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8672412008447391,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8672412008447391,
+      "anomaly_score": 0.3710766825213363,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -19,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8668928470714448,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8668928470714448,
+      "anomaly_score": 0.7605125908000078,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -18,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8665838097079157,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8665838097079157,
+      "anomaly_score": 1.1058590961546058,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -17,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8663187925687893,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8663187925687893,
+      "anomaly_score": 1.4019097364510589,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -16,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8661018140982769,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8661018140982769,
+      "anomaly_score": 1.6442241979299108,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -15,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.865936153820475,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.865936153820475,
+      "anomaly_score": 1.829183968193761,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -14,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.865824309257044,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.865824309257044,
+      "anomaly_score": 1.9540366500485016,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -13,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8657679634912674,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8657679634912674,
+      "anomaly_score": 2.0169290302277947,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -12,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8657679634912674,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8657679634912674,
+      "anomaly_score": 2.0169290302277947,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -11,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.865824309257044,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.865824309257044,
+      "anomaly_score": 1.9540366500485016,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -10,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.865936153820475,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.865936153820475,
+      "anomaly_score": 1.829183968193761,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -9,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8661018140982769,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8661018140982769,
+      "anomaly_score": 1.6442241979299108,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -8,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8663187925687893,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8663187925687893,
+      "anomaly_score": 1.4019097364510589,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -7,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8665838097079157,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8665838097079157,
+      "anomaly_score": 1.1058590961546058,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -6,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8668928470714448,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8668928470714448,
+      "anomaly_score": 0.7605125908000078,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -5,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8672412008447391,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8672412008447391,
+      "anomaly_score": 0.3710766825213363,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -4,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.867623545591666,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.867623545591666,
+      "anomaly_score": 0.05654354428479883,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -3,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8680340078191485,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8680340078191485,
+      "anomaly_score": 0.5158205680567342,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -2,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8684662488299179,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8684662488299179,
+      "anomaly_score": 0.9996975377344934,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": -1,
+      "phase": "history",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.868913556163965,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.868913556163965,
+      "anomaly_score": 1.50068440988494,
+      "is_anomaly": false
+    }
+  ],
+  "forecast": [
+    {
+      "day_offset": 1,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8706001615497159,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8689226766582827,
+      "anomaly_score": 2.522533318842488,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 2,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8710507774096417,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8684858925200972,
+      "anomaly_score": 3.0272801873142106,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 3,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8715013932695674,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8680652813799994,
+      "anomaly_score": 3.5171607604975503,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 4,
+      "phase": "forecast",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8719520091294932,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.7945374118264303,
+      "anomaly_score": 2.8468800631184843,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 5,
+      "phase": "forecast",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8724026249894189,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8595648889788864,
+      "anomaly_score": 3.3765611369494586,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 6,
+      "phase": "forecast",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8728532408493447,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.7931609608723735,
+      "anomaly_score": 2.8952193855551185,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 7,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8733038567092705,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8666644471631919,
+      "anomaly_score": 5.176178886629912,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 8,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8737544725691962,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8664101514253278,
+      "anomaly_score": 5.481943535541066,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 9,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.874205088429122,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8662023376190184,
+      "anomaly_score": 5.732881887762264,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 10,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8746557042890478,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8660439079142332,
+      "anomaly_score": 5.924833561115793,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 11,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8751063201489736,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8659370590090092,
+      "anomaly_score": 6.054606831854701,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 12,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8755569360088994,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8658832647203728,
+      "anomaly_score": 6.1200393082249285,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 13,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8760075518688251,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8658832647203728,
+      "anomaly_score": 6.1200393082249285,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 14,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8764581677287508,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8659370590090092,
+      "anomaly_score": 6.054606831854701,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 15,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8769087835886766,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8660439079142332,
+      "anomaly_score": 5.924833561115793,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 16,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8773593994486024,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8662023376190184,
+      "anomaly_score": 5.732881887762264,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 17,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8778100153085282,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8664101514253278,
+      "anomaly_score": 5.481943535541066,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 18,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.878260631168454,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8666644471631919,
+      "anomaly_score": 5.176178886629912,
+      "is_anomaly": true
+    },
+    {
+      "day_offset": 19,
+      "phase": "forecast",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8787112470283798,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.7934535136387819,
+      "anomaly_score": 3.2712597394626273,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 20,
+      "phase": "forecast",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8791618628883056,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8591572634409171,
+      "anomaly_score": 2.8151751130985834,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 21,
+      "phase": "forecast",
+      "is_orbital_edge": true,
+      "earthquake_match": 0.8796124787482313,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.7959056654924078,
+      "anomaly_score": 3.404937027496059,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 22,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.880063094608157,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8680652813799994,
+      "anomaly_score": 3.5171607604975503,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 23,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8805137104680828,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8684858925200972,
+      "anomaly_score": 3.0272801873142106,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 24,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8809643263280086,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8689226766582827,
+      "anomaly_score": 2.522533318842488,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 25,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8814149421879344,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8693689427311561,
+      "anomaly_score": 2.0109687925146766,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 26,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8818655580478602,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.868913556163965,
+      "anomaly_score": 1.50068440988494,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 27,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8823161739077859,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8684662488299179,
+      "anomaly_score": 0.9996975377344934,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 28,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8827667897677117,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8680340078191485,
+      "anomaly_score": 0.5158205680567342,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 29,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8832174056276375,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.867623545591666,
+      "anomaly_score": 0.05654354428479883,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 30,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8836680214875632,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8672412008447391,
+      "anomaly_score": 0.3710766825213363,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 31,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.884118637347489,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8668928470714448,
+      "anomaly_score": 0.7605125908000078,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 32,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8845692532074148,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8665838097079157,
+      "anomaly_score": 1.1058590961546058,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 33,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8850198690673405,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8663187925687893,
+      "anomaly_score": 1.4019097364510589,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 34,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8854704849272663,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8661018140982769,
+      "anomaly_score": 1.6442241979299108,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 35,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8859211007871921,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.865936153820475,
+      "anomaly_score": 1.829183968193761,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 36,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8863717166471179,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.865824309257044,
+      "anomaly_score": 1.9540366500485016,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 37,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8868223325070437,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8657679634912674,
+      "anomaly_score": 2.0169290302277947,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 38,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8872729483669693,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8657679634912674,
+      "anomaly_score": 2.0169290302277947,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 39,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8877235642268951,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.865824309257044,
+      "anomaly_score": 1.9540366500485016,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 40,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8881741800868209,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.865936153820475,
+      "anomaly_score": 1.829183968193761,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 41,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8886247959467467,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8661018140982769,
+      "anomaly_score": 1.6442241979299108,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 42,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8890754118066725,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8663187925687893,
+      "anomaly_score": 1.4019097364510589,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 43,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8895260276665983,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8665838097079157,
+      "anomaly_score": 1.1058590961546058,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 44,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8899766435265241,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8668928470714448,
+      "anomaly_score": 0.7605125908000078,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 45,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8904272593864498,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8672412008447391,
+      "anomaly_score": 0.3710766825213363,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 46,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8908778752463756,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.867623545591666,
+      "anomaly_score": 0.05654354428479883,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 47,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8913284911063013,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8680340078191485,
+      "anomaly_score": 0.5158205680567342,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 48,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8917791069662271,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8684662488299179,
+      "anomaly_score": 0.9996975377344934,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 49,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8922297228261529,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.868913556163965,
+      "anomaly_score": 1.50068440988494,
+      "is_anomaly": false
+    },
+    {
+      "day_offset": 50,
+      "phase": "forecast",
+      "is_orbital_edge": false,
+      "earthquake_match": 0.8926803386860787,
+      "best_reference": "ref-earthquake-psd-001",
+      "best_score": 0.8693689427311561,
+      "anomaly_score": 2.0109687925146766,
+      "is_anomaly": false
+    }
+  ]
+}

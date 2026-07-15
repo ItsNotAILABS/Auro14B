@@ -1,0 +1,60 @@
+{
+  "domain": "robotics",
+  "title": "Robotics & machinery condition monitoring",
+  "records_used": [
+    "ref-vibration-monitor-001",
+    "earthquake-011",
+    "earthquake-005",
+    "earthquake-003"
+  ],
+  "reasoning": {
+    "ok": true,
+    "engine": "intelligence",
+    "action": "reason",
+    "data": {
+      "conclusion": "anomaly_detected",
+      "confidence": 0.8,
+      "evidence": [
+        "High-attention regions detected at bins: [36, 37, 38, 39, 40]",
+        "High variability detected - possible anomaly"
+      ]
+    },
+    "error": null
+  },
+  "matches": [
+    {
+      "candidate_id": "earthquake-011",
+      "score": 0.5667
+    },
+    {
+      "candidate_id": "earthquake-005",
+      "score": 0.56
+    },
+    {
+      "candidate_id": "earthquake-003",
+      "score": 0.5487
+    },
+    {
+      "candidate_id": "earthquake-002",
+      "score": 0.5485
+    },
+    {
+      "candidate_id": "earthquake-001",
+      "score": 0.5467
+    }
+  ],
+  "metrics": {
+    "machine_type": null,
+    "fault_threshold": 0.55,
+    "top_score": 0.5667
+  },
+  "control_commands": [
+    "investigate_match",
+    "trigger_alert"
+  ],
+  "logic_rules_fired": 4,
+  "plain_conclusion": "Robotics baseline (pump vibration) ranked 5 machine states. Likely fault candidate: earthquake-003 (score 0.549). Intelligence: anomaly_detected. Record valid=True. Match score=0.515. Control issued ['investigate_match', 'trigger_alert']. Logic fired 4 rule(s). Intelligence says anomaly_detected. Workflow complete=True.",
+  "power_data": {},
+  "orbital_data": {},
+  "elapsed_ms": 16.378500033169985
+}

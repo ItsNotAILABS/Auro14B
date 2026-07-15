@@ -1,0 +1,317 @@
+"""Cognitive architecture adapters for spectral integration."""
+
+from mesie.cognitive.memory_adapter import SpectralMemoryAdapter
+from mesie.cognitive.attention_adapter import SpectralAttentionAdapter
+from mesie.cognitive.agent_state_adapter import AgentStateSpectralAdapter, SpectralAnomalyAdapter
+from mesie.cognitive.miniverse import (
+    ContainedEngine,
+    DownwardAttention,
+    RecursiveMemoryContainer,
+    ScaleBridge,
+    ScaleBridgeConfig,
+)
+from mesie.cognitive.miniverse_taxonomy import (
+    ClassificationSignals,
+    LayerClassification,
+    MatryoshkaClassifier,
+    NestingType,
+    SafetyControl,
+    SystemTaxonomist,
+    get_safety_profile,
+)
+from mesie.cognitive.miniverse_governance import (
+    ActionDomain,
+    Claim,
+    ClaimClass,
+    ClaimRegistry,
+    DeploymentReadinessGate,
+    EvidenceRung,
+    PolicyDecision,
+    PolicyGate,
+    PolicyRequest,
+    PolicyVerdict,
+    ReadinessLevel,
+    ReadinessRecord,
+)
+from mesie.cognitive.taurus_memory import (
+    TaurusMemoryStore,
+    TaurusWorkingMemory,
+    MemoryTrace,
+    RetrievalResult,
+)
+from mesie.cognitive.neurocores import (
+    SpectralNeuroCore,
+    NeuroCoreCluster,
+    NeuroCoreConfig,
+    CoreProcessingResult,
+)
+from mesie.cognitive.reasoning_engine import (
+    SpectralReasoningEngine,
+    CausalGraph,
+    BayesianUpdater,
+    AbductiveReasoner,
+    CounterfactualEngine,
+    EvidenceAccumulator,
+    SpectralPatternRecognizer,
+)
+from mesie.cognitive.temporal_dynamics import TemporalDynamicsPipeline
+from mesie.cognitive.multimodal_fusion import MultiModalFusionPipeline
+from mesie.cognitive.memory_consolidation import ConsolidationPipeline
+from mesie.cognitive.knowledge_graph import (
+    SpectralKnowledgeGraph,
+    SpectralOntology,
+    OntologicalReasoner,
+    KnowledgeDrivenClassifier,
+    KnowledgeNode,
+    KnowledgeRelation,
+    NodeType,
+    RelationType,
+)
+from mesie.cognitive.signal_processing import (
+    AdaptiveFilter,
+    SpectralDecomposer,
+    AdvancedFeatureExtractor,
+    SignalSynthesizer,
+    SpectralQualityAssessor,
+    SpectralAnomalyDetector,
+)
+from mesie.cognitive.learning_framework import (
+    OnlineLearner,
+    MetaLearner,
+    ContinualLearner,
+    SpectralOptimizer,
+    EnsemblePredictor,
+    ActiveLearner,
+)
+from mesie.cognitive.calibration import (
+    SpectralCalibrator,
+    UncertaintyQuantifier,
+    ConfidenceEstimator,
+    MeasurementValidator,
+    CalibrationTransferEngine,
+    DriftDetector,
+)
+from mesie.cognitive.pattern_library import (
+    PatternLibrary,
+    PatternGenerator,
+    SpectralFingerprinter,
+    PatternEvolutionTracker,
+    SpectralTemplate,
+    PatternCategory,
+    MatchingMetric,
+)
+from mesie.cognitive.distributed_processing import (
+    SpectralProcessingPipeline,
+    SpectralPipelineStage,
+    BatchProcessor,
+    StreamProcessor,
+    WorkflowOrchestrator,
+    ResultAggregator,
+)
+from mesie.cognitive.domain_adaptation import (
+    AlignmentMethod,
+    CurriculumTransfer,
+    DomainAligner,
+    DomainInvariantEncoder,
+    DomainShiftDetector,
+    FeatureTransformer,
+    MultiSourceEnsemble,
+    ShiftType,
+)
+from mesie.cognitive.experiment_management import (
+    AblationStudyRunner,
+    CrossValidationEngine,
+    DataAugmentation,
+    ExperimentConfig,
+    ExperimentPipeline,
+    ExperimentResult,
+    ExperimentStatus,
+    ExperimentTracker,
+    HyperparameterOptimizer,
+    OptimizationStrategy,
+    ReproducibilityManager,
+    SpectralBenchmark,
+    StatisticalTestSuite,
+)
+from mesie.cognitive.cross_domain_transfer import (
+    CORALTransfer,
+    CrossDomainTransferEngine,
+    DomainDescriptor,
+    DomainInvariantNormalizer,
+    MMDTransfer,
+    SpectralCorpus,
+    SpectralDomain,
+    SpectralDomainGenerator,
+    TransferLearningPipeline,
+)
+from mesie.cognitive.tokenomics import (
+    BenchmarkResult,
+    CognitiveReturnMetrics,
+    CognitiveReturnScores,
+    CompressionEfficiencyMetrics,
+    CompressionResult,
+    EvaluationCriterion,
+    RuntimeLoopState,
+    RuntimeMeasurementLoop,
+    SalienceAllocator,
+    SalienceItem,
+    SalienceWeights,
+    TaskClass,
+    TokenomicBenchmark,
+    TokenScores,
+    TokenValueFunction,
+    TokenValueWeights,
+)
+
+__all__ = [
+    # Core adapters
+    "AgentStateSpectralAdapter",
+    "ContainedEngine",
+    "DownwardAttention",
+    "RecursiveMemoryContainer",
+    "ScaleBridge",
+    "ScaleBridgeConfig",
+    "SpectralAnomalyAdapter",
+    "SpectralAttentionAdapter",
+    "SpectralMemoryAdapter",
+    # Miniverse Taxonomy V2
+    "ClassificationSignals",
+    "LayerClassification",
+    "MatryoshkaClassifier",
+    "NestingType",
+    "SafetyControl",
+    "SystemTaxonomist",
+    "get_safety_profile",
+    # Miniverse Governance
+    "ActionDomain",
+    "Claim",
+    "ClaimClass",
+    "ClaimRegistry",
+    "DeploymentReadinessGate",
+    "EvidenceRung",
+    "PolicyDecision",
+    "PolicyGate",
+    "PolicyRequest",
+    "PolicyVerdict",
+    "ReadinessLevel",
+    "ReadinessRecord",
+    # TAURUS Memory
+    "TaurusMemoryStore",
+    "TaurusWorkingMemory",
+    "MemoryTrace",
+    "RetrievalResult",
+    # NeuroCores
+    "SpectralNeuroCore",
+    "NeuroCoreCluster",
+    "NeuroCoreConfig",
+    "CoreProcessingResult",
+    # Reasoning Engine
+    "SpectralReasoningEngine",
+    "CausalGraph",
+    "BayesianUpdater",
+    "AbductiveReasoner",
+    "CounterfactualEngine",
+    "EvidenceAccumulator",
+    "SpectralPatternRecognizer",
+    # Temporal Dynamics
+    "TemporalDynamicsPipeline",
+    # Multi-Modal Fusion
+    "MultiModalFusionPipeline",
+    # Memory Consolidation
+    "ConsolidationPipeline",
+    # Knowledge Graph
+    "SpectralKnowledgeGraph",
+    "SpectralOntology",
+    "OntologicalReasoner",
+    "KnowledgeDrivenClassifier",
+    "KnowledgeNode",
+    "KnowledgeRelation",
+    "NodeType",
+    "RelationType",
+    # Signal Processing
+    "AdaptiveFilter",
+    "SpectralDecomposer",
+    "AdvancedFeatureExtractor",
+    "SignalSynthesizer",
+    "SpectralQualityAssessor",
+    "SpectralAnomalyDetector",
+    # Learning Framework
+    "OnlineLearner",
+    "MetaLearner",
+    "ContinualLearner",
+    "SpectralOptimizer",
+    "EnsemblePredictor",
+    "ActiveLearner",
+    # Calibration
+    "SpectralCalibrator",
+    "UncertaintyQuantifier",
+    "ConfidenceEstimator",
+    "MeasurementValidator",
+    "CalibrationTransferEngine",
+    "DriftDetector",
+    # Pattern Library
+    "PatternLibrary",
+    "PatternGenerator",
+    "SpectralFingerprinter",
+    "PatternEvolutionTracker",
+    "SpectralTemplate",
+    "PatternCategory",
+    "MatchingMetric",
+    # Distributed Processing
+    "SpectralProcessingPipeline",
+    "SpectralPipelineStage",
+    "BatchProcessor",
+    "StreamProcessor",
+    "WorkflowOrchestrator",
+    "ResultAggregator",
+    # Domain Adaptation
+    "DomainAligner",
+    "AlignmentMethod",
+    "DomainShiftDetector",
+    "ShiftType",
+    "FeatureTransformer",
+    "CurriculumTransfer",
+    "DomainInvariantEncoder",
+    "MultiSourceEnsemble",
+    # Experiment Management
+    "ExperimentTracker",
+    "ExperimentConfig",
+    "ExperimentResult",
+    "ExperimentStatus",
+    "HyperparameterOptimizer",
+    "OptimizationStrategy",
+    "ReproducibilityManager",
+    "CrossValidationEngine",
+    "StatisticalTestSuite",
+    "AblationStudyRunner",
+    "SpectralBenchmark",
+    "DataAugmentation",
+    "ExperimentPipeline",
+    # Cross-Domain Spectral Transfer
+    "SpectralDomain",
+    "DomainDescriptor",
+    "SpectralCorpus",
+    "DomainInvariantNormalizer",
+    "CORALTransfer",
+    "MMDTransfer",
+    "CrossDomainTransferEngine",
+    "SpectralDomainGenerator",
+    "TransferLearningPipeline",
+    # Tokenomics Measurement and Benchmarking
+    "BenchmarkResult",
+    "CognitiveReturnMetrics",
+    "CognitiveReturnScores",
+    "CompressionEfficiencyMetrics",
+    "CompressionResult",
+    "EvaluationCriterion",
+    "RuntimeLoopState",
+    "RuntimeMeasurementLoop",
+    "SalienceAllocator",
+    "SalienceItem",
+    "SalienceWeights",
+    "TaskClass",
+    "TokenomicBenchmark",
+    "TokenScores",
+    "TokenValueFunction",
+    "TokenValueWeights",
+]

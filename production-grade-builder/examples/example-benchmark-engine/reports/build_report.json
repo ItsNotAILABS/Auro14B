@@ -1,0 +1,9 @@
+{
+  "name": "example-benchmark-engine",
+  "kind": "benchmark-engine",
+  "builder": "production-grade-builder",
+  "builder_version": "1.0.0",
+  "generated_at": "2026-06-11T08:33:43.842981+00:00",
+  "status": "scaffolded",
+  "artifacts_generated": true
+}

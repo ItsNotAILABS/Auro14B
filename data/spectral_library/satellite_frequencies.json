@@ -1,0 +1,93 @@
+{
+  "record_id": "spectral-lib-satellite-001",
+  "record_type": "satellite_communication_frequencies",
+  "description": "Real satellite communication frequencies, orbital parameters, and link budgets from ITU filings and public constellation data",
+  "source": "ITU Radio Regulations, FCC filings, ESA frequency coordination",
+  "units": {
+    "frequency": "Hz",
+    "altitude": "km",
+    "velocity": "m/s"
+  },
+  "constellations": {
+    "GPS": {
+      "orbit_type": "MEO",
+      "altitude_km": 20200,
+      "orbital_period_s": 43077,
+      "orbital_frequency_Hz": 2.3214e-05,
+      "velocity_m_s": 3874,
+      "signals": {
+        "L1": {"center_frequency_Hz": 1575420000, "bandwidth_Hz": 15345000, "modulation": "BPSK/BOC"},
+        "L2": {"center_frequency_Hz": 1227600000, "bandwidth_Hz": 11000000, "modulation": "BPSK"},
+        "L5": {"center_frequency_Hz": 1176450000, "bandwidth_Hz": 24000000, "modulation": "BPSK"}
+      },
+      "doppler_shift_max_Hz": 5000
+    },
+    "Starlink": {
+      "orbit_type": "LEO",
+      "altitude_km": 550,
+      "orbital_period_s": 5765,
+      "orbital_frequency_Hz": 1.7346e-04,
+      "velocity_m_s": 7586,
+      "signals": {
+        "downlink_Ku": {"center_frequency_Hz": 11700000000, "bandwidth_Hz": 2000000000, "band": "Ku"},
+        "uplink_Ku": {"center_frequency_Hz": 14000000000, "bandwidth_Hz": 2000000000, "band": "Ku"},
+        "downlink_Ka": {"center_frequency_Hz": 19700000000, "bandwidth_Hz": 3000000000, "band": "Ka"},
+        "uplink_Ka": {"center_frequency_Hz": 29500000000, "bandwidth_Hz": 4000000000, "band": "Ka"},
+        "inter_satellite_link": {"center_frequency_Hz": 60000000000, "bandwidth_Hz": 5000000000, "band": "V"}
+      },
+      "doppler_shift_max_Hz": 38000
+    },
+    "Iridium": {
+      "orbit_type": "LEO",
+      "altitude_km": 780,
+      "orbital_period_s": 6027,
+      "orbital_frequency_Hz": 1.6592e-04,
+      "velocity_m_s": 7452,
+      "signals": {
+        "user_link": {"center_frequency_Hz": 1621500000, "bandwidth_Hz": 10500000, "band": "L"},
+        "feeder_link_downlink": {"center_frequency_Hz": 19400000000, "bandwidth_Hz": 1000000000, "band": "Ka"},
+        "crosslink": {"center_frequency_Hz": 23180000000, "bandwidth_Hz": 200000000, "band": "Ka"}
+      },
+      "doppler_shift_max_Hz": 36000
+    },
+    "GEO_typical": {
+      "orbit_type": "GEO",
+      "altitude_km": 35786,
+      "orbital_period_s": 86164,
+      "orbital_frequency_Hz": 1.1606e-05,
+      "velocity_m_s": 3075,
+      "signals": {
+        "C_band_downlink": {"center_frequency_Hz": 4000000000, "bandwidth_Hz": 500000000, "band": "C"},
+        "C_band_uplink": {"center_frequency_Hz": 6000000000, "bandwidth_Hz": 500000000, "band": "C"},
+        "Ku_band_downlink": {"center_frequency_Hz": 12000000000, "bandwidth_Hz": 500000000, "band": "Ku"},
+        "Ku_band_uplink": {"center_frequency_Hz": 14250000000, "bandwidth_Hz": 500000000, "band": "Ku"}
+      },
+      "doppler_shift_max_Hz": 1200
+    }
+  },
+  "orbital_physics": {
+    "description": "Orbital mechanics Hz relationships — frequency as a function of altitude",
+    "earth_radius_m": 6371000,
+    "gravitational_parameter_m3_s2": 3.986004418e+14,
+    "orbital_tiers": [
+      {"name": "LEO_low", "altitude_km": 300, "orbital_frequency_Hz": 1.8765e-04, "velocity_m_s": 7726, "free_space_loss_1GHz_dB": 154.5},
+      {"name": "LEO_mid", "altitude_km": 550, "orbital_frequency_Hz": 1.7346e-04, "velocity_m_s": 7586, "free_space_loss_1GHz_dB": 159.3},
+      {"name": "LEO_high", "altitude_km": 1200, "orbital_frequency_Hz": 1.5321e-04, "velocity_m_s": 7261, "free_space_loss_1GHz_dB": 166.0},
+      {"name": "MEO", "altitude_km": 20200, "orbital_frequency_Hz": 2.3214e-05, "velocity_m_s": 3874, "free_space_loss_1GHz_dB": 182.5},
+      {"name": "GEO", "altitude_km": 35786, "orbital_frequency_Hz": 1.1606e-05, "velocity_m_s": 3075, "free_space_loss_1GHz_dB": 188.5}
+    ]
+  },
+  "edge_node_frequencies": {
+    "description": "Frequency allocations for satellite edge computing nodes",
+    "telemetry_tracking_command": {
+      "S_band_uplink_Hz": 2025000000,
+      "S_band_downlink_Hz": 2200000000,
+      "bandwidth_Hz": 5000000
+    },
+    "inter_satellite_optical": {
+      "wavelength_nm": 1550,
+      "frequency_Hz": 193414489032258,
+      "data_rate_Gbps": 100
+    }
+  }
+}

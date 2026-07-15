@@ -1,0 +1,10 @@
+{
+  "pass": true,
+  "score": 1.0,
+  "checks": {
+    "artifacts_present": true,
+    "manifest_valid": true,
+    "readme_has_verification": true
+  },
+  "evaluated_at": "2026-06-11T08:33:43.782153+00:00"
+}

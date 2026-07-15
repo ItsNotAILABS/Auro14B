@@ -1,0 +1,65 @@
+{
+  "domain": "seismic",
+  "title": "Seismic & structural reference cross-analysis",
+  "records_used": [
+    "earthquake_psd_reference",
+    "rotdnn_reference",
+    "structural_fas_reference",
+    "vibration_monitoring_reference"
+  ],
+  "reasoning": {
+    "ok": true,
+    "engine": "intelligence",
+    "action": "reason",
+    "data": {
+      "conclusion": "normal_operation",
+      "confidence": 0.7,
+      "evidence": [
+        "High-attention regions detected at bins: [45, 46, 47, 48, 49]"
+      ]
+    },
+    "error": null
+  },
+  "matches": [
+    {
+      "a": "earthquake_psd_reference",
+      "b": "rotdnn_reference",
+      "score": 0.7866
+    },
+    {
+      "a": "earthquake_psd_reference",
+      "b": "structural_fas_reference",
+      "score": 0.6358
+    },
+    {
+      "a": "rotdnn_reference",
+      "b": "vibration_monitoring_reference",
+      "score": 0.6291
+    },
+    {
+      "a": "rotdnn_reference",
+      "b": "structural_fas_reference",
+      "score": 0.6204
+    },
+    {
+      "a": "earthquake_psd_reference",
+      "b": "vibration_monitoring_reference",
+      "score": 0.5676
+    },
+    {
+      "a": "structural_fas_reference",
+      "b": "vibration_monitoring_reference",
+      "score": 0.4701
+    }
+  ],
+  "metrics": {
+    "pair_count": 6,
+    "reference_count": 4
+  },
+  "control_commands": [],
+  "logic_rules_fired": 0,
+  "plain_conclusion": "Seismic suite: 4 references cross-matched. Strongest pair score 0.7866 (earthquake_psd_reference vs rotdnn_reference). Record valid=True. Match score=1.000. Control issued ['none']. Logic fired 0 rule(s). Intelligence says normal_operation. Workflow complete=True.",
+  "power_data": {},
+  "orbital_data": {},
+  "elapsed_ms": 6.203100085258484
+}

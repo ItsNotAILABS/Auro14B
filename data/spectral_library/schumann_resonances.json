@@ -1,0 +1,55 @@
+{
+  "record_id": "spectral-lib-schumann-001",
+  "record_type": "earth_resonances",
+  "description": "Schumann resonances — real electromagnetic resonance frequencies of the Earth-ionosphere cavity, plus related geophysical frequencies",
+  "source": "Schumann (1952), Balser & Wagner (1960), Nickolaenko & Hayakawa (2002), Williams (1992)",
+  "units": {
+    "frequency": "Hz",
+    "magnetic_field": "pT",
+    "electric_field": "mV/m"
+  },
+  "schumann_resonances": {
+    "description": "Global electromagnetic resonances in the Earth-ionosphere waveguide cavity, excited by lightning",
+    "modes": [
+      {"mode": 1, "frequency_Hz": 7.83, "q_factor": 5.0, "typical_amplitude_pT": 1.0, "bandwidth_Hz": 1.5},
+      {"mode": 2, "frequency_Hz": 14.3, "q_factor": 5.5, "typical_amplitude_pT": 0.7, "bandwidth_Hz": 2.0},
+      {"mode": 3, "frequency_Hz": 20.8, "q_factor": 6.0, "typical_amplitude_pT": 0.5, "bandwidth_Hz": 2.5},
+      {"mode": 4, "frequency_Hz": 27.3, "q_factor": 6.5, "typical_amplitude_pT": 0.3, "bandwidth_Hz": 3.0},
+      {"mode": 5, "frequency_Hz": 33.8, "q_factor": 7.0, "typical_amplitude_pT": 0.2, "bandwidth_Hz": 3.5},
+      {"mode": 6, "frequency_Hz": 39.0, "q_factor": 7.5, "typical_amplitude_pT": 0.1, "bandwidth_Hz": 4.0},
+      {"mode": 7, "frequency_Hz": 45.0, "q_factor": 8.0, "typical_amplitude_pT": 0.08, "bandwidth_Hz": 4.5}
+    ],
+    "theoretical_formula": "f_n = (c / (2 * pi * R_earth)) * sqrt(n * (n+1))",
+    "earth_radius_m": 6371000,
+    "ionosphere_height_km": 60,
+    "speed_of_light_m_s": 299792458,
+    "excitation_source": "global_lightning_activity_40-100_flashes_per_second"
+  },
+  "earth_geophysical_frequencies": {
+    "description": "Natural geophysical oscillation frequencies of Earth systems",
+    "frequencies": [
+      {"name": "earth_rotation", "frequency_Hz": 1.1574e-05, "period": "86400 s (1 day)", "source": "diurnal_rotation"},
+      {"name": "chandler_wobble", "frequency_Hz": 2.6718e-08, "period": "433 days", "source": "polar_motion"},
+      {"name": "free_core_nutation", "frequency_Hz": 2.7154e-08, "period": "430 days", "source": "core_mantle_coupling"},
+      {"name": "solar_tide_S2", "frequency_Hz": 2.3148e-05, "period": "12 hours", "source": "solar_gravitational"},
+      {"name": "lunar_tide_M2", "frequency_Hz": 2.2362e-05, "period": "12.42 hours", "source": "lunar_gravitational"},
+      {"name": "seismic_hum_0S2", "frequency_Hz": 3.093e-04, "period": "3233 s", "source": "earth_free_oscillation"},
+      {"name": "seismic_breathing_0S0", "frequency_Hz": 8.146e-04, "period": "1228 s (20.5 min)", "source": "radial_mode"}
+    ]
+  },
+  "eco_hz_reference": {
+    "description": "Ecological and biologically relevant Hz frequencies — natural rhythms usable as timing references",
+    "frequencies": [
+      {"name": "circadian_fundamental", "frequency_Hz": 1.1574e-05, "period_hours": 24.0, "source": "suprachiasmatic_nucleus"},
+      {"name": "ultradian_90min", "frequency_Hz": 1.8519e-04, "period_min": 90.0, "source": "BRAC_cycle"},
+      {"name": "heart_rate_rest", "frequency_Hz": 1.167, "bpm": 70, "source": "human_cardiac_sinoatrial"},
+      {"name": "respiration_rate", "frequency_Hz": 0.25, "breaths_per_min": 15, "source": "human_pulmonary"},
+      {"name": "alpha_brain_wave", "frequency_Hz": 10.0, "range_Hz": [8, 13], "source": "occipital_cortex_EEG"},
+      {"name": "theta_brain_wave", "frequency_Hz": 6.0, "range_Hz": [4, 8], "source": "hippocampal_EEG"},
+      {"name": "gamma_brain_wave", "frequency_Hz": 40.0, "range_Hz": [30, 100], "source": "cortical_binding"},
+      {"name": "dolphin_echolocation", "frequency_Hz": 120000, "range_Hz": [20000, 150000], "source": "biosonar"},
+      {"name": "bat_echolocation", "frequency_Hz": 60000, "range_Hz": [20000, 200000], "source": "biosonar"},
+      {"name": "bee_wing_beat", "frequency_Hz": 230, "range_Hz": [190, 250], "source": "apis_mellifera_flight"}
+    ]
+  }
+}

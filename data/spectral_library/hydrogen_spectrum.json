@@ -1,0 +1,64 @@
+{
+  "record_id": "spectral-lib-hydrogen-001",
+  "record_type": "emission_lines",
+  "element": "hydrogen",
+  "atomic_number": 1,
+  "description": "Hydrogen atomic emission spectrum — Balmer, Lyman, and Paschen series with precise wavelengths, frequencies, and energy levels from NIST Atomic Spectra Database",
+  "source": "NIST Atomic Spectra Database (ASD), https://physics.nist.gov/asd",
+  "units": {
+    "wavelength": "nm",
+    "frequency": "THz",
+    "energy": "eV"
+  },
+  "series": {
+    "lyman": {
+      "description": "Lyman series — transitions to n=1 (ultraviolet)",
+      "lines": [
+        {"transition": "2→1", "name": "Lyman-alpha", "wavelength_nm": 121.567, "frequency_THz": 2466.068, "frequency_Hz": 2.466068e+15, "energy_eV": 10.204},
+        {"transition": "3→1", "name": "Lyman-beta", "wavelength_nm": 102.572, "frequency_THz": 2923.264, "frequency_Hz": 2.923264e+15, "energy_eV": 12.094},
+        {"transition": "4→1", "name": "Lyman-gamma", "wavelength_nm": 97.254, "frequency_THz": 3083.056, "frequency_Hz": 3.083056e+15, "energy_eV": 12.755},
+        {"transition": "5→1", "name": "Lyman-delta", "wavelength_nm": 94.974, "frequency_THz": 3157.453, "frequency_Hz": 3.157453e+15, "energy_eV": 13.056},
+        {"transition": "6→1", "name": "Lyman-epsilon", "wavelength_nm": 93.780, "frequency_THz": 3197.337, "frequency_Hz": 3.197337e+15, "energy_eV": 13.222}
+      ],
+      "series_limit_nm": 91.175,
+      "series_limit_Hz": 3.2898e+15
+    },
+    "balmer": {
+      "description": "Balmer series — transitions to n=2 (visible/near-UV)",
+      "lines": [
+        {"transition": "3→2", "name": "H-alpha", "wavelength_nm": 656.281, "frequency_THz": 456.807, "frequency_Hz": 4.56807e+14, "energy_eV": 1.889, "color": "red"},
+        {"transition": "4→2", "name": "H-beta", "wavelength_nm": 486.135, "frequency_THz": 616.725, "frequency_Hz": 6.16725e+14, "energy_eV": 2.551, "color": "cyan"},
+        {"transition": "5→2", "name": "H-gamma", "wavelength_nm": 434.047, "frequency_THz": 690.787, "frequency_Hz": 6.90787e+14, "energy_eV": 2.857, "color": "blue"},
+        {"transition": "6→2", "name": "H-delta", "wavelength_nm": 410.175, "frequency_THz": 731.092, "frequency_Hz": 7.31092e+14, "energy_eV": 3.023, "color": "violet"},
+        {"transition": "7→2", "name": "H-epsilon", "wavelength_nm": 397.007, "frequency_THz": 755.222, "frequency_Hz": 7.55222e+14, "energy_eV": 3.123, "color": "violet"}
+      ],
+      "series_limit_nm": 364.506,
+      "series_limit_Hz": 8.2234e+14
+    },
+    "paschen": {
+      "description": "Paschen series — transitions to n=3 (near-infrared)",
+      "lines": [
+        {"transition": "4→3", "name": "Paschen-alpha", "wavelength_nm": 1875.10, "frequency_THz": 159.918, "frequency_Hz": 1.59918e+14, "energy_eV": 0.661},
+        {"transition": "5→3", "name": "Paschen-beta", "wavelength_nm": 1281.81, "frequency_THz": 233.980, "frequency_Hz": 2.33980e+14, "energy_eV": 0.968},
+        {"transition": "6→3", "name": "Paschen-gamma", "wavelength_nm": 1093.81, "frequency_THz": 274.285, "frequency_Hz": 2.74285e+14, "energy_eV": 1.134},
+        {"transition": "7→3", "name": "Paschen-delta", "wavelength_nm": 1004.94, "frequency_THz": 298.415, "frequency_Hz": 2.98415e+14, "energy_eV": 1.234}
+      ],
+      "series_limit_nm": 820.4,
+      "series_limit_Hz": 3.6559e+14
+    }
+  },
+  "fundamental_constants": {
+    "rydberg_constant_m_inv": 10973731.568160,
+    "rydberg_frequency_Hz": 3.2898419602508e+15,
+    "ionization_energy_eV": 13.598,
+    "bohr_radius_m": 5.29177210903e-11
+  },
+  "hydrogen_21cm": {
+    "description": "Hydrogen 21-cm hyperfine transition line — fundamental radio astronomy frequency",
+    "wavelength_cm": 21.106,
+    "frequency_Hz": 1420405751.768,
+    "frequency_MHz": 1420.405752,
+    "energy_eV": 5.874e-6,
+    "applications": ["radio_astronomy", "interstellar_medium_mapping", "cosmological_redshift"]
+  }
+}

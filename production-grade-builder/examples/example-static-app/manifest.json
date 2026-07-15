@@ -1,0 +1,8 @@
+{
+  "name": "example-static-app",
+  "version": "0.1.0",
+  "kind": "static-app",
+  "author": "MESIE Team",
+  "created": "2026-06-11T08:33:37.628777+00:00",
+  "description": "Production-grade static-app deliverable: example-static-app"
+}

@@ -1,0 +1,862 @@
+{
+  "title": "MESIE Enterprise + Chaos + Flow 100 Report",
+  "generated_at": "2026-06-07T22:50:02Z",
+  "total_tests": 100,
+  "total_passed": 100,
+  "total_failed": 0,
+  "elapsed_s": 0.06,
+  "all_pass": true,
+  "lanes": {
+    "enterprise": {
+      "total": 35,
+      "passed": 35,
+      "failed": 0,
+      "elapsed_s": 0.004
+    },
+    "chaos": {
+      "total": 30,
+      "passed": 30,
+      "failed": 0,
+      "elapsed_s": 0.003
+    },
+    "flow": {
+      "total": 35,
+      "passed": 35,
+      "failed": 0,
+      "elapsed_s": 0.056
+    }
+  },
+  "outcomes": [
+    {
+      "id": "E01",
+      "lane": "enterprise",
+      "name": "Copilot field_bridge basic",
+      "passed": true,
+      "elapsed_ms": 0.09,
+      "detail": ""
+    },
+    {
+      "id": "E02",
+      "lane": "enterprise",
+      "name": "Copilot field_route ground\u2192world",
+      "passed": true,
+      "elapsed_ms": 0.02,
+      "detail": ""
+    },
+    {
+      "id": "E03",
+      "lane": "enterprise",
+      "name": "Copilot field_status airgapped",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E04",
+      "lane": "enterprise",
+      "name": "Copilot vault store receipt",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "E05",
+      "lane": "enterprise",
+      "name": "Copilot vault mint token",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E06",
+      "lane": "enterprise",
+      "name": "Copilot vault verify chain",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E07",
+      "lane": "enterprise",
+      "name": "Copilot unknown tool graceful",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E08",
+      "lane": "enterprise",
+      "name": "Field bridge peak=7.83Hz",
+      "passed": true,
+      "elapsed_ms": 0.12,
+      "detail": ""
+    },
+    {
+      "id": "E09",
+      "lane": "enterprise",
+      "name": "Field bridge peak=14.3Hz",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "E10",
+      "lane": "enterprise",
+      "name": "Field bridge peak=20.8Hz",
+      "passed": true,
+      "elapsed_ms": 0.05,
+      "detail": ""
+    },
+    {
+      "id": "E11",
+      "lane": "enterprise",
+      "name": "Field bridge peak=33.8Hz",
+      "passed": true,
+      "elapsed_ms": 0.05,
+      "detail": ""
+    },
+    {
+      "id": "E12",
+      "lane": "enterprise",
+      "name": "Field bridge peak=45.0Hz",
+      "passed": true,
+      "elapsed_ms": 0.04,
+      "detail": ""
+    },
+    {
+      "id": "E13",
+      "lane": "enterprise",
+      "name": "Enterprise MC Manufacturing",
+      "passed": true,
+      "elapsed_ms": 0.76,
+      "detail": ""
+    },
+    {
+      "id": "E14",
+      "lane": "enterprise",
+      "name": "Enterprise MC Energy",
+      "passed": true,
+      "elapsed_ms": 0.56,
+      "detail": ""
+    },
+    {
+      "id": "E15",
+      "lane": "enterprise",
+      "name": "Enterprise MC Aerospace",
+      "passed": true,
+      "elapsed_ms": 0.48,
+      "detail": ""
+    },
+    {
+      "id": "E16",
+      "lane": "enterprise",
+      "name": "Enterprise MC Insurance",
+      "passed": true,
+      "elapsed_ms": 0.5,
+      "detail": ""
+    },
+    {
+      "id": "E17",
+      "lane": "enterprise",
+      "name": "Enterprise MC Healthcare",
+      "passed": true,
+      "elapsed_ms": 0.46,
+      "detail": ""
+    },
+    {
+      "id": "E18",
+      "lane": "enterprise",
+      "name": "Route ground\u2192world-root",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "E19",
+      "lane": "enterprise",
+      "name": "Route leo-edge-0\u2192geo-backbone-0",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "E20",
+      "lane": "enterprise",
+      "name": "Route ionosphere\u2192meo-relay-0",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "E21",
+      "lane": "enterprise",
+      "name": "Route ladder-0\u2192ladder-6",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "E22",
+      "lane": "enterprise",
+      "name": "Route ground\u2192leo-edge-1",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E23",
+      "lane": "enterprise",
+      "name": "SLA copilot cycle 0",
+      "passed": true,
+      "elapsed_ms": 0.07,
+      "detail": ""
+    },
+    {
+      "id": "E24",
+      "lane": "enterprise",
+      "name": "SLA copilot cycle 1",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "E25",
+      "lane": "enterprise",
+      "name": "SLA copilot cycle 2",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "E26",
+      "lane": "enterprise",
+      "name": "SLA copilot cycle 3",
+      "passed": true,
+      "elapsed_ms": 0.1,
+      "detail": ""
+    },
+    {
+      "id": "E27",
+      "lane": "enterprise",
+      "name": "SLA copilot cycle 4",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "E28",
+      "lane": "enterprise",
+      "name": "Copilot memory store",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E29",
+      "lane": "enterprise",
+      "name": "Copilot memory route cache",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "E30",
+      "lane": "enterprise",
+      "name": "Copilot tool audit trail",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E31",
+      "lane": "enterprise",
+      "name": "Hz ladder 7 tiers",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E32",
+      "lane": "enterprise",
+      "name": "Hz ladder Schumann in ELF",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E33",
+      "lane": "enterprise",
+      "name": "Hz ladder tiers ordered",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "E34",
+      "lane": "enterprise",
+      "name": "Vault 10-receipt chain valid",
+      "passed": true,
+      "elapsed_ms": 0.04,
+      "detail": ""
+    },
+    {
+      "id": "E35",
+      "lane": "enterprise",
+      "name": "Vault multi-token mint",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "C01",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.05",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "C02",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.07",
+      "passed": true,
+      "elapsed_ms": 0.04,
+      "detail": ""
+    },
+    {
+      "id": "C03",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.09",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C04",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.11",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C05",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.13",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C06",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.15",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C07",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.17",
+      "passed": true,
+      "elapsed_ms": 0.04,
+      "detail": ""
+    },
+    {
+      "id": "C08",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.19",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C09",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.21",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C10",
+      "lane": "chaos",
+      "name": "Rapid bridge noise=0.23",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C11",
+      "lane": "chaos",
+      "name": "Rapid bridge peak=7.83Hz noisy",
+      "passed": true,
+      "elapsed_ms": 0.1,
+      "detail": ""
+    },
+    {
+      "id": "C12",
+      "lane": "chaos",
+      "name": "Rapid bridge peak=14.3Hz noisy",
+      "passed": true,
+      "elapsed_ms": 0.08,
+      "detail": ""
+    },
+    {
+      "id": "C13",
+      "lane": "chaos",
+      "name": "Rapid bridge peak=20.8Hz noisy",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "C14",
+      "lane": "chaos",
+      "name": "Rapid bridge peak=26.4Hz noisy",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "C15",
+      "lane": "chaos",
+      "name": "Rapid bridge peak=33.8Hz noisy",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "C16",
+      "lane": "chaos",
+      "name": "Chaos route ground\u2192geo-backbone-0",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "C17",
+      "lane": "chaos",
+      "name": "Chaos route leo-edge-1\u2192world-root",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "C18",
+      "lane": "chaos",
+      "name": "Chaos route ladder-3\u2192ground",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "C19",
+      "lane": "chaos",
+      "name": "Chaos route meo-relay-0\u2192ladder-0",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "C20",
+      "lane": "chaos",
+      "name": "Chaos route world-root\u2192ground",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    },
+    {
+      "id": "C21",
+      "lane": "chaos",
+      "name": "Invalid source node",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "C22",
+      "lane": "chaos",
+      "name": "Invalid dest node",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "C23",
+      "lane": "chaos",
+      "name": "15-link receipt chain",
+      "passed": true,
+      "elapsed_ms": 0.07,
+      "detail": ""
+    },
+    {
+      "id": "C24",
+      "lane": "chaos",
+      "name": "Policy burst SLA<500ms",
+      "passed": true,
+      "elapsed_ms": 0.31,
+      "detail": ""
+    },
+    {
+      "id": "C25",
+      "lane": "chaos",
+      "name": "Policy burst SLA<1000ms",
+      "passed": true,
+      "elapsed_ms": 0.27,
+      "detail": ""
+    },
+    {
+      "id": "C26",
+      "lane": "chaos",
+      "name": "Policy burst SLA<2000ms",
+      "passed": true,
+      "elapsed_ms": 0.28,
+      "detail": ""
+    },
+    {
+      "id": "C27",
+      "lane": "chaos",
+      "name": "Near-zero amplitude bridge",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C28",
+      "lane": "chaos",
+      "name": "Spike amplitude bridge",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "C29",
+      "lane": "chaos",
+      "name": "Match under 30% noise",
+      "passed": true,
+      "elapsed_ms": 0.41,
+      "detail": ""
+    },
+    {
+      "id": "C30",
+      "lane": "chaos",
+      "name": "Match under 50% noise",
+      "passed": true,
+      "elapsed_ms": 0.41,
+      "detail": ""
+    },
+    {
+      "id": "F01",
+      "lane": "flow",
+      "name": "Full flow cycle 0",
+      "passed": true,
+      "elapsed_ms": 0.18,
+      "detail": ""
+    },
+    {
+      "id": "F02",
+      "lane": "flow",
+      "name": "Full flow cycle 1",
+      "passed": true,
+      "elapsed_ms": 0.18,
+      "detail": ""
+    },
+    {
+      "id": "F03",
+      "lane": "flow",
+      "name": "Full flow cycle 2",
+      "passed": true,
+      "elapsed_ms": 0.15,
+      "detail": ""
+    },
+    {
+      "id": "F04",
+      "lane": "flow",
+      "name": "Full flow cycle 3",
+      "passed": true,
+      "elapsed_ms": 0.14,
+      "detail": ""
+    },
+    {
+      "id": "F05",
+      "lane": "flow",
+      "name": "Full flow cycle 4",
+      "passed": true,
+      "elapsed_ms": 0.14,
+      "detail": ""
+    },
+    {
+      "id": "F06",
+      "lane": "flow",
+      "name": "Copilot tool flow 0",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "F07",
+      "lane": "flow",
+      "name": "Copilot tool flow 1",
+      "passed": true,
+      "elapsed_ms": 0.07,
+      "detail": ""
+    },
+    {
+      "id": "F08",
+      "lane": "flow",
+      "name": "Copilot tool flow 2",
+      "passed": true,
+      "elapsed_ms": 0.05,
+      "detail": ""
+    },
+    {
+      "id": "F09",
+      "lane": "flow",
+      "name": "Copilot tool flow 3",
+      "passed": true,
+      "elapsed_ms": 0.05,
+      "detail": ""
+    },
+    {
+      "id": "F10",
+      "lane": "flow",
+      "name": "Copilot tool flow 4",
+      "passed": true,
+      "elapsed_ms": 0.05,
+      "detail": ""
+    },
+    {
+      "id": "F11",
+      "lane": "flow",
+      "name": "SDK validate+match flow",
+      "passed": true,
+      "elapsed_ms": 0.54,
+      "detail": ""
+    },
+    {
+      "id": "F12",
+      "lane": "flow",
+      "name": "SDK research search flow",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "F13",
+      "lane": "flow",
+      "name": "SDK vectorize flow",
+      "passed": true,
+      "elapsed_ms": 0.2,
+      "detail": ""
+    },
+    {
+      "id": "F14",
+      "lane": "flow",
+      "name": "SDK rank candidates flow",
+      "passed": true,
+      "elapsed_ms": 1.86,
+      "detail": ""
+    },
+    {
+      "id": "F15",
+      "lane": "flow",
+      "name": "SDK MAESI client ready",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "F16",
+      "lane": "flow",
+      "name": "Vault flow cycle 0",
+      "passed": true,
+      "elapsed_ms": 0.08,
+      "detail": ""
+    },
+    {
+      "id": "F17",
+      "lane": "flow",
+      "name": "Vault flow cycle 1",
+      "passed": true,
+      "elapsed_ms": 0.07,
+      "detail": ""
+    },
+    {
+      "id": "F18",
+      "lane": "flow",
+      "name": "Vault flow cycle 2",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "F19",
+      "lane": "flow",
+      "name": "Vault flow cycle 3",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "F20",
+      "lane": "flow",
+      "name": "Vault flow cycle 4",
+      "passed": true,
+      "elapsed_ms": 0.06,
+      "detail": ""
+    },
+    {
+      "id": "F21",
+      "lane": "flow",
+      "name": "Hz ladder + bridge flow",
+      "passed": true,
+      "elapsed_ms": 0.07,
+      "detail": ""
+    },
+    {
+      "id": "F22",
+      "lane": "flow",
+      "name": "Satellite network deploy flow",
+      "passed": true,
+      "elapsed_ms": 0.05,
+      "detail": ""
+    },
+    {
+      "id": "F23",
+      "lane": "flow",
+      "name": "Satellite route compute flow",
+      "passed": true,
+      "elapsed_ms": 0.04,
+      "detail": ""
+    },
+    {
+      "id": "F24",
+      "lane": "flow",
+      "name": "Edge message creation flow",
+      "passed": true,
+      "elapsed_ms": 0.03,
+      "detail": ""
+    },
+    {
+      "id": "F25",
+      "lane": "flow",
+      "name": "Full E2E validate\u2192vault flow",
+      "passed": true,
+      "elapsed_ms": 0.35,
+      "detail": ""
+    },
+    {
+      "id": "F26",
+      "lane": "flow",
+      "name": "Preset flow: seismic",
+      "passed": true,
+      "elapsed_ms": 0.16,
+      "detail": ""
+    },
+    {
+      "id": "F27",
+      "lane": "flow",
+      "name": "Preset flow: vibration",
+      "passed": true,
+      "elapsed_ms": 0.14,
+      "detail": ""
+    },
+    {
+      "id": "F28",
+      "lane": "flow",
+      "name": "Preset flow: structural",
+      "passed": true,
+      "elapsed_ms": 0.14,
+      "detail": ""
+    },
+    {
+      "id": "F29",
+      "lane": "flow",
+      "name": "Preset flow: grid",
+      "passed": true,
+      "elapsed_ms": 0.13,
+      "detail": ""
+    },
+    {
+      "id": "F30",
+      "lane": "flow",
+      "name": "Preset flow: orbital",
+      "passed": true,
+      "elapsed_ms": 0.17,
+      "detail": ""
+    },
+    {
+      "id": "F31",
+      "lane": "flow",
+      "name": "Octopus full run flow",
+      "passed": true,
+      "elapsed_ms": 5.45,
+      "detail": ""
+    },
+    {
+      "id": "F32",
+      "lane": "flow",
+      "name": "SOLUS organism alive flow",
+      "passed": true,
+      "elapsed_ms": 0.0,
+      "detail": ""
+    },
+    {
+      "id": "F33",
+      "lane": "flow",
+      "name": "Fast compute batch flow",
+      "passed": true,
+      "elapsed_ms": 2.15,
+      "detail": ""
+    },
+    {
+      "id": "F34",
+      "lane": "flow",
+      "name": "Fingerprint ANN flow",
+      "passed": true,
+      "elapsed_ms": 41.06,
+      "detail": ""
+    },
+    {
+      "id": "F35",
+      "lane": "flow",
+      "name": "Sovereign stack status flow",
+      "passed": true,
+      "elapsed_ms": 0.01,
+      "detail": ""
+    }
+  ],
+  "field_access": {
+    "internet_connected": false,
+    "airgapped": true,
+    "third_party": false,
+    "anchors": [
+      "schumann_1",
+      "schumann_2",
+      "schumann_3",
+      "schumann_4",
+      "schumann_5",
+      "schumann_6",
+      "schumann_7"
+    ],
+    "nodes": [
+      "ground",
+      "ionosphere",
+      "ladder-0",
+      "ladder-1",
+      "ladder-2",
+      "ladder-3",
+      "ladder-4",
+      "ladder-5",
+      "ladder-6",
+      "leo-edge-0",
+      "leo-edge-1",
+      "meo-relay-0",
+      "geo-backbone-0",
+      "world-root"
+    ],
+    "node_count": 14
+  }
+}

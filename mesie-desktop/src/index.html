@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';">
+  <title>MESIE — Spectral Intelligence Engine</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="logo">MESIE</h1>
+        <span class="version" id="version-badge">v0.4.0</span>
+      </div>
+      <ul class="nav-items">
+        <li class="nav-item active" data-panel="dashboard">
+          <span class="nav-icon">◈</span> Dashboard
+        </li>
+        <li class="nav-item" data-panel="generate">
+          <span class="nav-icon">⊕</span> Generate
+        </li>
+        <li class="nav-item" data-panel="validate">
+          <span class="nav-icon">✓</span> Validate
+        </li>
+        <li class="nav-item" data-panel="match">
+          <span class="nav-icon">⇋</span> Match
+        </li>
+        <li class="nav-item" data-panel="embed">
+          <span class="nav-icon">◉</span> Embed
+        </li>
+        <li class="nav-item" data-panel="knowledge">
+          <span class="nav-icon">⊞</span> Knowledge
+        </li>
+        <li class="nav-item" data-panel="benchmark">
+          <span class="nav-icon">▶</span> Benchmark
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <span class="engine-label">Powered by MAESI + NeuroAIX</span>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content">
+      <!-- Dashboard Panel -->
+      <section class="panel active" id="panel-dashboard">
+        <h2>Spectral Intelligence Dashboard</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-version">—</div>
+            <div class="stat-label">Engine Version</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-laws">—</div>
+            <div class="stat-label">Physical Laws</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-elements">—</div>
+            <div class="stat-label">Chemical Elements</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-research">—</div>
+            <div class="stat-label">Research Entries</div>
+          </div>
+        </div>
+        <div class="status-bar">
+          <span class="status-dot green"></span>
+          <span id="status-text">Ready</span>
+        </div>
+      </section>
+
+      <!-- Generate Panel -->
+      <section class="panel" id="panel-generate">
+        <h2>Generate Spectrum</h2>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="gen-type">
+            <option value="psd">Power Spectral Density (PSD)</option>
+            <option value="fas">Fourier Amplitude Spectrum (FAS)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Seed</label>
+          <input type="number" id="gen-seed" value="42" min="0">
+        </div>
+        <button class="btn primary" id="btn-generate">Generate</button>
+        <div class="result-area" id="gen-result"></div>
+        <canvas id="spectrum-canvas" width="800" height="300"></canvas>
+      </section>
+
+      <!-- Validate Panel -->
+      <section class="panel" id="panel-validate">
+        <h2>Validate Record</h2>
+        <div class="form-group">
+          <label>Spectral Record File</label>
+          <div class="file-input">
+            <input type="text" id="validate-path" placeholder="Select a JSON record..." readonly>
+            <button class="btn" id="btn-validate-browse">Browse</button>
+          </div>
+        </div>
+        <button class="btn primary" id="btn-validate">Validate</button>
+        <div class="result-area" id="validate-result"></div>
+      </section>
+
+      <!-- Match Panel -->
+      <section class="panel" id="panel-match">
+        <h2>Match Records</h2>
+        <div class="form-group">
+          <label>Reference Record</label>
+          <div class="file-input">
+            <input type="text" id="match-ref-path" placeholder="Reference record..." readonly>
+            <button class="btn" id="btn-match-ref-browse">Browse</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Candidate Record</label>
+          <div class="file-input">
+            <input type="text" id="match-cand-path" placeholder="Candidate record..." readonly>
+            <button class="btn" id="btn-match-cand-browse">Browse</button>
+          </div>
+        </div>
+        <button class="btn primary" id="btn-match">Match</button>
+        <div class="result-area" id="match-result"></div>
+      </section>
+
+      <!-- Embed Panel -->
+      <section class="panel" id="panel-embed">
+        <h2>Spectral Embedding</h2>
+        <div class="form-group">
+          <label>Record File</label>
+          <div class="file-input">
+            <input type="text" id="embed-path" placeholder="Select a record..." readonly>
+            <button class="btn" id="btn-embed-browse">Browse</button>
+          </div>
+        </div>
+        <button class="btn primary" id="btn-embed">Compute Embedding</button>
+        <div class="result-area" id="embed-result"></div>
+      </section>
+
+      <!-- Knowledge Panel -->
+      <section class="panel" id="panel-knowledge">
+        <h2>Knowledge Base</h2>
+        <div class="form-group">
+          <label>Search Research Catalog</label>
+          <div class="file-input">
+            <input type="text" id="knowledge-query" placeholder="e.g., spectral analysis, neural networks...">
+            <button class="btn" id="btn-search">Search</button>
+          </div>
+        </div>
+        <div class="result-area" id="knowledge-result"></div>
+      </section>
+
+      <!-- Benchmark Panel -->
+      <section class="panel" id="panel-benchmark">
+        <h2>Monte Carlo Enterprise Benchmark</h2>
+        <div class="form-group">
+          <label>Trials per use case</label>
+          <input type="number" id="mc-trials" value="100" min="10" max="1000" step="10">
+        </div>
+        <button class="btn primary" id="btn-benchmark">Run Benchmark</button>
+        <div class="result-area" id="benchmark-result"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

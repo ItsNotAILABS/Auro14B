@@ -1,0 +1,62 @@
+{
+  "record_id": "spectral-lib-atmospheric-001",
+  "record_type": "atmospheric_absorption",
+  "description": "Real atmospheric absorption and transmission windows — key frequencies for ground-to-satellite communication",
+  "source": "ITU-R P.676-12 (Attenuation by atmospheric gases), Liebe MPM93 model",
+  "units": {
+    "frequency": "GHz",
+    "attenuation": "dB/km"
+  },
+  "absorption_lines": {
+    "water_vapor": {
+      "description": "H2O rotational absorption lines",
+      "lines_GHz": [
+        {"frequency_GHz": 22.235, "peak_attenuation_dB_km": 0.18, "linewidth_GHz": 2.5},
+        {"frequency_GHz": 183.310, "peak_attenuation_dB_km": 28.0, "linewidth_GHz": 5.0},
+        {"frequency_GHz": 323.826, "peak_attenuation_dB_km": 15.0, "linewidth_GHz": 8.0},
+        {"frequency_GHz": 380.197, "peak_attenuation_dB_km": 30.0, "linewidth_GHz": 6.0},
+        {"frequency_GHz": 448.001, "peak_attenuation_dB_km": 10.0, "linewidth_GHz": 10.0},
+        {"frequency_GHz": 556.936, "peak_attenuation_dB_km": 500.0, "linewidth_GHz": 15.0},
+        {"frequency_GHz": 752.033, "peak_attenuation_dB_km": 200.0, "linewidth_GHz": 20.0}
+      ]
+    },
+    "oxygen": {
+      "description": "O2 magnetic dipole absorption complex",
+      "lines_GHz": [
+        {"frequency_GHz": 60.0, "peak_attenuation_dB_km": 15.0, "linewidth_GHz": 8.0, "note": "60 GHz O2 complex (50-70 GHz)"},
+        {"frequency_GHz": 118.750, "peak_attenuation_dB_km": 1.5, "linewidth_GHz": 3.0, "note": "isolated O2 line"},
+        {"frequency_GHz": 368.498, "peak_attenuation_dB_km": 3.0, "linewidth_GHz": 5.0},
+        {"frequency_GHz": 424.763, "peak_attenuation_dB_km": 6.0, "linewidth_GHz": 4.0},
+        {"frequency_GHz": 487.249, "peak_attenuation_dB_km": 2.0, "linewidth_GHz": 5.0}
+      ]
+    }
+  },
+  "transmission_windows": {
+    "description": "Low-attenuation atmospheric windows optimal for satellite communication",
+    "windows": [
+      {"name": "VHF_window", "frequency_range_GHz": [0.03, 0.3], "zenith_attenuation_dB": 0.01, "use": "FM_broadcast_satellite"},
+      {"name": "L_band_window", "frequency_range_GHz": [1.0, 2.0], "zenith_attenuation_dB": 0.03, "use": "GPS_satellite_phone"},
+      {"name": "S_band_window", "frequency_range_GHz": [2.0, 4.0], "zenith_attenuation_dB": 0.04, "use": "weather_radar_telemetry"},
+      {"name": "C_band_window", "frequency_range_GHz": [4.0, 8.0], "zenith_attenuation_dB": 0.06, "use": "satellite_TV_uplink"},
+      {"name": "X_band_window", "frequency_range_GHz": [8.0, 12.0], "zenith_attenuation_dB": 0.08, "use": "earth_observation_SAR"},
+      {"name": "Ku_band_window", "frequency_range_GHz": [12.0, 18.0], "zenith_attenuation_dB": 0.12, "use": "satellite_broadband"},
+      {"name": "Ka_band_window", "frequency_range_GHz": [26.5, 40.0], "zenith_attenuation_dB": 0.30, "use": "high_throughput_satellite"},
+      {"name": "W_band_window", "frequency_range_GHz": [75.0, 110.0], "zenith_attenuation_dB": 0.50, "use": "automotive_radar_ISL"},
+      {"name": "submm_window_1", "frequency_range_GHz": [130.0, 170.0], "zenith_attenuation_dB": 3.0, "use": "radio_astronomy"},
+      {"name": "submm_window_2", "frequency_range_GHz": [200.0, 320.0], "zenith_attenuation_dB": 10.0, "use": "earth_remote_sensing"}
+    ]
+  },
+  "rain_attenuation": {
+    "description": "Additional rain attenuation at key satellite frequencies (ITU-R P.838)",
+    "rain_rate_mm_hr": 25,
+    "frequencies": [
+      {"frequency_GHz": 4.0, "attenuation_dB_km": 0.07},
+      {"frequency_GHz": 12.0, "attenuation_dB_km": 2.2},
+      {"frequency_GHz": 20.0, "attenuation_dB_km": 5.5},
+      {"frequency_GHz": 30.0, "attenuation_dB_km": 9.0},
+      {"frequency_GHz": 50.0, "attenuation_dB_km": 12.5},
+      {"frequency_GHz": 80.0, "attenuation_dB_km": 14.0},
+      {"frequency_GHz": 100.0, "attenuation_dB_km": 14.5}
+    ]
+  }
+}

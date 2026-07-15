@@ -1,0 +1,135 @@
+{
+  "record_id": "spectral-lib-em-bands-001",
+  "record_type": "band_definitions",
+  "description": "Complete electromagnetic spectrum band definitions with precise frequency boundaries from IEEE/ITU standards",
+  "source": "IEEE Std 521-2019, ITU Radio Regulations",
+  "units": {
+    "frequency_low": "Hz",
+    "frequency_high": "Hz",
+    "wavelength": "m"
+  },
+  "radio_bands": {
+    "ELF": {
+      "name": "Extremely Low Frequency",
+      "frequency_low_Hz": 3.0,
+      "frequency_high_Hz": 30.0,
+      "wavelength_low_m": 10000000,
+      "wavelength_high_m": 100000000,
+      "applications": ["submarine_communication", "earth_ionosphere_waveguide"],
+      "propagation": "ground_wave"
+    },
+    "SLF": {
+      "name": "Super Low Frequency",
+      "frequency_low_Hz": 30.0,
+      "frequency_high_Hz": 300.0,
+      "wavelength_low_m": 1000000,
+      "wavelength_high_m": 10000000,
+      "applications": ["submarine_communication"],
+      "propagation": "ground_wave"
+    },
+    "ULF": {
+      "name": "Ultra Low Frequency",
+      "frequency_low_Hz": 300.0,
+      "frequency_high_Hz": 3000.0,
+      "wavelength_low_m": 100000,
+      "wavelength_high_m": 1000000,
+      "applications": ["geophysics", "magnetotellurics"],
+      "propagation": "ground_wave"
+    },
+    "VLF": {
+      "name": "Very Low Frequency",
+      "frequency_low_Hz": 3000.0,
+      "frequency_high_Hz": 30000.0,
+      "wavelength_low_m": 10000,
+      "wavelength_high_m": 100000,
+      "applications": ["submarine_communication", "navigation", "time_signals"],
+      "propagation": "ground_wave_waveguide"
+    },
+    "LF": {
+      "name": "Low Frequency",
+      "frequency_low_Hz": 30000.0,
+      "frequency_high_Hz": 300000.0,
+      "wavelength_low_m": 1000,
+      "wavelength_high_m": 10000,
+      "applications": ["navigation", "time_signals", "RFID"],
+      "propagation": "ground_wave"
+    },
+    "MF": {
+      "name": "Medium Frequency",
+      "frequency_low_Hz": 300000.0,
+      "frequency_high_Hz": 3000000.0,
+      "wavelength_low_m": 100,
+      "wavelength_high_m": 1000,
+      "applications": ["AM_broadcast", "maritime_communication"],
+      "propagation": "ground_wave_skywave"
+    },
+    "HF": {
+      "name": "High Frequency",
+      "frequency_low_Hz": 3000000.0,
+      "frequency_high_Hz": 30000000.0,
+      "wavelength_low_m": 10,
+      "wavelength_high_m": 100,
+      "applications": ["shortwave_broadcast", "aviation", "amateur_radio", "OTH_radar"],
+      "propagation": "skywave"
+    },
+    "VHF": {
+      "name": "Very High Frequency",
+      "frequency_low_Hz": 30000000.0,
+      "frequency_high_Hz": 300000000.0,
+      "wavelength_low_m": 1,
+      "wavelength_high_m": 10,
+      "applications": ["FM_broadcast", "television", "aviation_communication", "marine_VHF"],
+      "propagation": "line_of_sight"
+    },
+    "UHF": {
+      "name": "Ultra High Frequency",
+      "frequency_low_Hz": 300000000.0,
+      "frequency_high_Hz": 3000000000.0,
+      "wavelength_low_m": 0.1,
+      "wavelength_high_m": 1,
+      "applications": ["television", "cell_phones", "GPS", "WiFi", "Bluetooth", "satellite"],
+      "propagation": "line_of_sight"
+    },
+    "SHF": {
+      "name": "Super High Frequency",
+      "frequency_low_Hz": 3000000000.0,
+      "frequency_high_Hz": 30000000000.0,
+      "wavelength_low_m": 0.01,
+      "wavelength_high_m": 0.1,
+      "applications": ["satellite_communication", "radar", "microwave_links", "5G"],
+      "propagation": "line_of_sight"
+    },
+    "EHF": {
+      "name": "Extremely High Frequency",
+      "frequency_low_Hz": 30000000000.0,
+      "frequency_high_Hz": 300000000000.0,
+      "wavelength_low_m": 0.001,
+      "wavelength_high_m": 0.01,
+      "applications": ["5G_mmWave", "radio_astronomy", "security_scanning", "satellite_crosslinks"],
+      "propagation": "line_of_sight_high_attenuation"
+    }
+  },
+  "microwave_radar_bands": {
+    "L_band": {"frequency_low_GHz": 1.0, "frequency_high_GHz": 2.0, "applications": ["GPS_L1_1575.42MHz", "satellite_phone", "ATC_radar"]},
+    "S_band": {"frequency_low_GHz": 2.0, "frequency_high_GHz": 4.0, "applications": ["weather_radar", "WiFi_2.4GHz", "satellite_comm"]},
+    "C_band": {"frequency_low_GHz": 4.0, "frequency_high_GHz": 8.0, "applications": ["satellite_TV", "weather_radar", "5G"]},
+    "X_band": {"frequency_low_GHz": 8.0, "frequency_high_GHz": 12.0, "applications": ["military_radar", "satellite_comm", "weather_radar"]},
+    "Ku_band": {"frequency_low_GHz": 12.0, "frequency_high_GHz": 18.0, "applications": ["satellite_TV_direct", "satellite_broadband"]},
+    "K_band": {"frequency_low_GHz": 18.0, "frequency_high_GHz": 27.0, "applications": ["satellite_comm", "astronomy"]},
+    "Ka_band": {"frequency_low_GHz": 27.0, "frequency_high_GHz": 40.0, "applications": ["satellite_broadband", "5G_backhaul", "military"]},
+    "V_band": {"frequency_low_GHz": 40.0, "frequency_high_GHz": 75.0, "applications": ["satellite_crosslinks", "60GHz_WiFi"]},
+    "W_band": {"frequency_low_GHz": 75.0, "frequency_high_GHz": 110.0, "applications": ["automotive_radar_77GHz", "radio_astronomy"]}
+  },
+  "optical_spectrum": {
+    "infrared": {"frequency_low_THz": 0.3, "frequency_high_THz": 430, "wavelength_range_um": "0.7-1000"},
+    "visible": {
+      "red": {"wavelength_nm": [620, 750], "frequency_THz": [400, 484]},
+      "orange": {"wavelength_nm": [590, 620], "frequency_THz": [484, 508]},
+      "yellow": {"wavelength_nm": [570, 590], "frequency_THz": [508, 526]},
+      "green": {"wavelength_nm": [495, 570], "frequency_THz": [526, 606]},
+      "blue": {"wavelength_nm": [450, 495], "frequency_THz": [606, 668]},
+      "violet": {"wavelength_nm": [380, 450], "frequency_THz": [668, 789]}
+    },
+    "ultraviolet": {"frequency_low_THz": 789, "frequency_high_THz": 30000, "wavelength_range_nm": "10-400"}
+  }
+}

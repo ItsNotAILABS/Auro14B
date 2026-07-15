@@ -1,0 +1,26 @@
+{
+  "kind": "python-service",
+  "description": "Python microservice or library",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "src/__init__.py",
+    "src/main.py",
+    "requirements.txt"
+  ],
+  "optional_artifacts": [
+    "Dockerfile",
+    "tests/test_main.py",
+    "pyproject.toml"
+  ],
+  "template_vars": {
+    "entry_point": "src/main.py",
+    "build_cmd": "pip install -r requirements.txt",
+    "serve_cmd": "python src/main.py"
+  }
+}

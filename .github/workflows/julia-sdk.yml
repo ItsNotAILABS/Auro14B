@@ -1,0 +1,112 @@
+name: Julia SDK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'bindings/julia/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bindings/julia/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test-julia-sdk:
+    name: Julia SDK (${{ matrix.julia-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        julia-version: ['1.6', '1.10']
+        include:
+          - os: macos-latest
+            julia-version: '1.10'
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Verify bash is available
+        run: |
+          bash --version
+          echo "✅ bash is available"
+
+      - name: Verify git is available
+        run: |
+          git --version
+          echo "✅ git is available"
+
+      - name: Set up Julia ${{ matrix.julia-version }}
+        uses: julia-actions/setup-julia@5c9647d97b78a5debe5164e9eec09d653d29bd71 # v2
+        with:
+          version: ${{ matrix.julia-version }}
+
+      - name: Verify Julia installation
+        run: julia --version
+
+      - name: Install Julia SDK dependencies
+        working-directory: bindings/julia/ZenodoSpectralSDK
+        run: |
+          julia --project=. -e '
+            import Pkg
+            Pkg.instantiate()
+            Pkg.resolve()
+            Pkg.precompile()
+          '
+
+      - name: Run Julia SDK tests
+        working-directory: bindings/julia/ZenodoSpectralSDK
+        run: |
+          julia --project=. test/runtests.jl
+
+      - name: Test CLI health check
+        working-directory: bindings/julia/ZenodoSpectralSDK
+        run: |
+          julia --project=. cli.jl health
+
+      - name: Test install.sh is valid bash
+        working-directory: bindings/julia/ZenodoSpectralSDK
+        run: |
+          bash -n install.sh
+          echo "✅ install.sh syntax is valid"
+
+      - name: Test SDK module loads correctly
+        working-directory: bindings/julia/ZenodoSpectralSDK
+        run: |
+          julia --project=. -e '
+            include("src/ZenodoSpectralSDK.jl")
+            using .ZenodoSpectralSDK
+            result = dispatch_action(Dict("action" => "health"))
+            @assert get(result, "ok", false) "Health check failed"
+            println("✅ SDK loads and health check passes")
+          '
+
+  test-polyglot:
+    name: MESIEPolyglot CLI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@5c9647d97b78a5debe5164e9eec09d653d29bd71 # v2
+        with:
+          version: '1.10'
+
+      - name: Install MESIEPolyglot dependencies
+        working-directory: bindings/julia/MESIEPolyglot
+        run: |
+          julia --project=. -e '
+            import Pkg
+            Pkg.instantiate()
+            Pkg.resolve()
+            Pkg.precompile()
+          '
+
+      - name: Test MESIEPolyglot health action
+        working-directory: bindings/julia/MESIEPolyglot
+        run: |
+          echo '{"action":"health"}' | julia --project=. cli.jl

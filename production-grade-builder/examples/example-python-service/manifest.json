@@ -1,0 +1,8 @@
+{
+  "name": "example-python-service",
+  "version": "0.1.0",
+  "kind": "python-service",
+  "author": "MESIE Team",
+  "created": "2026-06-11T08:33:43.781872+00:00",
+  "description": "Production-grade python-service deliverable: example-python-service"
+}

@@ -1,0 +1,24 @@
+{
+  "kind": "research-packet",
+  "description": "Research paper or technical report",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "paper.md"
+  ],
+  "optional_artifacts": [
+    "figures/",
+    "references.bib",
+    "appendix/"
+  ],
+  "template_vars": {
+    "entry_point": "paper.md",
+    "build_cmd": null,
+    "serve_cmd": null
+  }
+}

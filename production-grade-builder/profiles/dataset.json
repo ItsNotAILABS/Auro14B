@@ -1,0 +1,25 @@
+{
+  "kind": "dataset",
+  "description": "Structured dataset package",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "data/schema.json",
+    "data/sample.json"
+  ],
+  "optional_artifacts": [
+    "data/full/",
+    "scripts/validate.py",
+    "scripts/transform.py"
+  ],
+  "template_vars": {
+    "entry_point": "data/sample.json",
+    "build_cmd": null,
+    "serve_cmd": null
+  }
+}

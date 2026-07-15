@@ -1,0 +1,86 @@
+{
+  "domain": "orbital",
+  "title": "Orbital edge, satellite nodes & seismic coupling",
+  "records_used": [
+    "earthquake_psd_reference",
+    "orbital_50d_synthetic"
+  ],
+  "reasoning": {
+    "conclusion": "normal_operation",
+    "confidence": 0.7,
+    "evidence": [
+      "High-attention regions detected at bins: [45, 46, 47, 48, 49]"
+    ]
+  },
+  "matches": [],
+  "metrics": {
+    "history_edge_days": 7,
+    "mean_eq_match_edge": 0.8070476756412107,
+    "forecast_edge_count": 6,
+    "alert_days": []
+  },
+  "control_commands": [],
+  "logic_rules_fired": 0,
+  "plain_conclusion": "Orbital: 7 edge days in last 50d; 6 edge days forecast. Alerts on days []. LEO link margins computed for 3 nodes. Record valid=True. Match score=1.000. Control issued ['none']. Logic fired 0 rule(s). Intelligence says normal_operation. Workflow complete=True.",
+  "power_data": {},
+  "orbital_data": {
+    "orbital_50d": {
+      "model": {
+        "orbital_period_days": 16.4,
+        "long_cycle_days": 50.0,
+        "edge_threshold": 0.72,
+        "anchor": "earthquake_psd_reference"
+      },
+      "history_summary": {
+        "days": 50,
+        "orbital_edge_days": 7,
+        "mean_eq_match_edge": 0.8070476756412107,
+        "mean_eq_match_normal": 0.8670606589208301,
+        "mean_anomaly_edge": 2.982925456757023,
+        "mean_anomaly_normal": 2.6878397473667865
+      },
+      "forward_model": {
+        "match_trend_slope_per_day": 0.00045061585992577156,
+        "predicted_orbital_edge_days": [
+          4,
+          5,
+          6,
+          19,
+          20,
+          21
+        ],
+        "alert_days_anomaly_elevated": []
+      }
+    },
+    "satellite_link_budgets": [
+      {
+        "node": "node_LEO_300",
+        "tier": "LEO_300",
+        "orbital_hz": 0.00018442,
+        "max_contact_s": 297.1,
+        "path_loss_dB": 163.35,
+        "doppler_max_Hz": 360978.0,
+        "hz_tier4_center_GHz": 14.0
+      },
+      {
+        "node": "node_LEO_550",
+        "tier": "LEO_550",
+        "orbital_hz": 0.00017452,
+        "max_contact_s": 476.5,
+        "path_loss_dB": 168.62,
+        "doppler_max_Hz": 354398.4,
+        "hz_tier4_center_GHz": 14.0
+      },
+      {
+        "node": "node_LEO_780",
+        "tier": "LEO_780",
+        "orbital_hz": 0.00016616,
+        "max_contact_s": 624.2,
+        "path_loss_dB": 171.65,
+        "doppler_max_Hz": 348652.5,
+        "hz_tier4_center_GHz": 14.0
+      }
+    ]
+  },
+  "elapsed_ms": 167.43020014837384
+}

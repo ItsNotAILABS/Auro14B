@@ -1,0 +1,404 @@
+{
+  "suite": "MESIE / MAESI / NeuroAIX",
+  "tool_count": 29,
+  "skill_count": 20,
+  "categories": {
+    "core": "MESIE Core Spectral Engine",
+    "retrieval": "Embedding, Fingerprint & ANN Retrieval",
+    "orchestration": "Octopus & Internal API",
+    "maesi": "MAESI SDK & Knowledge",
+    "neuroaix": "NeuroAIX Connectome & Cognitive",
+    "analysis": "Domain & Enterprise Analysis",
+    "qa": "Quality Assurance & Benchmarks",
+    "deploy": "Deploy & Edge"
+  },
+  "skills": {
+    "mesie-benchmark": [
+      {
+        "id": "benchmark",
+        "name": "Speed Benchmark",
+        "category": "qa",
+        "command": "python scripts/determinism_benchmark.py",
+        "deliverable": null,
+        "triggers": [
+          "benchmark",
+          "speed",
+          "determinism"
+        ]
+      }
+    ],
+    "mesie-data": [
+      {
+        "id": "bundled-data",
+        "name": "Load Bundled Data",
+        "category": "core",
+        "command": "python examples/09_load_bundled_data.py",
+        "deliverable": null,
+        "triggers": [
+          "bundled data",
+          "references",
+          "benchmarks"
+        ]
+      },
+      {
+        "id": "fix-data",
+        "name": "Fix Reference Data",
+        "category": "core",
+        "command": "python scripts/fix_reference_data.py",
+        "deliverable": null,
+        "triggers": [
+          "fix data",
+          "repair references",
+          "data quality"
+        ]
+      }
+    ],
+    "mesie-deploy": [
+      {
+        "id": "cloudflare",
+        "name": "Cloudflare Worker",
+        "category": "deploy",
+        "command": "type docs\\cloudflare.md",
+        "deliverable": null,
+        "triggers": [
+          "cloudflare",
+          "worker",
+          "edge api",
+          "deploy"
+        ]
+      },
+      {
+        "id": "catalog",
+        "name": "Export Tool Catalog",
+        "category": "deploy",
+        "command": "python -m mesie.tools.cli catalog",
+        "deliverable": "deliverables/MESIE_Native_Tools_Catalog.json",
+        "triggers": [
+          "catalog",
+          "tool list",
+          "skills map"
+        ]
+      }
+    ],
+    "mesie-domains": [
+      {
+        "id": "domains",
+        "name": "Multi-Domain Suites",
+        "category": "analysis",
+        "command": "python scripts/run_multi_domain_suites.py",
+        "deliverable": "deliverables/MESIE_Multi_Domain_Suite_Report.md",
+        "triggers": [
+          "domains",
+          "terrain",
+          "robotics",
+          "power",
+          "seismic suites"
+        ]
+      }
+    ],
+    "mesie-embed": [
+      {
+        "id": "embed",
+        "name": "Create Embedding",
+        "category": "core",
+        "command": "python examples/06_create_spectral_embedding.py",
+        "deliverable": null,
+        "triggers": [
+          "embed",
+          "vectorize",
+          "embedding"
+        ]
+      }
+    ],
+    "mesie-embed-library": [
+      {
+        "id": "embed-library",
+        "name": "Embed Full Library",
+        "category": "retrieval",
+        "command": "python scripts/embed_spectral_library.py",
+        "deliverable": "library/spectral_index.json",
+        "triggers": [
+          "embed library",
+          "index corpus"
+        ]
+      },
+      {
+        "id": "embed-mine",
+        "name": "Embed User Library",
+        "category": "retrieval",
+        "command": "python scripts/embed_my_library.py <folder> --octopus",
+        "deliverable": "library/my_spectral_index.json",
+        "triggers": [
+          "my library",
+          "embed folder"
+        ]
+      }
+    ],
+    "mesie-enterprise": [
+      {
+        "id": "monte-carlo",
+        "name": "Monte Carlo Enterprise",
+        "category": "analysis",
+        "command": "python scripts/monte_carlo_enterprise_benchmark.py --trials 200",
+        "deliverable": "deliverables/MESIE_Monte_Carlo_Enterprise_Report.md",
+        "triggers": [
+          "monte carlo",
+          "enterprise",
+          "sla benchmark"
+        ]
+      }
+    ],
+    "mesie-fingerprint": [
+      {
+        "id": "fingerprint",
+        "name": "Fingerprint ANN Pipeline",
+        "category": "retrieval",
+        "command": "python examples/13_fingerprint_ann_pipeline.py",
+        "deliverable": "library/spectral_index.json",
+        "triggers": [
+          "fingerprint",
+          "lsh",
+          "ann",
+          "time-frequency",
+          "salient"
+        ]
+      }
+    ],
+    "mesie-generate": [
+      {
+        "id": "generate-psd",
+        "name": "Generate PSD",
+        "category": "core",
+        "command": "python examples/03_generate_psd.py",
+        "deliverable": null,
+        "triggers": [
+          "generate psd",
+          "synthetic psd"
+        ]
+      },
+      {
+        "id": "generate-fas",
+        "name": "Generate FAS",
+        "category": "core",
+        "command": "python examples/04_generate_fas.py",
+        "deliverable": null,
+        "triggers": [
+          "generate fas"
+        ]
+      },
+      {
+        "id": "rotdnn",
+        "name": "RotDNN Workflow",
+        "category": "core",
+        "command": "python examples/05_rotdnn_workflow.py",
+        "deliverable": null,
+        "triggers": [
+          "rotdnn",
+          "orientation"
+        ]
+      }
+    ],
+    "mesie-internal": [
+      {
+        "id": "internal-bus",
+        "name": "Internal API Bus",
+        "category": "orchestration",
+        "command": "python scripts/run_internal_bus_demo.py",
+        "deliverable": null,
+        "triggers": [
+          "internal bus",
+          "internal api",
+          "engine bus",
+          "message envelope"
+        ]
+      },
+      {
+        "id": "engines",
+        "name": "List Engines",
+        "category": "orchestration",
+        "command": "python -c \"from mesie.engines.registry import build_default_registry; r=build_default_registry(); print(', '.join(sorted(r.names())))\"",
+        "deliverable": null,
+        "triggers": [
+          "engines",
+          "engine registry",
+          "nine engines"
+        ]
+      }
+    ],
+    "mesie-knowledge": [
+      {
+        "id": "knowledge",
+        "name": "Research Knowledge Search",
+        "category": "maesi",
+        "command": "python -c \"from mesie.sdk import search_research; print(search_research('LSH ANN', 5))\"",
+        "deliverable": null,
+        "triggers": [
+          "research",
+          "technical library",
+          "knowledge"
+        ]
+      }
+    ],
+    "mesie-laptop": [
+      {
+        "id": "laptop",
+        "name": "Laptop Research Report",
+        "category": "analysis",
+        "command": "python scripts/embed_spectral_library.py && python scripts/generate_laptop_research_report.py",
+        "deliverable": "deliverables/MESIE_Laptop_Research_Report.md",
+        "triggers": [
+          "laptop",
+          "virtual chip",
+          "research report"
+        ]
+      }
+    ],
+    "mesie-maesi": [
+      {
+        "id": "maesi",
+        "name": "MAESI SDK Run",
+        "category": "maesi",
+        "command": "python scripts/run_maesi_sdk.py",
+        "deliverable": "deliverables/MAESI_SDK_Run_Report.json",
+        "triggers": [
+          "maesi",
+          "maesi sdk",
+          "neuroaix sdk"
+        ]
+      },
+      {
+        "id": "fast-compute",
+        "name": "Fast Compute Benchmark",
+        "category": "maesi",
+        "command": "python scripts/run_fast_compute_benchmark.py",
+        "deliverable": "deliverables/MAESI_Fast_Compute_Benchmark.json",
+        "triggers": [
+          "fast compute",
+          "batch match",
+          "speedup",
+          "virtual chip"
+        ]
+      }
+    ],
+    "mesie-match": [
+      {
+        "id": "match",
+        "name": "Match Two Spectra",
+        "category": "core",
+        "command": "python examples/02_match_two_records.py",
+        "deliverable": null,
+        "triggers": [
+          "match",
+          "similarity",
+          "compare spectra"
+        ]
+      },
+      {
+        "id": "rank",
+        "name": "Rank Candidates",
+        "category": "core",
+        "command": "python scripts/run_rank_demo.py",
+        "deliverable": null,
+        "triggers": [
+          "rank",
+          "rank candidates",
+          "retrieval",
+          "top-k"
+        ]
+      }
+    ],
+    "mesie-neuroaix": [
+      {
+        "id": "neuroaix",
+        "name": "NeuroAIX Connectome",
+        "category": "neuroaix",
+        "command": "python examples/08_3d_connectome_brain.py",
+        "deliverable": null,
+        "triggers": [
+          "neuroaix",
+          "connectome",
+          "brain regions"
+        ]
+      },
+      {
+        "id": "cognitive",
+        "name": "Cognitive Memory",
+        "category": "neuroaix",
+        "command": "python examples/07_cognitive_memory_adapter.py",
+        "deliverable": null,
+        "triggers": [
+          "cognitive",
+          "memory adapter"
+        ]
+      }
+    ],
+    "mesie-octopus": [
+      {
+        "id": "octopus",
+        "name": "Octopus Engineering",
+        "category": "orchestration",
+        "command": "python examples/11_octopus_internal_api.py",
+        "deliverable": null,
+        "triggers": [
+          "octopus",
+          "eight arms",
+          "internal api",
+          "multi-arm"
+        ]
+      }
+    ],
+    "mesie-orbital": [
+      {
+        "id": "orbital",
+        "name": "Orbital Edge 50d",
+        "category": "analysis",
+        "command": "python scripts/orbital_edge_50d_analysis.py",
+        "deliverable": "scripts/orbital_edge_50d_report.json",
+        "triggers": [
+          "orbital",
+          "satellite edge",
+          "50 day"
+        ]
+      }
+    ],
+    "mesie-test": [
+      {
+        "id": "test",
+        "name": "Run Test Suite",
+        "category": "qa",
+        "command": "python -m pytest tests/ -q",
+        "deliverable": null,
+        "triggers": [
+          "test",
+          "pytest",
+          "ci"
+        ]
+      },
+      {
+        "id": "sdk-drive",
+        "name": "SDK Test Drive",
+        "category": "qa",
+        "command": "python scripts/sdk_test_drive.py",
+        "deliverable": "scripts/sdk_test_drive_report.json",
+        "triggers": [
+          "sdk test drive",
+          "smoke test"
+        ]
+      }
+    ],
+    "mesie-validate": [
+      {
+        "id": "validate",
+        "name": "Validate Record",
+        "category": "core",
+        "command": "python examples/01_load_and_validate.py",
+        "deliverable": null,
+        "triggers": [
+          "validate",
+          "schema",
+          "quality check"
+        ]
+      }
+    ]
+  }
+}

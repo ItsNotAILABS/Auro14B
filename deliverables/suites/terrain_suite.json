@@ -1,0 +1,55 @@
+{
+  "domain": "terrain",
+  "title": "Terrain & structural ground coupling",
+  "records_used": [
+    "terrain_coupled_fas",
+    "earthquake_psd_reference",
+    "structural_fas_reference"
+  ],
+  "reasoning": {
+    "ok": true,
+    "engine": "intelligence",
+    "action": "reason",
+    "data": {
+      "conclusion": "anomaly_detected",
+      "confidence": 0.8,
+      "evidence": [
+        "High-attention regions detected at bins: [68, 69, 70, 71, 72]",
+        "High variability detected - possible anomaly"
+      ]
+    },
+    "error": null
+  },
+  "matches": [
+    {
+      "candidate_id": "ref-structural-fas-001",
+      "score": 0.845
+    },
+    {
+      "candidate_id": "ref-earthquake-psd-001",
+      "score": 0.6296
+    },
+    {
+      "candidate_id": "ref-rotdnn-001",
+      "score": 0.6174
+    },
+    {
+      "candidate_id": "ref-vibration-monitor-001",
+      "score": 0.4646
+    }
+  ],
+  "metrics": {
+    "validation_level": 6,
+    "seismic_coupling_score": 0.6296,
+    "terrain_roughness": 0.5633270638512314
+  },
+  "control_commands": [
+    "investigate_match",
+    "trigger_alert"
+  ],
+  "logic_rules_fired": 2,
+  "plain_conclusion": "Terrain-coupled FAS valid=True. Strongest match: ref-structural-fas-001 (0.845). Ground coupling to seismic anchor: 0.630. Record valid=True. Match score=0.630. Control issued ['investigate_match', 'trigger_alert']. Logic fired 2 rule(s). Intelligence says anomaly_detected. Workflow complete=True.",
+  "power_data": {},
+  "orbital_data": {},
+  "elapsed_ms": 7.441800087690353
+}

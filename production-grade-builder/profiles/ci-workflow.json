@@ -1,0 +1,24 @@
+{
+  "kind": "ci-workflow",
+  "description": "CI/CD pipeline configuration",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "workflows/ci.yml"
+  ],
+  "optional_artifacts": [
+    "workflows/deploy.yml",
+    "workflows/release.yml",
+    "scripts/setup.sh"
+  ],
+  "template_vars": {
+    "entry_point": "workflows/ci.yml",
+    "build_cmd": null,
+    "serve_cmd": null
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "kind": "docs",
+  "description": "Documentation site or package",
+  "required_artifacts": [
+    "README.md",
+    "PACKET_POLICY.md",
+    "manifest.json",
+    "release_manifest.json",
+    "reports/build_report.json",
+    "scores/quality_score.json",
+    "tools/quality_gate.py",
+    "docs/index.md"
+  ],
+  "optional_artifacts": [
+    "docs/api/",
+    "docs/guides/",
+    "mkdocs.yml"
+  ],
+  "template_vars": {
+    "entry_point": "docs/index.md",
+    "build_cmd": null,
+    "serve_cmd": null
+  }
+}

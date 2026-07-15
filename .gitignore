@@ -1,0 +1,41 @@
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Node / Cloudflare Worker
+workers/mesie-api/node_modules/
+workers/mesie-api/.wrangler/
+workers/mesie-api/dist/
+
+# Electron Desktop App
+mesie-desktop/node_modules/
+mesie-desktop/dist/
+mesie-desktop/out/
+
+# Generated spectral indices (rebuild via scripts/)
+library/*.json
+!library/.gitkeep
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+mesie.egg-info/

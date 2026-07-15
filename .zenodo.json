@@ -1,0 +1,78 @@
+{
+  "title": "MESIE: Multi-Element Spectral Intelligence Engine v0.4.0 — Foundation Pretraining, Connectome Brain, Polyglot Ecosystem",
+  "upload_type": "software",
+  "publication_date": "2026-06-07",
+  "doi": "10.5281/zenodo.20598320",
+  "description": "<p><strong>MESIE v0.4.0</strong> is the latest release of the Multi-Element Spectral Intelligence Engine, featuring intelligence AI protocols, transformer-based spectral processing, foundation pretraining, and a full polyglot ecosystem.</p><h3>Highlights</h3><ul><li><strong>Foundation Pretraining Suite</strong>: Masked Spectral Modeling, InfoNCE Contrastive Learning, Temporal Prediction, and unified loss orchestration.</li><li><strong>3D Connectome Brain Environment</strong>: 44 real brain regions with MNI coordinates, 68 white-matter tract connections, and neural signal propagation simulation.</li><li><strong>Miniverse Nesting</strong>: Recursive containment with scale-bridging and downward attention via SpectralAttentionAdapter.</li><li><strong>MAESI SDK v1.1</strong>: Technical library, research knowledge catalog, FastSpectralCompute, fingerprint pipeline.</li><li><strong>Edge API</strong>: Cloudflare Worker API for spectral validation and matching at the edge.</li><li><strong>Desktop Application</strong>: Cross-platform Electron app with builds for Windows, macOS, and Linux.</li><li><strong>Polyglot Bindings</strong>: Rust, Julia, TypeScript, and Motoko (Internet Computer) integrations.</li><li><strong>Intelligence AI Protocols</strong>: Multi-level autonomous reasoning from passive observation to fully autonomous decision-making.</li><li><strong>Spectral Transformer Pipeline</strong>: End-to-end transformer encoder with configurable tokenization and multi-head spectral attention.</li></ul><h3>Core Capabilities</h3><ul><li>Core spectral record data model (MultiElementRecord, SpectralComponent, SpectralMetadata)</li><li>Spectral validation with multi-level checks</li><li>Normalization, interpolation, and smoothing</li><li>Spectral matching engine with composite scoring</li><li>PSD, FAS, and RotDnn generation</li><li>Electro-spectral feature extraction</li><li>Node topology mapping and lineage</li><li>Spectral embedding vectorizers</li><li>Cognitive architecture adapters</li></ul>",
+  "creators": [
+    {
+      "name": "Medina, Alfredo",
+      "affiliation": "ITSNOTAILabs",
+      "orcid": ""
+    }
+  ],
+  "contributors": [
+    {
+      "name": "ITSNOTAILabs",
+      "type": "ResearchGroup"
+    }
+  ],
+  "access_right": "open",
+  "license": "Apache-2.0",
+  "version": "0.4.0",
+  "language": "eng",
+  "keywords": [
+    "spectral matching",
+    "signal processing",
+    "power spectral density",
+    "Fourier amplitude spectrum",
+    "RotDnn",
+    "spectral embeddings",
+    "artificial intelligence",
+    "transformer models",
+    "intelligence protocols",
+    "attention mechanisms",
+    "spectral tokenization",
+    "autonomous reasoning",
+    "anomaly detection",
+    "cognitive architectures",
+    "digital twins",
+    "resonance analysis",
+    "multi-component records",
+    "scientific Python",
+    "earthquake engineering",
+    "structural monitoring",
+    "time series analysis",
+    "deep learning",
+    "neural networks",
+    "episodic memory",
+    "multi-head attention"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/FreddyCreates/Multi-Element-Spectral-Intelligence-Engine-MESIE-",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ],
+  "references": [
+    "Vaswani, A., et al. (2017). Attention Is All You Need. NeurIPS.",
+    "Devlin, J., et al. (2019). BERT: Pre-training of Deep Bidirectional Transformers. NAACL.",
+    "Sun, B., Saenko, K. (2016). Deep CORAL: Correlation Alignment for Deep Domain Adaptation. ECCV Workshops."
+  ],
+  "notes": "Version 0.4.0 release. Includes intelligence AI protocols, transformer-based spectral processing, foundation pretraining suite, 3D connectome brain environment, miniverse nesting, MAESI SDK, Cloudflare Worker edge API, desktop application, and polyglot bindings (Rust, Julia, TypeScript, Motoko). All transformer and intelligence components are implemented in pure NumPy for portability, with optional PyTorch/HuggingFace Transformers integration available via the [intelligence] or [full] install extras.",
+  "subjects": [
+    {
+      "term": "Artificial Intelligence",
+      "identifier": "https://id.loc.gov/authorities/subjects/sh85008180"
+    },
+    {
+      "term": "Signal Processing",
+      "identifier": "https://id.loc.gov/authorities/subjects/sh85122397"
+    },
+    {
+      "term": "Spectral Theory",
+      "identifier": "https://id.loc.gov/authorities/subjects/sh85126471"
+    }
+  ]
+}

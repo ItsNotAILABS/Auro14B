@@ -1,0 +1,217 @@
+{
+  "timestamp": "2026-06-14T05:27:05Z",
+  "version": "1.0",
+  "speed_benchmarks": [
+    {
+      "name": "spectral_matching",
+      "operation": "match_records(record1, record2)",
+      "latency_ms": 0.41158391000010397,
+      "latency_us": 411.58391000010397,
+      "unit": "ms"
+    },
+    {
+      "name": "embedding_generation",
+      "operation": "SpectralFingerprintPipeline.process(record)",
+      "latency_ms": 5.781310320000443,
+      "latency_us": 5781.310320000443,
+      "unit": "ms"
+    },
+    {
+      "name": "record_validation",
+      "operation": "validate_record(record)",
+      "latency_ms": 0.21967558999989478,
+      "latency_us": 219.67558999989478,
+      "unit": "ms"
+    },
+    {
+      "name": "psd_generation",
+      "operation": "generate_psd(config)",
+      "latency_ms": 0.03699244000017643,
+      "latency_us": 36.99244000017643,
+      "unit": "ms"
+    },
+    {
+      "name": "candidate_ranking",
+      "operation": "rank_candidates(ref, [cand1, cand2, cand3])",
+      "latency_ms": 1.2647395400000505,
+      "latency_us": 1264.7395400000505,
+      "unit": "ms"
+    }
+  ],
+  "reasoning_benchmarks": [
+    {
+      "intelligence_level": 0,
+      "level_name": "passive",
+      "success_rate": 1.0,
+      "quality_score": 0.7,
+      "latency_ms": 0.4954320000081225,
+      "memory_mb": 0.01680755615234375,
+      "notes": "Reasoning result type: ReasoningResult"
+    },
+    {
+      "intelligence_level": 1,
+      "level_name": "reactive",
+      "success_rate": 1.0,
+      "quality_score": 0.7,
+      "latency_ms": 0.3740460000187795,
+      "memory_mb": 0.01667022705078125,
+      "notes": "Reasoning result type: ReasoningResult"
+    },
+    {
+      "intelligence_level": 2,
+      "level_name": "adaptive",
+      "success_rate": 1.0,
+      "quality_score": 0.7,
+      "latency_ms": 0.40257899999573965,
+      "memory_mb": 0.01663970947265625,
+      "notes": "Reasoning result type: ReasoningResult"
+    },
+    {
+      "intelligence_level": 3,
+      "level_name": "predictive",
+      "success_rate": 1.0,
+      "quality_score": 0.7,
+      "latency_ms": 0.35995999999727246,
+      "memory_mb": 0.01660919189453125,
+      "notes": "Reasoning result type: ReasoningResult"
+    },
+    {
+      "intelligence_level": 4,
+      "level_name": "autonomous",
+      "success_rate": 1.0,
+      "quality_score": 0.7,
+      "latency_ms": 0.360369999981458,
+      "memory_mb": 0.01657867431640625,
+      "notes": "Reasoning result type: ReasoningResult"
+    },
+    {
+      "intelligence_level": 0,
+      "level_name": "validation_level_0",
+      "success_rate": 1.0,
+      "quality_score": 0.0,
+      "latency_ms": 0.34529300000940566,
+      "memory_mb": 0.0,
+      "notes": "Valid: True"
+    },
+    {
+      "intelligence_level": 1,
+      "level_name": "validation_level_1",
+      "success_rate": 1.0,
+      "quality_score": 0.0,
+      "latency_ms": 0.22326600000610597,
+      "memory_mb": 0.0,
+      "notes": "Valid: True"
+    },
+    {
+      "intelligence_level": 2,
+      "level_name": "validation_level_2",
+      "success_rate": 1.0,
+      "quality_score": 0.0,
+      "latency_ms": 0.21458000000507127,
+      "memory_mb": 0.0,
+      "notes": "Valid: True"
+    },
+    {
+      "intelligence_level": 3,
+      "level_name": "validation_level_3",
+      "success_rate": 1.0,
+      "quality_score": 0.0,
+      "latency_ms": 0.21788500001207467,
+      "memory_mb": 0.0,
+      "notes": "Valid: True"
+    },
+    {
+      "intelligence_level": 4,
+      "level_name": "validation_level_4",
+      "success_rate": 1.0,
+      "quality_score": 0.0,
+      "latency_ms": 0.24408400000197616,
+      "memory_mb": 0.0,
+      "notes": "Valid: True"
+    },
+    {
+      "intelligence_level": 5,
+      "level_name": "validation_level_5",
+      "success_rate": 1.0,
+      "quality_score": 0.0,
+      "latency_ms": 0.21206499999948392,
+      "memory_mb": 0.0,
+      "notes": "Valid: True"
+    }
+  ],
+  "throughput_benchmarks": [
+    {
+      "batch_size": 10,
+      "total_time_ms": 1.4746140000170271,
+      "throughput_per_sec": 2034.430705232257,
+      "avg_latency_ms": 0.49056966665261825,
+      "p95_latency_ms": 0.5195578999831696,
+      "p99_latency_ms": 0.5230515799820523
+    },
+    {
+      "batch_size": 50,
+      "total_time_ms": 1.375719999998637,
+      "throughput_per_sec": 2180.6763004121276,
+      "avg_latency_ms": 0.4579086666562186,
+      "p95_latency_ms": 0.5169807999862996,
+      "p99_latency_ms": 0.5252449599851161
+    },
+    {
+      "batch_size": 100,
+      "total_time_ms": 1.3619940000069164,
+      "throughput_per_sec": 2202.6528751116125,
+      "avg_latency_ms": 0.4534873333360186,
+      "p95_latency_ms": 0.4613351000102739,
+      "p99_latency_ms": 0.46170702001063546
+    },
+    {
+      "batch_size": 250,
+      "total_time_ms": 1.2879070000053616,
+      "throughput_per_sec": 2329.360737993901,
+      "avg_latency_ms": 0.4287546666811674,
+      "p95_latency_ms": 0.4617325000083383,
+      "p99_latency_ms": 0.46622650000813337
+    },
+    {
+      "batch_size": 4,
+      "total_time_ms": 0.0014,
+      "throughput_per_sec": 2857142.8571428573,
+      "avg_latency_ms": 0.00035,
+      "p95_latency_ms": 0.0,
+      "p99_latency_ms": 0.0
+    }
+  ],
+  "bottleneck_analysis": [
+    {
+      "component": "embedding_generation",
+      "latency_ms": 5.781310320000443,
+      "percentage_of_total": 100.0,
+      "recommendation": "Profile embedding pipeline; consider caching."
+    },
+    {
+      "component": "candidate_ranking",
+      "latency_ms": 1.2647395400000505,
+      "percentage_of_total": 21.87634757512815,
+      "recommendation": "Use approximate ranking for large candidates."
+    },
+    {
+      "component": "spectral_matching",
+      "latency_ms": 0.41158391000010397,
+      "percentage_of_total": 7.119214974090379,
+      "recommendation": "Consider batch operations or vectorization."
+    }
+  ],
+  "summary": {
+    "speed_metrics_count": 5,
+    "speed_min_ms": 0.03699244000017643,
+    "speed_max_ms": 5.781310320000443,
+    "speed_mean_ms": 1.5428603600001338,
+    "reasoning_metrics_count": 11,
+    "reasoning_avg_success_rate": 1.0,
+    "reasoning_avg_quality": 0.3181818181818182,
+    "throughput_metrics_count": 5,
+    "throughput_max_per_sec": 2857142.8571428573,
+    "throughput_min_per_sec": 2034.430705232257,
+    "bottleneck_count": 3
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "example-static-app",
+  "kind": "static-app",
+  "builder": "production-grade-builder",
+  "builder_version": "1.0.0",
+  "generated_at": "2026-06-11T08:33:37.628949+00:00",
+  "status": "scaffolded",
+  "artifacts_generated": true
+}

@@ -1,0 +1,8 @@
+{
+  "name": "example-benchmark-engine",
+  "version": "0.1.0",
+  "kind": "benchmark-engine",
+  "author": "MESIE Team",
+  "created": "2026-06-11T08:33:43.842807+00:00",
+  "description": "Production-grade benchmark-engine deliverable: example-benchmark-engine"
+}

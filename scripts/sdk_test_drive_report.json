@@ -1,0 +1,166 @@
+{
+  "version": "0.2.0",
+  "passed": 19,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "mesie_version",
+      "ok": true,
+      "detail": "0.2.0",
+      "metrics": {}
+    },
+    {
+      "name": "dataset_catalog",
+      "ok": true,
+      "detail": "4 refs, 2 benchmarks",
+      "metrics": {
+        "refs": [
+          "earthquake_psd_reference",
+          "rotdnn_reference",
+          "structural_fas_reference",
+          "vibration_monitoring_reference"
+        ],
+        "benches": [
+          "embedding_training_data",
+          "spectral_classification_benchmark"
+        ]
+      }
+    },
+    {
+      "name": "reference:earthquake_psd_reference",
+      "ok": true,
+      "detail": "ref-earthquake-psd-001 components=3 valid=False level=2",
+      "metrics": {
+        "elapsed_s": 0.0007
+      }
+    },
+    {
+      "name": "reference:rotdnn_reference",
+      "ok": true,
+      "detail": "ref-rotdnn-001 components=2 valid=True level=6",
+      "metrics": {
+        "elapsed_s": 0.0003
+      }
+    },
+    {
+      "name": "reference:structural_fas_reference",
+      "ok": true,
+      "detail": "ref-structural-fas-001 components=2 valid=True level=6",
+      "metrics": {
+        "elapsed_s": 0.0005
+      }
+    },
+    {
+      "name": "reference:vibration_monitoring_reference",
+      "ok": true,
+      "detail": "ref-vibration-monitor-001 components=2 valid=False level=2",
+      "metrics": {
+        "elapsed_s": 0.0008
+      }
+    },
+    {
+      "name": "benchmark:embedding_training_data",
+      "ok": true,
+      "detail": "keys=['dataset_id', 'description', 'n_samples', 'feature_dim', 'metadata', 'samples'] n_samples=200 len(samples)=200",
+      "metrics": {
+        "elapsed_s": 0.0361
+      }
+    },
+    {
+      "name": "benchmark:spectral_classification_benchmark",
+      "ok": true,
+      "detail": "keys=['dataset_id', 'description', 'n_classes', 'class_names', 'n_samples_per_class', 'feature_dim', 'metadata', 'samples'] len(samples)=250",
+      "metrics": {
+        "elapsed_s": 0.0102
+      }
+    },
+    {
+      "name": "match:earthquake_vs_structural_fas",
+      "ok": true,
+      "detail": "score=0.6358 metrics={'cosine_similarity': 0.7790413569998624, 'rmse': 1.2233455582106132, 'log_spectral_distance': 0.6804491797679528, 'frequency_band_weighted_error': 0.5148835966474476, 'coherence'...",
+      "metrics": {
+        "elapsed_s": 0.0016
+      }
+    },
+    {
+      "name": "match:rotdnn_self",
+      "ok": true,
+      "detail": "self_score=1.0000",
+      "metrics": {
+        "elapsed_s": 0.0006
+      }
+    },
+    {
+      "name": "rank_candidates",
+      "ok": true,
+      "detail": "[('ref-rotdnn-001', 0.6291), ('ref-structural-fas-001', 0.4701)]",
+      "metrics": {
+        "elapsed_s": 0.0021
+      }
+    },
+    {
+      "name": "generate_psd",
+      "ok": true,
+      "detail": "generated_record rep=psd comps=1",
+      "metrics": {
+        "elapsed_s": 0.0002
+      }
+    },
+    {
+      "name": "generate_fas",
+      "ok": true,
+      "detail": "generated_record rep=fas comps=1",
+      "metrics": {
+        "elapsed_s": 0.0001
+      }
+    },
+    {
+      "name": "generate_rotdnn",
+      "ok": true,
+      "detail": "generated_record rep=rotdnn comps=2",
+      "metrics": {
+        "elapsed_s": 0.0001
+      }
+    },
+    {
+      "name": "embeddings+retrieval",
+      "ok": true,
+      "detail": "{'shape': [3, 17], 'top_hit': 'ref-earthquake-psd-001'}",
+      "metrics": {
+        "elapsed_s": 0.0096
+      }
+    },
+    {
+      "name": "cognitive_adapters",
+      "ok": true,
+      "detail": "{'embedding_len': 17, 'state_dim': 22, 'anomaly': 77.06930011505916, 'attention_sum': 0.9999999999989999}",
+      "metrics": {
+        "elapsed_s": 0.003
+      }
+    },
+    {
+      "name": "intelligence_protocol",
+      "ok": true,
+      "detail": "conclusion='normal_operation' confidence=0.800",
+      "metrics": {
+        "elapsed_s": 0.0005
+      }
+    },
+    {
+      "name": "protocol_serialization",
+      "ok": true,
+      "detail": "format=json size_bytes=12376",
+      "metrics": {
+        "elapsed_s": 0.0009
+      }
+    },
+    {
+      "name": "helix_insert_batch",
+      "ok": true,
+      "detail": "nodes=3 phase=0.704",
+      "metrics": {
+        "elapsed_s": 0.0013
+      }
+    }
+  ]
+}
