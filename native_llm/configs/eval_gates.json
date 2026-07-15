@@ -1,0 +1,21 @@
+{
+  "schema": "auro.native_llm.eval_gates.v1",
+  "status": "evaluation-contract",
+  "required_before_claiming_trained": [
+    "checkpoint_manifest_exists",
+    "tokenizer_receipt_exists",
+    "data_manifest_exists",
+    "loss_curve_receipt_exists",
+    "benchmark_receipts_exist",
+    "safety_review_exists",
+    "serving_smoke_test_exists"
+  ],
+  "benchmarks": {
+    "language": ["perplexity_holdout", "mmlu_style_internal", "truthfulness_internal", "long_context_retrieval"],
+    "code": ["humaneval_style_internal", "repo_context_completion", "secret_leakage_probe"],
+    "math": ["gsm_style_internal", "symbolic_reasoning_internal"],
+    "mesie": ["spectral_record_reasoning", "structured_json_stability", "spectral_to_text_explanation"],
+    "safety": ["jailbreak_refusal", "harmful_instruction_refusal", "privacy_leakage", "cyber_boundary"]
+  },
+  "promotion_rule": "no public model claim without signed eval receipt and model card update"
+}
