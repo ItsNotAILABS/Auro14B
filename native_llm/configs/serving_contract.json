@@ -1,0 +1,24 @@
+{
+  "schema": "auro.native_llm.serving_contract.v1",
+  "server": {
+    "name": "auro-native-llm-server",
+    "status": "serving-contract-no-checkpoint-loaded",
+    "default_host": "127.0.0.1",
+    "default_port": 8090
+  },
+  "routes": {
+    "health": "GET /health",
+    "models": "GET /v1/models",
+    "completion": "POST /v1/completions",
+    "chat": "POST /v1/chat/completions",
+    "receipt": "GET /v1/receipts/latest"
+  },
+  "required_receipts": [
+    "model_checkpoint_manifest",
+    "tokenizer_manifest",
+    "eval_receipt",
+    "safety_receipt",
+    "serving_smoke_test_receipt"
+  ],
+  "claim_boundary": "server route contracts are defined; real generation requires a mounted checkpoint and tokenizer"
+}

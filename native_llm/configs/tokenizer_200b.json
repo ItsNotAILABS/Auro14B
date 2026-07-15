@@ -1,0 +1,11 @@
+{
+  "schema": "auro.native_llm.tokenizer_config.v1",
+  "tokenizer_id": "auro-tokenizer-v1",
+  "status": "training-plan",
+  "algorithm": "bpe-or-unigram-after-corpus-audit",
+  "target_vocab_size": 256000,
+  "normalization": "nfc",
+  "reserved_tokens": ["<|begin|>", "<|end|>", "<|system|>", "<|user|>", "<|assistant|>", "<|tool|>", "<|receipt|>", "<|spectral|>"],
+  "required_reports": ["coverage", "compression", "language_balance", "code_balance", "toxicity_filter_summary", "duplication_summary"],
+  "claim_boundary": "tokenizer is not trained until tokenizer.model and tokenizer_receipt.json exist"
+}

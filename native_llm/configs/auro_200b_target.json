@@ -1,0 +1,32 @@
+{
+  "schema": "auro.native_llm.model_config.v1",
+  "model_id": "Auro-200B-Base",
+  "status": "architecture-target-not-trained-checkpoint",
+  "parameter_target": 200000000000,
+  "architecture": {
+    "family": "decoder-only-transformer",
+    "objective": "causal-language-modeling",
+    "hidden_size": 16384,
+    "layers": 120,
+    "attention_heads": 128,
+    "kv_heads": 16,
+    "ffn_multiple": 4,
+    "activation": "silu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 131072,
+    "vocab_size_target": 256000
+  },
+  "training_targets": {
+    "pretraining_tokens_target": 8000000000000,
+    "minimum_viable_tokens": 1000000000000,
+    "precision": ["bf16", "fp8-where-validated"],
+    "parallelism": ["data", "tensor", "pipeline", "sequence"],
+    "checkpoint_policy": "save-sharded-checkpoints-with-manifest-and-eval-receipts"
+  },
+  "safety_boundary": {
+    "claim_policy": "do-not-claim-trained-until-checkpoint-and-eval-receipts-exist",
+    "public_release": false,
+    "required_gates": ["GATE_IDENTITY", "GATE_CAPABILITY", "GATE_PROOF", "GATE_CONTAINMENT", "GATE_MODEL_EVAL"]
+  }
+}

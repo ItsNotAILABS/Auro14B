@@ -1,0 +1,21 @@
+{
+  "schema": "auro.native_llm.model_config.v1",
+  "model_id": "Auro-14B-Dev",
+  "status": "development-target-not-trained-checkpoint",
+  "parameter_target": 14000000000,
+  "architecture": {
+    "family": "decoder-only-transformer",
+    "objective": "causal-language-modeling",
+    "hidden_size": 5120,
+    "layers": 48,
+    "attention_heads": 40,
+    "kv_heads": 8,
+    "activation": "silu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 32768,
+    "vocab_size_target": 128000
+  },
+  "purpose": "local development and integration lane before expensive 200B-scale pretraining",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving"]
+}

@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mesie"
 version = "0.4.0"
-description = "Multi-Element Spectral Intelligence Engine — spectral matching, generation, embeddings, transformer-based intelligence protocols, and cognitive integration"
+description = "Multi-Element Spectral Intelligence Engine — spectral matching, generation, embeddings, transformer-based intelligence protocols, cognitive integration, and Auro native LLM scaffolding"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [
     {name = "Alfredo Medina", email = "alfredo@itsnotailabs.com"}
 ]
-keywords = ["spectral matching", "signal processing", "PSD", "FAS", "RotDnn", "embeddings", "AI", "transformers", "intelligence protocols"]
+keywords = ["spectral matching", "signal processing", "PSD", "FAS", "RotDnn", "embeddings", "AI", "transformers", "intelligence protocols", "native LLM", "text generation"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -68,6 +68,11 @@ julia = [
 mesie = "mesie.cli:main"
 mesie-tools = "mesie.tools.cli:main"
 mesie-web = "mesie.web.server:main"
+auro-tokenizer-train = "auro_native_llm.tokenizer.train:main"
+auro-build-corpus = "auro_native_llm.data.build_corpus:main"
+auro-pretrain = "auro_native_llm.train.pretrain:main"
+auro-eval = "auro_native_llm.eval.run:main"
+auro-serve = "auro_native_llm.serve.local:main"
 
 [project.urls]
 Homepage = "https://github.com/FreddyCreates/Multi-Element-Spectral-Intelligence-Engine-MESIE-"
@@ -81,7 +86,7 @@ Documentation = "https://github.com/FreddyCreates/Multi-Element-Spectral-Intelli
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["mesie*", "data*"]
+include = ["mesie*", "auro_native_llm*", "data*"]
 
 [tool.setuptools.package-data]
 data = ["reference/*.json", "benchmarks/*.json"]

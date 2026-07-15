@@ -1,0 +1,17 @@
+{
+  "schema": "auro.native_llm.data_mixture.v1",
+  "mixture_id": "auro-200b-pretrain-mixture-v1",
+  "status": "curation-plan",
+  "target_tokens": 8000000000000,
+  "sources": [
+    {"name": "licensed_text", "target_share": 0.35, "required_proof": "license_manifest"},
+    {"name": "open_web_filtered", "target_share": 0.25, "required_proof": "filter_receipt"},
+    {"name": "code_permissive", "target_share": 0.15, "required_proof": "license_and_pii_audit"},
+    {"name": "math_science", "target_share": 0.10, "required_proof": "source_manifest"},
+    {"name": "structured_spectral_mesie", "target_share": 0.05, "required_proof": "mesie_conversion_manifest"},
+    {"name": "instruction_seed", "target_share": 0.05, "required_proof": "human_or_synthetic_label_manifest"},
+    {"name": "safety_governance", "target_share": 0.05, "required_proof": "policy_and_boundary_manifest"}
+  ],
+  "required_filters": ["deduplication", "pii_removal", "copyright_risk_review", "malware_filter", "quality_score", "language_detection", "toxicity_review"],
+  "claim_boundary": "no pretraining data exists until corpus shards and hash manifests are produced"
+}
