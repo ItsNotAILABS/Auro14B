@@ -1,0 +1,40 @@
+{
+  "schema": "medina.nova.feeder_manifest.v1",
+  "feeder_id": "auro14b",
+  "repository": "ItsNotAILABS/Auro14B",
+  "visibility": "public",
+  "priority": "critical-model-feed",
+  "status": "connected-native-llm-scaffold",
+  "base_system": "MESIE / Multi-Element Spectral Intelligence Engine",
+  "feeds_root": "ItsNotAILABS/NOVA-private-root",
+  "root_destinations": [
+    "integrations/feeder-repos/auro14b/",
+    "models/auro/native-llm/",
+    "protocols/model-feeds/auro14b/"
+  ],
+  "allowed_feed_types": [
+    "model_config",
+    "tokenizer_config",
+    "data_mixture_manifest",
+    "training_plan",
+    "evaluation_contract",
+    "serving_contract",
+    "model_card",
+    "operator_receipt"
+  ],
+  "denied_feed_types": [
+    "fake_checkpoint_claims",
+    "unlicensed_training_data",
+    "secrets",
+    "private_keys",
+    "unsafe_weight_release",
+    "benchmark_scores_without_receipts"
+  ],
+  "required_gates": [
+    "GATE_IDENTITY",
+    "GATE_CAPABILITY",
+    "GATE_MODEL_EVAL",
+    "GATE_CONTAINMENT",
+    "GATE_PROOF"
+  ]
+}
