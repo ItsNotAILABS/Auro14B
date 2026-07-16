@@ -1,0 +1,39 @@
+name: MESIE Compute Plane
+
+on:
+  push:
+    paths:
+      - "mesie/compute/**"
+      - "mesie/training_fabric/**"
+      - "runner/**"
+      - "tests/test_torch_spectral.py"
+      - "tests/test_training_fabric_discovery.py"
+      - ".github/workflows/mesie-runner-ci.yml"
+  pull_request:
+    paths:
+      - "mesie/compute/**"
+      - "mesie/training_fabric/**"
+      - "runner/**"
+      - "tests/test_torch_spectral.py"
+      - "tests/test_training_fabric_discovery.py"
+      - ".github/workflows/mesie-runner-ci.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install torch pytest
+      - name: Compile compute plane
+        run: python -m py_compile mesie/compute/torch_spectral.py mesie/training_fabric/discovery.py runner/healthcheck.py
+      - name: Run differentiable compute tests
+        run: python -m pytest -q tests/test_torch_spectral.py tests/test_training_fabric_discovery.py
+      - name: Validate runner contract
+        run: |
+          grep -q "actions-runner" runner/Dockerfile.cuda
+          grep -q "--ephemeral" runner/entrypoint.sh
+          grep -q "mesie,spectral-transformer" runner/docker-compose.yml
+          grep -q "mesie-compute-node/1.0" mesie/training_fabric/discovery.py
