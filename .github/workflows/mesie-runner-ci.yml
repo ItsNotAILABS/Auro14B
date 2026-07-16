@@ -26,7 +26,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install torch pytest
+      - name: Install MESIE AI package and tests
+        run: python -m pip install -e '.[ai]' pytest
       - name: Compile compute plane
         run: python -m py_compile mesie/compute/torch_spectral.py mesie/training_fabric/discovery.py runner/healthcheck.py
       - name: Run differentiable compute tests
@@ -34,6 +35,6 @@ jobs:
       - name: Validate runner contract
         run: |
           grep -q "actions-runner" runner/Dockerfile.cuda
-          grep -q "--ephemeral" runner/entrypoint.sh
+          grep -q -- "--ephemeral" runner/entrypoint.sh
           grep -q "mesie,spectral-transformer" runner/docker-compose.yml
           grep -q "mesie-compute-node/1.0" mesie/training_fabric/discovery.py
