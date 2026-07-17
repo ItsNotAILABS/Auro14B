@@ -18,3 +18,7 @@ def test_bounded_dispatch():
     out=sdk().execute({"tool":"capsula","arguments":{"operation":"create_session","parameters":{"runtime":"python"}}})
     assert out["output"]["session"]["runtime"] == "python"
 
+def test_contract_is_machine_promptable():
+    contract=sdk().action_contract()
+    assert contract["matdaemon"]["arguments"]["name"].startswith("matdaemon_")
+    assert "deploy_plan" in contract["capsula"]["arguments"]["operation"]
