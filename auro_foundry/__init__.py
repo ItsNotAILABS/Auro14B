@@ -1,12 +1,19 @@
-"""Auro Foundry: repository-native corpus, tokenizer, training, generation, and serving.
-
-The same code path runs small local models immediately and scales through
-PyTorch distributed launchers when additional Medina-owned nodes are registered
-in MESIE's training fabric.
-"""
+"""Auro Foundry repository-native training and inference runtime."""
 
 from .config import ModelConfig, TrainConfig
+from .generation import TextGenerator, load_model
+from .model import AuroForCausalLM
 from .tokenizer import AuroBPETokenizer
+from .training import TrainingResult, train
 
-__all__ = ["ModelConfig", "TrainConfig", "AuroBPETokenizer"]
+__all__ = [
+    "AuroBPETokenizer",
+    "AuroForCausalLM",
+    "ModelConfig",
+    "TextGenerator",
+    "TrainConfig",
+    "TrainingResult",
+    "load_model",
+    "train",
+]
 __version__ = "1.0.0-alpha"
