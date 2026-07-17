@@ -11,6 +11,7 @@ class FakeGenerator:
 
 class FakeSDK:
     def manifest(self): return {"schema":"test.sdk"}
+    def action_contract(self): return {"capsula":{"tool":"capsula"}}
     def execute(self,action): return {"tool":action["tool"],"ok":True}
 
 def test_council_answers_without_executing():
