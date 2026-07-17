@@ -84,9 +84,10 @@ class OpenAICompatibleGenerator:
 
 
 class AgentManager:
-    def __init__(self, generator: Generator, agents: Iterable[AgentSpec] = DEFAULT_AGENTS):
+    def __init__(self, generator: Generator, agents: Iterable[AgentSpec] = DEFAULT_AGENTS, capability_context: str = ""):
         self.generator = generator
         self.agents = {agent.id: agent for agent in agents}
+        self.capability_context = capability_context
 
     def run(self, objective: str, agent_ids: Iterable[str] | None = None) -> list[AgentResult]:
         selected = list(agent_ids or self.agents)
@@ -95,7 +96,7 @@ class AgentManager:
         for agent_id in selected:
             agent = self.agents[agent_id]
             t0 = time.perf_counter()
-            prompt = _agent_prompt(agent, objective, shared)
+            prompt = _agent_prompt(agent, objective, shared, self.capability_context)
             response = self.generator(
                 [{"role": "system", "content": prompt}, {"role": "user", "content": objective}],
                 {"temperature": 0.2, "max_tokens": 700},
@@ -121,11 +122,14 @@ class NovaRuntime:
     def __init__(self, endpoint: ModelEndpoint | None = None, generator: Generator | None = None, sdk=None):
         self.endpoint = endpoint or ModelEndpoint.from_env()
         self.generator = generator or OpenAICompatibleGenerator(self.endpoint)
-        self.agents = AgentManager(self.generator)
         if sdk is None:
             from .organ_sdk import AuroOrganSDK
             sdk = AuroOrganSDK()
         self.sdk = sdk
+        from .capabilities import NativeCapabilities
+        self.capabilities = NativeCapabilities(sdk)
+        capability_context = json.dumps({"organs":sdk.manifest(),"native_capabilities":self.capabilities.manifest()},ensure_ascii=False)
+        self.agents = AgentManager(self.generator, capability_context=capability_context)
 
     def respond(self, message: str, *, execute: bool = False) -> dict[str, Any]:
         started = time.time()
@@ -133,7 +137,7 @@ class NovaRuntime:
         council_json = json.dumps([asdict(x) for x in council], ensure_ascii=False)
         synthesis = self.generator(
             [
-                {"role": "system", "content": _synthesis_prompt(execute)},
+                {"role": "system", "content": _synthesis_prompt(execute, self.sdk.action_contract())},
                 {"role": "user", "content": f"OBJECTIVE:\n{message}\n\nCOUNCIL:\n{council_json}"},
             ],
             {"temperature": 0.25, "max_tokens": 1400},
@@ -158,6 +162,7 @@ class NovaRuntime:
             "approved_actions": approved,
             "executions": executions,
             "organ_sdk": self.sdk.manifest(),
+            "native_capabilities": self.capabilities.manifest(),
             "model": {
                 "endpoint_id": self.endpoint.id,
                 "model": self.endpoint.model,
@@ -169,23 +174,25 @@ class NovaRuntime:
         }
 
 
-def _agent_prompt(agent: AgentSpec, objective: str, shared: str) -> str:
+def _agent_prompt(agent: AgentSpec, objective: str, shared: str, capability_context: str = "") -> str:
     return f"""You are NOVA internal agent {agent.id} ({agent.role}).
 {agent.instruction}
 Return JSON only: {{"summary": string, "confidence": 0..1,
 "evidence": [string], "proposed_actions": [{{"tool": string, "arguments": object, "reason": string}}]}}.
 Use concise conclusions; do not reveal private chain-of-thought. Never claim an action ran.
+Only propose actions matching this exact capability contract: {capability_context or 'no tools available'}
 Prior council context: {shared or 'none'}"""
 
 
-def _synthesis_prompt(execute: bool) -> str:
+def _synthesis_prompt(execute: bool, action_contract: dict[str,Any] | None = None) -> str:
     posture = "Actions may be approved for a separate executor." if execute else "Do not approve or claim execution."
     return f"""You are NOVA, governing a council of internal model-backed agents.
 Resolve disagreement, distinguish evidence from inference, and answer the user directly.
 {posture}
 Return JSON only: {{"answer": string, "reasoning_summary": [string],
 "confidence": 0..1, "actions": [{{"tool": "matdaemon|capsula", "arguments": object, "reason": string}}]}}.
-Reasoning summaries are conclusions and checks, not hidden chain-of-thought."""
+Reasoning summaries are conclusions and checks, not hidden chain-of-thought.
+Every action must match this exact contract: {json.dumps(action_contract or {},ensure_ascii=False)}"""
 
 
 def _parse_object(text: str) -> dict[str, Any]:
