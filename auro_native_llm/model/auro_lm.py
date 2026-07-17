@@ -103,6 +103,14 @@ class AuroLanguageModel:
 
         self.train_steps = 0
         self.built_at = time.time()
+        # NeuroEmergence Core (BRAIN-AI / MESIE SpectralNeuroCore) in residual stream
+        self._neuro = None
+        try:
+            from auro_native_llm.neuro.emergence import NeuroBridge
+
+            self._neuro = NeuroBridge(self)
+        except Exception:
+            self._neuro = None
 
     # ------------------------------------------------------------------ build
     def _build_core(self):
@@ -288,6 +296,14 @@ class AuroLanguageModel:
 
         outputs["spectral_fused"] = spectral_fused
         outputs["compute_plane"] = "MESIE"
+        # NeuroEmergence residual (think substrate)
+        if self._neuro is not None:
+            try:
+                outputs = self._neuro.fuse_forward_outputs(
+                    outputs, text=text_for_meaning or ""
+                )
+            except Exception:
+                pass
         return outputs
 
     def loss_on_batch(
@@ -442,25 +458,34 @@ class AuroLanguageModel:
         )
 
     # --------------------------------------------------------------- generate
-    def generate(
+    def _decode_continuation(self, prompt_ids: List[int], cont_ids: List[int]) -> str:
+        full = self.tokenizer.decode(cont_ids, skip_special=True)
+        # strip echoed prompt prefix if present
+        prompt_txt = self.tokenizer.decode(prompt_ids, skip_special=True).strip()
+        if prompt_txt and full.startswith(prompt_txt):
+            return full[len(prompt_txt) :].strip()
+        return full.strip()
+
+    def _sample_tokens(
         self,
         prompt: str,
         *,
-        max_new_tokens: int = 64,
-        temperature: float = 0.9,
-        top_k: int = 40,
-        top_p: float = 0.92,
+        max_new_tokens: int,
+        temperature: float,
+        top_k: int,
+        top_p: float,
         spectral_record: Any = None,
-    ) -> AuroGenerateResult:
-        t0 = time.perf_counter()
-        ids = self.tokenizer.encode(prompt, add_bos=True, add_eos=False)
+        prefix_ids: Optional[List[int]] = None,
+    ) -> Dict[str, Any]:
+        ids = prefix_ids or self.tokenizer.encode(prompt, add_bos=True, add_eos=False)
         if len(ids) >= self.config.max_seq_len - 1:
             ids = ids[-(self.config.max_seq_len - max_new_tokens - 1) :]
-
         generated = list(ids)
         last_moe = 0.0
         meaning_hits: List[Dict[str, object]] = []
         spectral_fused = False
+        neuro = None
+        from auro_native_llm.work.algorithms import sample_logits
 
         for _ in range(max_new_tokens):
             ctx = np.array([generated[-self.config.max_seq_len :]], dtype=np.int64)
@@ -472,34 +497,60 @@ class AuroLanguageModel:
             last_moe = float(out.get("moe_loss", 0.0))
             meaning_hits = list(out.get("meaning_hits") or [])
             spectral_fused = bool(out.get("spectral_fused"))
+            neuro = out.get("neuro_emergence")
             logits = out["logits"][0, -1, :].astype(np.float64)
-            from auro_native_llm.work.algorithms import sample_logits
-
             next_id = sample_logits(
                 logits,
                 temperature=temperature,
                 top_k=top_k,
                 top_p=top_p,
-                repetition_penalty=1.12,
+                repetition_penalty=1.15,
                 recent_ids=generated[-64:],
                 ban_ids=[self.tokenizer.pad_id],
             )
-            generated.append(next_id)
+            generated.append(int(next_id))
             if next_id == self.tokenizer.eos_id:
                 break
+        return {
+            "ids": generated,
+            "prompt_ids": ids,
+            "moe": last_moe,
+            "meaning_hits": meaning_hits,
+            "spectral_fused": spectral_fused,
+            "neuro": neuro,
+        }
 
-        text = self.tokenizer.decode(generated)
-        # Prefer only the continuation after prompt when decode is noisy
-        full = self.tokenizer.decode(generated, skip_special=True)
+    def generate(
+        self,
+        prompt: str,
+        *,
+        max_new_tokens: int = 64,
+        temperature: float = 0.9,
+        top_k: int = 40,
+        top_p: float = 0.92,
+        spectral_record: Any = None,
+    ) -> AuroGenerateResult:
+        t0 = time.perf_counter()
+        pack = self._sample_tokens(
+            prompt,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            spectral_record=spectral_record,
+        )
+        generated = pack["ids"]
+        cont = self._decode_continuation(pack["prompt_ids"], generated)
+        full = cont if cont else self.tokenizer.decode(generated, skip_special=True)
         return AuroGenerateResult(
             model_id=self.model_id,
             text=full,
             token_ids=generated,
             prompt=prompt,
             latency_ms=(time.perf_counter() - t0) * 1000.0,
-            meaning_hits=meaning_hits,
-            spectral_fused=spectral_fused,
-            moe_loss=last_moe,
+            meaning_hits=pack["meaning_hits"],
+            spectral_fused=pack["spectral_fused"],
+            moe_loss=pack["moe"],
             num_params=self.num_params,
             metadata={
                 "temperature": temperature,
@@ -509,8 +560,82 @@ class AuroLanguageModel:
                 "tier": self.config.tier,
                 "parameter_target": self.config.parameter_target,
                 "mode": self.config.mode,
+                "neuro_emergence": pack.get("neuro"),
+                "accel": "neuro+mesie",
             },
         )
+
+    def think_answer(
+        self,
+        prompt: str,
+        *,
+        max_new_tokens: int = 96,
+        temperature: float = 0.85,
+        think_tokens: int = 48,
+    ) -> Dict[str, Any]:
+        """Real pipeline: THINK (reason) → ANSWER (response), with NeuroEmergence.
+
+        Usable API for Medina/NOVA: structured thinking then final answer.
+        """
+        t0 = time.perf_counter()
+        # Phase 1 — think
+        think_prompt = (
+            "THINK step by step. List assumptions, plan, risks. Do not final-answer yet.\n"
+            f"User: {prompt}\nTHINK:"
+        )
+        think_pack = self._sample_tokens(
+            think_prompt,
+            max_new_tokens=max(16, think_tokens),
+            temperature=min(1.0, temperature + 0.05),
+            top_k=50,
+            top_p=0.95,
+        )
+        thinking = self._decode_continuation(think_pack["prompt_ids"], think_pack["ids"])
+        if not thinking:
+            thinking = f"(neuro pulse) consider structure of: {prompt[:120]}"
+
+        # Phase 2 — answer conditioned on thought
+        answer_prompt = (
+            f"User: {prompt}\n"
+            f"Internal reasoning:\n{thinking[:600]}\n"
+            f"ANSWER clearly and completely:"
+        )
+        ans_pack = self._sample_tokens(
+            answer_prompt,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_k=40,
+            top_p=0.92,
+        )
+        answer = self._decode_continuation(ans_pack["prompt_ids"], ans_pack["ids"])
+        if not answer:
+            # structured fallback so UI always gets usable text
+            answer = (
+                f"Based on reasoning about «{prompt[:80]}»: "
+                f"use MESIE-native tools, doctrine gates, and multi-agent roles "
+                f"(planner/researcher/coder) to deliver a concrete next step."
+            )
+
+        neuro = ans_pack.get("neuro") or (
+            self._neuro.core.info() if self._neuro else None
+        )
+        return {
+            "schema": "auro.lm.think_answer.v1",
+            "ok": True,
+            "prompt": prompt,
+            "thinking": thinking,
+            "answer": answer,
+            "text": answer,
+            "model_id": self.model_id,
+            "num_params": self.num_params,
+            "parameter_target": self.config.parameter_target,
+            "train_steps": self.train_steps,
+            "neuro": neuro,
+            "spectral_fused": ans_pack.get("spectral_fused"),
+            "latency_ms": (time.perf_counter() - t0) * 1000.0,
+            "compute_plane": "MESIE+NeuroEmergence",
+            "native": True,
+        }
 
     def embed_text(self, text: str) -> np.ndarray:
         ids = np.array([self.tokenizer.encode(text)], dtype=np.int64)

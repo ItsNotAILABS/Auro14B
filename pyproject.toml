@@ -46,7 +46,10 @@ auro-value-train = "auro_native_llm.organism.value_train:main"
 auro-corpus = "auro_native_llm.corpus.cli:main"
 auro-production = "auro_native_llm.organism.production:main"
 auro-autocycle = "auro_native_llm.organism.autocycle:main"
-auro-power-train = "auro_native_llm.mesie_power.power_train:main"\nauro-fleet = "auro_native_llm.production_fleet.cli:main"\nauro-fleet-serve = "auro_native_llm.production_fleet.server:main"
+auro-power-train = "auro_native_llm.mesie_power.power_train:main"
+auro-fleet = "auro_native_llm.production_fleet.cli:main"
+auro-fleet-serve = "auro_native_llm.production_fleet.server:main"
+auro-use = "auro_native_llm.use:main"
 
 [project.urls]
 Homepage = "https://github.com/ItsNotAILABS/Auro14B"

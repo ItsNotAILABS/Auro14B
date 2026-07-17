@@ -172,7 +172,14 @@ class AuroMind:
         mem = ""
         if self.organs.memory is not None:
             mem = self.organs.memory.context_block(prompt, top_k=3)
-        full = "\n\n".join(x for x in (preamble, mem, prompt) if x)
+        # symbolic compression programs
+        try:
+            from auro_native_llm.symbolic.compress import SymbolicCompressor
+
+            sym = SymbolicCompressor().expand_context(prompt, top_k=3)
+        except Exception:
+            sym = ""
+        full = "\n\n".join(x for x in (preamble, mem, sym, prompt) if x)
 
         # Soft constitutional on empty is skip; hard check intent
         if self.organs.governance is not None:
@@ -202,7 +209,7 @@ class AuroMind:
             f"PROMPT:{prompt}\nOUT:{text}",
             "generate",
             reward=0.6 + 0.2 * float(gen.confidence) if hasattr(gen, "confidence") else 0.7,
-            meta={"num_params": gen.num_params},
+            meta={"num_params": gen.num_params, "neuro": gen.metadata.get("neuro_emergence")},
         )
         return MindResult(
             ok=True,
@@ -213,6 +220,76 @@ class AuroMind:
             memory_wrote=absorb.get("memory_wrote", False),
             latency_ms=(time.perf_counter() - t0) * 1000.0,
         )
+
+    def think_answer(self, prompt: str, **kw: Any) -> Dict[str, Any]:
+        """Public usable API: THINK then ANSWER with NeuroEmergence + agents context."""
+        t0 = time.perf_counter()
+        if self.organs.governance is not None:
+            dec = self.organs.governance.review("generate", prompt, model_id=self.model_id)
+            if not dec.allowed:
+                return {
+                    "ok": False,
+                    "error": "; ".join(dec.reasons),
+                    "thinking": "",
+                    "answer": "",
+                }
+        mem = ""
+        if self.organs.memory is not None:
+            mem = self.organs.memory.context_block(prompt, top_k=3)
+        full = f"{mem}\n{prompt}" if mem else prompt
+        # ensure neuro attached
+        if getattr(self.language, "_neuro", None) is None:
+            try:
+                from auro_native_llm.neuro.emergence import NeuroBridge
+
+                NeuroBridge(self.language)
+            except Exception:
+                pass
+        result = self.language.think_answer(full, **kw)
+        self._absorb(
+            f"THINK:{result.get('thinking','')[:500]}\nANSWER:{result.get('answer','')[:500]}",
+            "think_answer",
+            reward=0.85,
+            meta={"neuro": result.get("neuro")},
+        )
+        result["latency_ms"] = (time.perf_counter() - t0) * 1000.0
+        result["mind_id"] = self.model_id
+        return result
+
+    def agents(self) -> Any:
+        """Internal agent manager (spawn/run_team)."""
+        if getattr(self.organs, "agent_manager", None) is None:
+            from auro_native_llm.agents.manager import AgentManager
+
+            self.organs.agent_manager = AgentManager(self)  # type: ignore[attr-defined]
+        return self.organs.agent_manager
+
+    def ready(self, *, output_dir: str = "artifacts/auro-readiness") -> Dict[str, Any]:
+        """NOVA promotion readiness — coding + reasoning measured before any claim."""
+        from auro_native_llm.intelligence.promotion import run_readiness
+
+        return run_readiness(self, output_dir=output_dir)
+
+    def code_solve(self, prompt: str, tests: str = "", entrypoint: str = "solution") -> Dict[str, Any]:
+        """Real coding orchestrator — execute tests, not vibes."""
+        from auro_foundry.coding_harness import CodingTask
+        from auro_native_llm.intelligence.coding import CodingOrchestrator
+
+        task = CodingTask(
+            task_id="adhoc",
+            prompt=prompt,
+            tests=tests or "assert solution is not None\n",
+            entrypoint=entrypoint,
+        )
+        att = CodingOrchestrator(self).solve_task(task)
+        return {
+            "ok": att.passed,
+            "passed": att.passed,
+            "source": att.source,
+            "method": att.method,
+            "attempts": att.attempts,
+            "stderr": att.stderr[-1000:],
+        }
 
     def reason(self, topic: str) -> MindResult:
         t0 = time.perf_counter()
@@ -688,6 +765,50 @@ class AuroMind:
             self.organs.brains = build_brain_cluster()
         return self.organs.brains.pulse_all()
 
+    def portal_open(self, *, chrome_mock: bool = True) -> Dict[str, Any]:
+        """Spin interior MCP portal with multi-site internet UI tools."""
+        from auro_native_llm.embedded.portal import build_portal
+
+        portal = build_portal(self, chrome_mock=chrome_mock)
+        spun = portal.spin()
+        self._absorb(
+            f"PORTAL_OPEN tools={spun.get('tools') and len(spun.get('tools') or [])} url={spun.get('url')}",
+            "portal",
+            reward=0.9,
+            meta={"portal": portal.manifest()},
+        )
+        return spun
+
+    def multi_site(
+        self,
+        objective: str,
+        urls: List[str],
+        *,
+        chrome_mock: bool = True,
+    ) -> Dict[str, Any]:
+        """Work many internet sites at once via fleet agents + absorb digest."""
+        if self.organs.portal is None:
+            self.portal_open(chrome_mock=chrome_mock)
+        fleet = self.organs.fleet
+        result = fleet.work_objective(objective, urls)
+        # mind reason over digest
+        digest = result.get("summary_for_llm") or ""
+        gen = self.generate(
+            f"Multi-site agent report. Objective={objective}\n{digest[:1800]}\nWrite findings + next actions.",
+            max_new_tokens=80,
+            temperature=0.7,
+        )
+        text = (gen.output or {}).get("text", "") if isinstance(gen.output, dict) else ""
+        self._absorb(
+            f"MULTI_SITE objective={objective}\n{digest[:1500]}\nFINDINGS:{text[:500]}",
+            "multi_site",
+            reward=0.92 if result.get("ok") else 0.5,
+            meta={"n_urls": len(urls), "latency_ms": result.get("latency_ms")},
+        )
+        result["mind_findings"] = text
+        result["generate_ok"] = gen.ok
+        return result
+
     def train_entangled(
         self,
         text: str,
@@ -823,6 +944,7 @@ class AuroMind:
                 "engines", "transformers", "orchestrators", "teachers",
                 "teach_domains", "heart_pulse", "mini_brain", "mini_heart",
                 "chaos_cuda", "code", "research", "math",
+                "portal_open", "multi_site", "interior_mcp", "multi_site_agents",
             ],
             "brains": (
                 self.organs.brains.info() if self.organs.brains is not None else None

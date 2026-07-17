@@ -39,6 +39,10 @@ class EmbeddedOrgans:
     mesie_power: Any = None  # multi-embed + compress stack
     polyglot: Any = None  # Python + Julia + Haskell + CUDA plane
     brains: Any = None  # MiniBrainCluster code/research/math + heart
+    portal: Any = None  # Interior MCP portal
+    fleet: Any = None  # MultiSiteFleet concurrent browsers
+    agent_manager: Any = None  # Internal multi-agent manager
+    neuro: Any = None  # NeuroEmergence bridge ref
 
     def manifest(self) -> Dict[str, bool]:
         return {
@@ -67,6 +71,10 @@ class EmbeddedOrgans:
             "mesie_power": self.mesie_power is not None,
             "polyglot": self.polyglot is not None,
             "brains": self.brains is not None,
+            "portal": self.portal is not None,
+            "fleet": self.fleet is not None,
+            "agent_manager": self.agent_manager is not None,
+            "neuro": self.neuro is not None,
         }
 
 
