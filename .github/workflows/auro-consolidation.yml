@@ -25,12 +25,16 @@ jobs:
       - name: Compile consolidation modules
         run: python -m compileall -q auro_foundry
       - name: Run consolidation tests
-        run: pytest -q tests/test_auro_consolidation.py
+        run: |
+          mkdir -p artifacts/ci
+          set -o pipefail
+          pytest -vv tests/test_auro_consolidation.py 2>&1 | tee artifacts/ci/pytest.log
       - name: Verify commands
         run: |
           auro-consolidate manifest --workspace artifacts/ci
           auro-consolidate workers --capability benchmark
-      - name: Upload receipts
+      - name: Upload receipts and logs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: auro-consolidation-receipts
