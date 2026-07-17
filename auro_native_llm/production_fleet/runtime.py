@@ -152,7 +152,7 @@ class NovaRuntime:
                     executions.append(self.sdk.execute(action))
                 except Exception as exc:
                     executions.append({"tool":action.get("tool"),"ok":False,"error":str(exc)[:500]})
-        return {
+        response = {
             "schema": "nova.production.response.v1",
             "answer": str(answer.get("answer", synthesis["text"])).strip(),
             "reasoning_summary": _strings(answer.get("reasoning_summary", [])),
@@ -172,6 +172,8 @@ class NovaRuntime:
             },
             "elapsed_ms": round((time.time() - started) * 1000, 3),
         }
+        response["receipt"] = asdict(self.capabilities.ledger.record("model_response",self.endpoint.model,True,response,{"agent_count":len(council)}))
+        return response
 
 
 def _agent_prompt(agent: AgentSpec, objective: str, shared: str, capability_context: str = "") -> str:
