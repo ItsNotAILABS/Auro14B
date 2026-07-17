@@ -1,8 +1,12 @@
 """Dependency-free loopback HTTP surface for the NOVA production fleet."""
 from __future__ import annotations
-import argparse, json
+import argparse, hmac, json, os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from .runtime import NovaRuntime
+
+def token_authorized(header: str, expected: str) -> bool:
+    if not expected or not header.startswith("Bearer "): return False
+    return hmac.compare_digest(header[7:],expected)
 
 class Handler(BaseHTTPRequestHandler):
     runtime = NovaRuntime()
@@ -18,7 +22,9 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/v1/capabilities/call":
             try:
                 length=int(self.headers.get("content-length","0")); body=json.loads(self.rfile.read(length) or b"{}")
-                self._json(200,self.runtime.capabilities.call(str(body.get("name","")),dict(body.get("arguments") or {}),approved=bool(body.get("approved",False))))
+                approved=bool(body.get("approved",False))
+                if approved and not self._authorized(): self._json(403,{"error":"operator_token_required"}); return
+                self._json(200,self.runtime.capabilities.call(str(body.get("name","")),dict(body.get("arguments") or {}),approved=approved))
             except Exception as exc: self._json(400,{"error":"capability_call_failed","detail":str(exc)[:500]})
             return
         if self.path != "/v1/respond":
@@ -29,11 +35,15 @@ class Handler(BaseHTTPRequestHandler):
             message=str(body.get("message","")).strip()
             if not message:
                 self._json(400,{"error":"message_required"}); return
-            self._json(200,self.runtime.respond(message,execute=bool(body.get("execute",False))))
+            execute=bool(body.get("execute",False))
+            if execute and not self._authorized(): self._json(403,{"error":"operator_token_required"}); return
+            self._json(200,self.runtime.respond(message,execute=execute))
         except Exception as exc:
             self._json(502,{"error":"inference_failed","detail":str(exc)[:500]})
 
     def log_message(self,format,*args): return
+    def _authorized(self):
+        return token_authorized(self.headers.get("authorization",""),os.getenv("AURO_EXECUTION_TOKEN",""))
     def _json(self,status,payload):
         data=json.dumps(payload,ensure_ascii=False).encode()
         self.send_response(status); self.send_header("content-type","application/json")
