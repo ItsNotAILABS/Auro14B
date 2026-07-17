@@ -13,6 +13,13 @@ export AURO_PARAMETER_COUNT=8200000000
 python -m auro_native_llm.production_fleet.cli "Analyze my repositories and propose the next bounded build"
 ```
 
+Start the BRAIN AI-facing loopback API:
+
+```bash
+python -m auro_native_llm.production_fleet.server --host 127.0.0.1 --port 8090
+curl -X POST http://127.0.0.1:8090/v1/respond -H 'content-type: application/json' -d '{"message":"Create a plan and have the internal council verify it"}'
+```
+
 `AURO_PARAMETER_COUNT` must come from the loaded checkpoint/config. Remove it when unverified. Agent count never changes model parameter count.
 
 ## Cognitive cycle
