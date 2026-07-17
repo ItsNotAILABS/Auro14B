@@ -34,16 +34,21 @@ BUILTINS=(
 )
 
 class NativeCapabilities:
-    def __init__(self,sdk,capabilities=BUILTINS): self.sdk=sdk; self._items={x.name:x for x in capabilities}
+    def __init__(self,sdk,capabilities=BUILTINS,ledger=None):
+        from .receipts import ReceiptLedger
+        self.sdk=sdk; self._items={x.name:x for x in capabilities}; self.ledger=ledger or ReceiptLedger()
     def manifest(self): return {"schema":"auro.native_capabilities.v1","protocol":"tool-contract-compatible","capabilities":[asdict(x) for x in self._items.values()]}
     def skills_prompt(self):
         return "\n".join(f"{x.name}: {' -> '.join(x.playbook)}" for x in self._items.values() if x.mode=="skill")
     def call(self,name:str,arguments:dict[str,Any],approved=False):
         if name not in self._items: raise ValueError(f"Unknown capability: {name}")
         spec=self._items[name]; _validate(spec.input_schema,arguments)
-        if spec.approval_required and not approved: return {"ok":False,"denied":True,"reason":"explicit approval required","capability":name}
+        if spec.approval_required and not approved:
+            result={"ok":False,"denied":True,"reason":"explicit approval required","capability":name}
+            result["receipt"]=asdict(self.ledger.record("capability",name,False,result,{"denied":True})); return result
         started=time.perf_counter(); output=self._dispatch(name,arguments)
-        return {"ok":True,"capability":name,"organ":spec.organ,"output":output,"latency_ms":round((time.perf_counter()-started)*1000,3)}
+        result={"ok":True,"capability":name,"organ":spec.organ,"output":output,"latency_ms":round((time.perf_counter()-started)*1000,3)}
+        result["receipt"]=asdict(self.ledger.record("capability",name,True,result)); return result
     def _dispatch(self,name,a):
         if name=="brain.state": return self.sdk.brain.state()
         if name=="brain.operator_snapshot": return self.sdk.brain.query(a.get("path","/v1/brain/operator-snapshot"))
@@ -62,4 +67,3 @@ def _validate(schema,args):
     missing=set(schema.get("required",[]))-set(args)
     if extra: raise ValueError("unknown arguments: "+", ".join(sorted(extra)))
     if missing: raise ValueError("missing arguments: "+", ".join(sorted(missing)))
-
