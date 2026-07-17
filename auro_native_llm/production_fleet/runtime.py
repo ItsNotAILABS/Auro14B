@@ -118,10 +118,14 @@ class AgentManager:
 class NovaRuntime:
     """Interpret → deliberate → verify → answer, with action proposals gated."""
 
-    def __init__(self, endpoint: ModelEndpoint | None = None, generator: Generator | None = None):
+    def __init__(self, endpoint: ModelEndpoint | None = None, generator: Generator | None = None, sdk=None):
         self.endpoint = endpoint or ModelEndpoint.from_env()
         self.generator = generator or OpenAICompatibleGenerator(self.endpoint)
         self.agents = AgentManager(self.generator)
+        if sdk is None:
+            from .organ_sdk import AuroOrganSDK
+            sdk = AuroOrganSDK()
+        self.sdk = sdk
 
     def respond(self, message: str, *, execute: bool = False) -> dict[str, Any]:
         started = time.time()
@@ -137,6 +141,13 @@ class NovaRuntime:
         answer = _parse_object(synthesis["text"])
         actions = _actions(answer.get("actions", []))
         approved = actions if execute else []
+        executions = []
+        if execute:
+            for action in approved:
+                try:
+                    executions.append(self.sdk.execute(action))
+                except Exception as exc:
+                    executions.append({"tool":action.get("tool"),"ok":False,"error":str(exc)[:500]})
         return {
             "schema": "nova.production.response.v1",
             "answer": str(answer.get("answer", synthesis["text"])).strip(),
@@ -145,6 +156,8 @@ class NovaRuntime:
             "agents": [asdict(x) for x in council],
             "proposed_actions": actions,
             "approved_actions": approved,
+            "executions": executions,
+            "organ_sdk": self.sdk.manifest(),
             "model": {
                 "endpoint_id": self.endpoint.id,
                 "model": self.endpoint.model,
@@ -213,4 +226,3 @@ def _actions(value: Any) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         return []
     return [x for x in value if isinstance(x, dict) and x.get("tool") in {"matdaemon", "capsula"}]
-

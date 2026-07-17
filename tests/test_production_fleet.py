@@ -9,9 +9,13 @@ class FakeGenerator:
             return {"text":json.dumps({"summary":f"agent-{self.calls}","confidence":0.8,"evidence":["fixture"],"proposed_actions":[]})}
         return {"text":json.dumps({"answer":"usable answer","reasoning_summary":["verified"],"confidence":0.9,"actions":[{"tool":"capsula","arguments":{"task":"build"},"reason":"approved proposal"}]})}
 
+class FakeSDK:
+    def manifest(self): return {"schema":"test.sdk"}
+    def execute(self,action): return {"tool":action["tool"],"ok":True}
+
 def test_council_answers_without_executing():
     endpoint=ModelEndpoint("test","http://127.0.0.1:1/v1","test",8_200_000_000)
-    result=NovaRuntime(endpoint,generator=FakeGenerator()).respond("Build it")
+    result=NovaRuntime(endpoint,generator=FakeGenerator(),sdk=FakeSDK()).respond("Build it")
     assert result["answer"] == "usable answer"
     assert len(result["agents"]) == 5
     assert result["approved_actions"] == []
@@ -20,6 +24,6 @@ def test_council_answers_without_executing():
 
 def test_explicit_execute_only_approves_bounded_tools():
     endpoint=ModelEndpoint("test","http://127.0.0.1:1/v1","test")
-    result=NovaRuntime(endpoint,generator=FakeGenerator()).respond("Build it",execute=True)
+    result=NovaRuntime(endpoint,generator=FakeGenerator(),sdk=FakeSDK()).respond("Build it",execute=True)
     assert result["approved_actions"][0]["tool"] == "capsula"
-
+    assert result["executions"][0]["ok"] is True
