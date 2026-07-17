@@ -30,9 +30,9 @@ def load_model(checkpoint: str | Path, device: str = "auto") -> tuple[AuroForCau
         tokenizer_path = Path(train_config.tokenizer_path)
     else:
         model_config = ModelConfig.from_dict(payload["model_config"])
-        tokenizer_path = Path(payload.get("tokenizer_path", path.parent / "tokenizer.json"))
+        tokenizer_path = Path(payload.get("tokenizer_path", "tokenizer.json"))
     if not tokenizer_path.is_absolute():
-        tokenizer_path = (Path.cwd() / tokenizer_path).resolve()
+        tokenizer_path = (path.parent / tokenizer_path).resolve()
     tokenizer = AuroBPETokenizer.load(tokenizer_path)
     if tokenizer.vocab_size != model_config.vocab_size:
         raise ValueError("checkpoint vocabulary does not match tokenizer")
@@ -48,6 +48,7 @@ def load_model(checkpoint: str | Path, device: str = "auto") -> tuple[AuroForCau
         "tokens_seen": int(payload.get("tokens_seen", 0)),
         "parameters": model.parameter_report()["parameters"],
         "device": str(target),
+        "tokenizer": str(tokenizer_path),
     }
     return model, tokenizer, metadata, target
 
