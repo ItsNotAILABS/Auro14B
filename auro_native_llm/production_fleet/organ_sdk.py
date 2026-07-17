@@ -64,6 +64,22 @@ class AuroOrganSDK:
           "matdaemon":{"purpose":"retrieval, similarity, bounded matrix compute","operations":["call","rank_text"]},
           "capsula":{"purpose":"bounded build sessions","operations":["create_session","write_file","run","manifest","deploy_plan"]}}}
 
+    def health(self)->dict[str,Any]:
+        checks={"brain":lambda:self.brain.health(),"nova":lambda:self.nova.get("/health"),
+                "matdaemon":lambda:self.matdaemon.tools(),"capsula":lambda:self.capsula.runtimes()}
+        result={}
+        for name,check in checks.items():
+            started=time.perf_counter()
+            try:
+                payload=check(); result[name]={"ok":True,"latency_ms":round((time.perf_counter()-started)*1000,3),"evidence":payload}
+            except Exception as exc:
+                result[name]={"ok":False,"latency_ms":round((time.perf_counter()-started)*1000,3),"error":str(exc)[:300]}
+        return {"schema":"auro.organ_sdk.health.v1","organs":result,"ready":all(x["ok"] for x in result.values())}
+
+    def action_contract(self)->dict[str,Any]:
+        return {"matdaemon":{"tool":"matdaemon","arguments":{"name":"matdaemon_<declared_tool>","arguments":{}}},
+                "capsula":{"tool":"capsula","arguments":{"operation":"create_session|write_file|run|manifest|deploy_plan","parameters":{}}}}
+
     def execute(self,action:dict[str,Any])->dict[str,Any]:
         started=time.perf_counter(); tool=action.get("tool"); args=action.get("arguments") or {}
         if tool=="matdaemon":
@@ -75,4 +91,3 @@ class AuroOrganSDK:
             output=getattr(self.capsula,op)(**dict(args.get("parameters") or {}))
         else: raise ValueError(f"Unsupported organ tool: {tool}")
         return {"tool":tool,"ok":True,"output":output,"latency_ms":round((time.perf_counter()-started)*1000,3)}
-
