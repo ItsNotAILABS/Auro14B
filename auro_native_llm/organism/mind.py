@@ -1,0 +1,700 @@
+"""AuroMind — production embedded model organism.
+
+Every capability AI systems need is *inside* the mind:
+  natural language · reason · code · work · chrome DOM ·
+  scripture · constitutional critique · memory · continuous training.
+
+Each family size is an AuroMind with the same organs (scaled core only).
+"""
+
+from __future__ import annotations
+
+import time
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+
+from auro_native_llm.model.auro_lm import AuroLanguageModel, AuroGenerateResult
+from auro_native_llm.model.config import AuroLMConfig, family_config
+from auro_native_llm.organism.modules import EmbeddedOrgans, build_organs
+from auro_native_llm.organism.self_train import ContinuousMindTrainer, Experience
+from auro_native_llm.work.algorithms import (
+    code_complete,
+    extract_code_blocks,
+    plan_from_text,
+    reason_steps,
+)
+
+
+@dataclass
+class MindResult:
+    ok: bool
+    kind: str
+    model_id: str
+    output: Any = None
+    train_pulse: Optional[Dict[str, Any]] = None
+    memory_wrote: bool = False
+    latency_ms: float = 0.0
+    error: Optional[str] = None
+    embedded: bool = True
+
+    def to_dict(self) -> Dict[str, Any]:
+        out = self.output
+        if hasattr(out, "to_dict"):
+            out = out.to_dict()
+        return {
+            "schema": "auro.mind.result.v1",
+            "ok": self.ok,
+            "kind": self.kind,
+            "model_id": self.model_id,
+            "output": out,
+            "train_pulse": self.train_pulse,
+            "memory_wrote": self.memory_wrote,
+            "latency_ms": self.latency_ms,
+            "error": self.error,
+            "embedded": True,
+            "compute_plane": "MESIE",
+            "always_training": True,
+        }
+
+
+class AuroMind:
+    """Full native model mind — organs embedded, always self-training."""
+
+    def __init__(
+        self,
+        language: AuroLanguageModel,
+        *,
+        chrome_mock: bool = True,
+        absorb_every_act: bool = True,
+        train_every_act: bool = True,
+    ) -> None:
+        self.language = language
+        self.model_id = language.model_id
+        self.config = language.config
+        self.absorb_every_act = absorb_every_act
+        self.train_every_act = train_every_act
+        self.organs: EmbeddedOrgans = build_organs(
+            language, chrome_mock=chrome_mock, lite_tools=True
+        )
+        self.act_count = 0
+        self.born_at = time.time()
+
+    # ---------------------------------------------------------------- factory
+    @classmethod
+    def build(
+        cls,
+        model_id: str = "Auro-2B",
+        mode: str = "dev",
+        *,
+        lite: bool = True,
+        chrome_mock: bool = True,
+        **overrides: Any,
+    ) -> "AuroMind":
+        """Build a complete mind for any family member — full organs always."""
+        if lite and mode == "dev":
+            # Smoke floor = MESIE spectral_gpt_tiny geometry + full arsenal.
+            # (Previously under-scaled to 64-dim / 2L — that ignored the stack.)
+            from auro_native_llm.model.config import mesie_preset_dims
+
+            tiny = mesie_preset_dims("spectral_gpt_tiny")
+            for k, v in tiny.items():
+                overrides.setdefault(k, v)
+            overrides.setdefault("mesie_preset", "spectral_gpt_tiny")
+            overrides.setdefault("use_cross_modal", True)
+            overrides.setdefault("use_spectral_encoder", True)
+            overrides.setdefault("use_moe", True)
+            overrides.setdefault("positional_encoding", "rotary")
+            overrides.setdefault("normalization", "rms_norm")
+            overrides.setdefault("activation", "swiglu")
+            overrides.setdefault("qk_norm", True)
+            overrides.setdefault("num_modalities", 8)
+            # Cap vocab/seq for fast smoke without abandoning MESIE width/depth
+            overrides.setdefault("max_seq_len", min(int(tiny["max_seq_len"]), 512))
+            overrides.setdefault("vocab_size", min(int(tiny["vocab_size"]), 4096))
+        lang = AuroLanguageModel.build(model_id, mode=mode, **overrides)  # type: ignore[arg-type]
+        return cls(lang, chrome_mock=chrome_mock)
+
+    # ---------------------------------------------------------------- absorb
+    def _absorb(
+        self,
+        text: str,
+        kind: str,
+        *,
+        reward: float = 0.5,
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Every act feeds the mind. Training is part of living."""
+        trainer: ContinuousMindTrainer = self.organs.trainer
+        exp = Experience(
+            text=text,
+            kind=kind,
+            model_id=self.model_id,
+            reward=reward,
+            meta=meta or {},
+        )
+        if self.absorb_every_act and trainer is not None:
+            trainer.absorb(exp)
+        mem_ok = False
+        if self.organs.memory is not None and self.organs.canon is not None:
+            try:
+                self.organs.memory.write(
+                    f"{kind}:{text[:300]}",
+                    canon_id=self.organs.canon.canon_id,
+                    model_id=self.model_id,
+                    op=kind if kind in self.organs.canon.allowed_ops else "generate",
+                    importance=reward,
+                    metadata=meta or {},
+                )
+                mem_ok = True
+            except Exception:
+                mem_ok = False
+        pulse = None
+        if self.train_every_act and trainer is not None:
+            pulse = trainer.train_on_model(self.language, steps=1)
+        self.act_count += 1
+        return {"memory_wrote": mem_ok, "train_pulse": pulse}
+
+    def pulse(self) -> Dict[str, Any]:
+        """Autonomic heartbeat — doctrine + messy train without external ask."""
+        if self.organs.trainer is None:
+            return {"ok": False}
+        return self.organs.trainer.pulse(self.language)
+
+    # ---------------------------------------------------------------- capabilities (all embedded)
+    def generate(self, prompt: str, **kw: Any) -> MindResult:
+        t0 = time.perf_counter()
+        # Doctrine preamble embedded
+        preamble = ""
+        if self.organs.constitutional is not None:
+            preamble = self.organs.constitutional.constitutional_prompt(prompt)[:1200]
+        mem = ""
+        if self.organs.memory is not None:
+            mem = self.organs.memory.context_block(prompt, top_k=3)
+        full = "\n\n".join(x for x in (preamble, mem, prompt) if x)
+
+        # Soft constitutional on empty is skip; hard check intent
+        if self.organs.governance is not None:
+            dec = self.organs.governance.review("generate", prompt, model_id=self.model_id)
+            if not dec.allowed:
+                absorb = self._absorb(prompt, "refuse", reward=0.3, meta={"reasons": dec.reasons})
+                return MindResult(
+                    ok=False,
+                    kind="generate",
+                    model_id=self.model_id,
+                    error="; ".join(dec.reasons),
+                    train_pulse=absorb.get("train_pulse"),
+                    memory_wrote=absorb.get("memory_wrote", False),
+                    latency_ms=(time.perf_counter() - t0) * 1000.0,
+                )
+
+        gen: AuroGenerateResult = self.language.generate(full, **kw)
+        # Soft revise
+        text = gen.text
+        if self.organs.constitutional is not None:
+            soft = self.organs.constitutional.critique_and_revise(text, context=prompt)
+            text = soft.revised
+            gen.metadata["constitutional"] = soft.to_dict()
+            gen.text = text
+
+        absorb = self._absorb(
+            f"PROMPT:{prompt}\nOUT:{text}",
+            "generate",
+            reward=0.6 + 0.2 * float(gen.confidence) if hasattr(gen, "confidence") else 0.7,
+            meta={"num_params": gen.num_params},
+        )
+        return MindResult(
+            ok=True,
+            kind="generate",
+            model_id=self.model_id,
+            output=gen.to_dict(),
+            train_pulse=absorb.get("train_pulse"),
+            memory_wrote=absorb.get("memory_wrote", False),
+            latency_ms=(time.perf_counter() - t0) * 1000.0,
+        )
+
+    def reason(self, topic: str) -> MindResult:
+        t0 = time.perf_counter()
+        r = self.generate(
+            f"Mode=REASON. Numbered steps then conclusion.\nTopic: {topic}",
+            max_new_tokens=96,
+            temperature=0.75,
+        )
+        text = (r.output or {}).get("text", "") if isinstance(r.output, dict) else ""
+        steps = reason_steps(text)
+        absorb = self._absorb(f"REASON:{topic}\n{text}", "reason", reward=0.75)
+        return MindResult(
+            ok=r.ok,
+            kind="reason",
+            model_id=self.model_id,
+            output={"text": text, "steps": steps},
+            train_pulse=absorb.get("train_pulse"),
+            memory_wrote=absorb.get("memory_wrote", False),
+            latency_ms=(time.perf_counter() - t0) * 1000.0,
+            error=r.error,
+        )
+
+    def code(self, task: str) -> MindResult:
+        t0 = time.perf_counter()
+
+        def _g(p: str) -> str:
+            return self.language.generate(p, max_new_tokens=120, temperature=0.65).text
+
+        out = code_complete(task, _g)
+        absorb = self._absorb(f"CODE:{task}\n{out.get('primary_code','')}", "code", reward=0.8)
+        return MindResult(
+            ok=True,
+            kind="code",
+            model_id=self.model_id,
+            output=out,
+            train_pulse=absorb.get("train_pulse"),
+            memory_wrote=absorb.get("memory_wrote", False),
+            latency_ms=(time.perf_counter() - t0) * 1000.0,
+        )
+
+    def chrome(self, action: str, **kwargs: Any) -> MindResult:
+        t0 = time.perf_counter()
+        belt = self.organs.chrome
+        if belt is None:
+            return MindResult(False, "chrome", self.model_id, error="chrome organ missing")
+        try:
+            if action == "navigate":
+                out = belt.navigate(kwargs.get("url", "about:blank"))
+            elif action == "dom":
+                out = belt.dom()
+            elif action == "eval":
+                out = belt.evaluate(kwargs.get("js", "document.title"))
+            elif action == "type":
+                out = belt.type_text(kwargs.get("text", ""))
+            elif action == "click":
+                out = belt.click(float(kwargs.get("x", 0)), float(kwargs.get("y", 0)))
+            else:
+                out = {"ok": False, "error": f"unknown {action}"}
+            reward = 0.85 if out.get("ok", True) else 0.2
+            text = str(out.get("llm") or out)[:800]
+            absorb = self._absorb(f"CHROME:{action}:{text}", "chrome", reward=reward)
+            return MindResult(
+                ok=bool(out.get("ok", True)),
+                kind="chrome",
+                model_id=self.model_id,
+                output=out,
+                train_pulse=absorb.get("train_pulse"),
+                memory_wrote=absorb.get("memory_wrote", False),
+                latency_ms=(time.perf_counter() - t0) * 1000.0,
+            )
+        except Exception as exc:
+            absorb = self._absorb(f"CHROME_ERR:{action}:{exc}", "error", reward=0.1)
+            return MindResult(
+                False,
+                "chrome",
+                self.model_id,
+                error=str(exc),
+                train_pulse=absorb.get("train_pulse"),
+                latency_ms=(time.perf_counter() - t0) * 1000.0,
+            )
+
+    def work(self, objective: str) -> MindResult:
+        """Full work loop embedded — plan tools, execute, train on every step."""
+        t0 = time.perf_counter()
+        steps: List[Dict[str, Any]] = []
+
+        # Hard governance on objective
+        if self.organs.governance is not None:
+            dec = self.organs.governance.review("tool_call", objective, model_id=self.model_id)
+            if not dec.allowed:
+                absorb = self._absorb(objective, "refuse", reward=0.25)
+                return MindResult(
+                    ok=False,
+                    kind="work",
+                    model_id=self.model_id,
+                    error="; ".join(dec.reasons),
+                    train_pulse=absorb.get("train_pulse"),
+                    memory_wrote=absorb.get("memory_wrote", False),
+                    latency_ms=(time.perf_counter() - t0) * 1000.0,
+                )
+
+        # Constitutional soft on objective
+        if self.organs.constitutional is not None:
+            soft = self.organs.constitutional.critique_and_revise(objective)
+            if soft.blocked:
+                absorb = self._absorb(objective, "refuse", reward=0.2)
+                return MindResult(
+                    False,
+                    "work",
+                    self.model_id,
+                    error="constitutional_block",
+                    train_pulse=absorb.get("train_pulse"),
+                    latency_ms=(time.perf_counter() - t0) * 1000.0,
+                )
+
+        dom_ctx = ""
+        # Bootstrap browse if URL-like
+        actions: List[Dict[str, Any]] = []
+        if "http" in objective or "browse" in objective.lower() or "chrome" in objective.lower():
+            url = "https://example.com"
+            for tok in objective.split():
+                if tok.startswith("http"):
+                    url = tok.strip(",.")
+            actions = [
+                {"action": "chrome.navigate", "url": url},
+                {"action": "chrome.dom"},
+                {"action": "done", "summary": f"worked DOM for {url}"},
+            ]
+        else:
+            # Mind plans
+            plan_text = self.language.generate(
+                f"Emit tool plan JSON actions for: {objective}",
+                max_new_tokens=80,
+                temperature=0.7,
+            ).text
+            if self.organs.constitutional is not None:
+                plan_text = self.organs.constitutional.critique_and_revise(
+                    plan_text, context=objective
+                ).revised
+            actions = plan_from_text(plan_text) or [
+                {"action": "reason", "topic": objective},
+                {"action": "done", "summary": "reasoned"},
+            ]
+
+        summary = ""
+        for act in actions:
+            name = str(act.get("action", "")).lower()
+            if name.startswith("chrome.") or name in ("navigate", "dom", "click", "type", "eval"):
+                mapped = name if name.startswith("chrome.") else f"chrome.{name}"
+                if mapped == "chrome.navigate":
+                    mr = self.chrome("navigate", url=act.get("url") or act.get("arg"))
+                elif mapped in ("chrome.dom",):
+                    mr = self.chrome("dom")
+                    if isinstance(mr.output, dict) and mr.output.get("llm"):
+                        dom_ctx = str(mr.output["llm"])
+                elif mapped == "chrome.eval":
+                    mr = self.chrome("eval", js=act.get("js") or act.get("arg") or "1")
+                else:
+                    mr = self.chrome(mapped.split(".", 1)[-1], **act)
+                steps.append({"act": act, "result": mr.to_dict()})
+            elif name in ("reason",):
+                mr = self.reason(str(act.get("topic") or objective))
+                steps.append({"act": act, "result": mr.to_dict()})
+            elif name in ("code", "code.run"):
+                mr = self.code(str(act.get("code") or act.get("arg") or objective))
+                steps.append({"act": act, "result": mr.to_dict()})
+            elif name == "done":
+                summary = str(act.get("summary") or "done")
+                steps.append({"act": act, "result": {"ok": True}})
+                break
+            else:
+                steps.append({"act": act, "result": {"ok": False, "error": "unknown"}})
+
+        absorb = self._absorb(
+            f"WORK:{objective}\nSUM:{summary}\nDOM:{dom_ctx[:400]}",
+            "work",
+            reward=0.85,
+            meta={"steps": len(steps)},
+        )
+        return MindResult(
+            ok=True,
+            kind="work",
+            model_id=self.model_id,
+            output={
+                "summary": summary or "completed",
+                "steps": steps,
+                "dom": dom_ctx[:2000],
+            },
+            train_pulse=absorb.get("train_pulse"),
+            memory_wrote=absorb.get("memory_wrote", False),
+            latency_ms=(time.perf_counter() - t0) * 1000.0,
+        )
+
+    def think(self, prompt: str) -> MindResult:
+        """Alias: natural language act that still trains the mind."""
+        return self.generate(prompt)
+
+    def monaco(self, action: str, **kwargs: Any) -> MindResult:
+        t0 = time.perf_counter()
+        organ = self.organs.monaco
+        if organ is None:
+            return MindResult(False, "monaco", self.model_id, error="monaco organ missing")
+        try:
+            if action == "create":
+                out = organ.create(
+                    kwargs.get("content", ""),
+                    language=kwargs.get("language", "python"),
+                    filename=kwargs.get("filename", "main.py"),
+                )
+            elif action == "get":
+                out = organ.get(kwargs["session_id"])
+            elif action == "set":
+                out = organ.set_content(kwargs["session_id"], kwargs.get("content", ""))
+            elif action == "append":
+                out = organ.append(kwargs["session_id"], kwargs.get("text", ""))
+            elif action == "replace":
+                out = organ.replace(kwargs["session_id"], kwargs.get("old", ""), kwargs.get("new", ""))
+            elif action == "insert":
+                out = organ.insert(kwargs["session_id"], int(kwargs.get("offset", 0)), kwargs.get("text", ""))
+            elif action == "list":
+                out = organ.list_sessions()
+            elif action == "ui":
+                out = organ.ui_payload(kwargs["session_id"])
+            else:
+                out = {"ok": False, "error": f"unknown monaco action {action}"}
+            absorb = self._absorb(f"MONACO:{action}:{out}", "monaco", reward=0.8 if out.get("ok") else 0.2)
+            return MindResult(
+                bool(out.get("ok")), "monaco", self.model_id, output=out,
+                train_pulse=absorb.get("train_pulse"), memory_wrote=absorb.get("memory_wrote", False),
+                latency_ms=(time.perf_counter() - t0) * 1000.0,
+            )
+        except Exception as exc:
+            absorb = self._absorb(f"MONACO_ERR:{exc}", "error", reward=0.1)
+            return MindResult(False, "monaco", self.model_id, error=str(exc), train_pulse=absorb.get("train_pulse"),
+                              latency_ms=(time.perf_counter() - t0) * 1000.0)
+
+    def jupyter(self, action: str, **kwargs: Any) -> MindResult:
+        t0 = time.perf_counter()
+        organ = self.organs.jupyter
+        if organ is None:
+            return MindResult(False, "jupyter", self.model_id, error="jupyter organ missing")
+        try:
+            if action == "create":
+                out = organ.create(kwargs.get("title", "Auro Notebook"))
+            elif action == "get":
+                out = organ.get(kwargs["notebook_id"])
+            elif action == "add_cell":
+                out = organ.add_cell(
+                    kwargs["notebook_id"], kwargs.get("source", ""),
+                    cell_type=kwargs.get("cell_type", "code"),
+                )
+            elif action == "execute":
+                out = organ.execute_cell(kwargs["notebook_id"], kwargs["cell_id"])
+            elif action == "execute_all":
+                out = organ.execute_all(kwargs["notebook_id"])
+            elif action == "export":
+                out = organ.export_ipynb(kwargs["notebook_id"])
+            elif action == "list":
+                out = organ.list_notebooks()
+            else:
+                out = {"ok": False, "error": f"unknown jupyter action {action}"}
+            absorb = self._absorb(f"JUPYTER:{action}:{out}", "jupyter", reward=0.85 if out.get("ok") else 0.2)
+            return MindResult(
+                bool(out.get("ok")), "jupyter", self.model_id, output=out,
+                train_pulse=absorb.get("train_pulse"), memory_wrote=absorb.get("memory_wrote", False),
+                latency_ms=(time.perf_counter() - t0) * 1000.0,
+            )
+        except Exception as exc:
+            absorb = self._absorb(f"JUPYTER_ERR:{exc}", "error", reward=0.1)
+            return MindResult(False, "jupyter", self.model_id, error=str(exc), train_pulse=absorb.get("train_pulse"),
+                              latency_ms=(time.perf_counter() - t0) * 1000.0)
+
+    def search(self, query: str, **kwargs: Any) -> MindResult:
+        t0 = time.perf_counter()
+        organ = self.organs.search
+        if organ is None:
+            return MindResult(False, "search", self.model_id, error="search organ missing")
+        try:
+            out = organ.search(query, **kwargs)
+            absorb = self._absorb(f"SEARCH:{query}:{out}", "search", reward=0.75 if out.get("ok") else 0.2)
+            return MindResult(
+                bool(out.get("ok")), "search", self.model_id, output=out,
+                train_pulse=absorb.get("train_pulse"), memory_wrote=absorb.get("memory_wrote", False),
+                latency_ms=(time.perf_counter() - t0) * 1000.0,
+            )
+        except Exception as exc:
+            absorb = self._absorb(f"SEARCH_ERR:{exc}", "error", reward=0.1)
+            return MindResult(False, "search", self.model_id, error=str(exc), train_pulse=absorb.get("train_pulse"),
+                              latency_ms=(time.perf_counter() - t0) * 1000.0)
+
+    def mcp(self, action: str, **kwargs: Any) -> MindResult:
+        t0 = time.perf_counter()
+        organ = self.organs.mcp
+        if organ is None:
+            return MindResult(False, "mcp", self.model_id, error="mcp organ missing")
+        try:
+            if action == "spin_up":
+                out = organ.spin_up()
+            elif action == "list_tools":
+                out = organ.list_tools()
+            elif action == "call":
+                out = organ.call(kwargs.get("tool", ""), kwargs.get("arguments") or {})
+            elif action == "shutdown":
+                out = organ.hub.shutdown()
+            else:
+                out = {"ok": False, "error": f"unknown mcp action {action}"}
+            absorb = self._absorb(f"MCP:{action}:{out}", "mcp", reward=0.85 if out.get("ok") else 0.2)
+            return MindResult(
+                bool(out.get("ok")), "mcp", self.model_id, output=out,
+                train_pulse=absorb.get("train_pulse"), memory_wrote=absorb.get("memory_wrote", False),
+                latency_ms=(time.perf_counter() - t0) * 1000.0,
+            )
+        except Exception as exc:
+            absorb = self._absorb(f"MCP_ERR:{exc}", "error", reward=0.1)
+            return MindResult(False, "mcp", self.model_id, error=str(exc), train_pulse=absorb.get("train_pulse"),
+                              latency_ms=(time.perf_counter() - t0) * 1000.0)
+
+    def teach(self, domains: Optional[List[str]] = None) -> MindResult:
+        t0 = time.perf_counter()
+        cur = self.organs.curriculum
+        if cur is None:
+            return MindResult(False, "teach", self.model_id, error="curriculum missing")
+        out = cur.teach(self, domains)
+        return MindResult(
+            True, "teach", self.model_id, output=out,
+            latency_ms=(time.perf_counter() - t0) * 1000.0,
+            train_pulse=out.get("train_pulse"),
+            memory_wrote=True,
+        )
+
+    # ---------------------------------------------------------------- succotash engines/models
+    def route_engines(self, task: str) -> Dict[str, Any]:
+        """Route a task using potential-succotash engines/models catalogue."""
+        if self.organs.succotash is None:
+            return {"ok": False, "error": "succotash organ unavailable"}
+        route = self.organs.succotash.route(task)
+        out = route.to_dict() if hasattr(route, "to_dict") else dict(route)
+        out["ok"] = True
+        # absorb routing experience
+        self._absorb(
+            f"ROUTE task={task} → {out.get('rationale')}",
+            kind="route",
+            reward=0.7,
+            meta=out,
+        )
+        return out
+
+    def list_engines(self) -> List[Dict[str, Any]]:
+        if self.organs.engines:
+            return list(self.organs.engines)
+        if self.organs.succotash:
+            return self.organs.succotash.list_engines()
+        return []
+
+    def list_models(self) -> List[Dict[str, Any]]:
+        if self.organs.model_catalogue:
+            return list(self.organs.model_catalogue)
+        if self.organs.succotash:
+            return self.organs.succotash.list_models()
+        return []
+
+    def python(self, source: str, *, intent: str = "") -> MindResult:
+        """Run sandboxed Python via the embedded organ; always absorbs experience."""
+        t0 = time.perf_counter()
+        if self.organs.python is None:
+            return MindResult(
+                ok=False,
+                kind="python",
+                model_id=self.model_id,
+                error="python organ unavailable",
+                latency_ms=(time.perf_counter() - t0) * 1000.0,
+            )
+        if self.organs.governance is not None:
+            dec = self.organs.governance.review(
+                "python", intent or source[:200], model_id=self.model_id
+            )
+            if not dec.allowed:
+                absorb = self._absorb(
+                    f"PYTHON_REFUSE:{intent}\n{source[:500]}",
+                    "refuse",
+                    reward=0.3,
+                    meta={"reasons": dec.reasons},
+                )
+                return MindResult(
+                    ok=False,
+                    kind="python",
+                    model_id=self.model_id,
+                    error="; ".join(dec.reasons),
+                    train_pulse=absorb.get("train_pulse"),
+                    latency_ms=(time.perf_counter() - t0) * 1000.0,
+                )
+        result = self.organs.python.run(source, intent=intent or "python")
+        emb = None
+        try:
+            from auro_native_llm.corpus.embeddings import MaxEmbedder
+
+            emb = MaxEmbedder().embed_text(result.training_text).tolist()
+        except Exception:
+            pass
+        absorb = self._absorb(
+            result.training_text,
+            "python_run" if result.ok else "python_error",
+            reward=0.9 if result.ok else 0.35,
+            meta={"receipt": result.receipt, "ok": result.ok},
+        )
+        # attach embedding on last experience if trainer present
+        if self.organs.trainer is not None and emb is not None and self.organs.trainer.buffer:
+            try:
+                self.organs.trainer.buffer[-1].embedding = emb
+            except Exception:
+                pass
+        if self.organs.trainer is not None:
+            pulse = self.organs.trainer.train_on_model(self.language, steps=1)
+        else:
+            pulse = absorb.get("train_pulse")
+        return MindResult(
+            ok=result.ok,
+            kind="python",
+            model_id=self.model_id,
+            output=result.to_dict(),
+            train_pulse=pulse if isinstance(pulse, dict) else absorb.get("train_pulse"),
+            memory_wrote=absorb.get("memory_wrote", False),
+            latency_ms=(time.perf_counter() - t0) * 1000.0,
+            error=result.error,
+        )
+
+    def autocycle(self, cycles: int = 3, **kw: Any) -> Dict[str, Any]:
+        """Run the autonomous learn loop in-process (uses this mind if checkpoint matches)."""
+        from auro_native_llm.organism.autocycle import AutocycleConfig, run_autocycle
+
+        return run_autocycle(
+            AutocycleConfig(
+                model_id=self.model_id,
+                cycles=cycles,
+                show=bool(kw.get("show", True)),
+                resume_checkpoint=kw.get("resume_checkpoint"),
+                train_steps_per_cycle=int(kw.get("train_steps_per_cycle", 2)),
+            )
+        )
+
+    # ---------------------------------------------------------------- identity
+    def info(self) -> Dict[str, Any]:
+        live = self.language.num_params
+        target = self.config.parameter_target
+        succ = None
+        if self.organs.succotash is not None:
+            try:
+                succ = self.organs.succotash.registry.summary()
+            except Exception:
+                succ = {"present": True}
+        return {
+            "model_id": self.model_id,
+            "tier": self.config.tier,
+            "parameter_target": target,
+            "num_params_live": live,
+            "live_is_running_model": True,
+            "target_is_architecture_label": True,
+            "live_vs_target_ratio": (live / target) if target else None,
+            "claim_boundary": (
+                "Live params are the trained, running model. "
+                "Family labels (2B/4B/8B/14B/100B) are architecture targets for scaled cores. "
+                "Value is proven by CE drop + working tools + durable checkpoint, not marketing."
+            ),
+            "production_loop": "train → measure → save → load → work → keep learning",
+            "compute_plane": "MESIE",
+            "embedded_organs": self.organs.manifest(),
+            "always_training": True,
+            "trainer": self.organs.trainer.stats() if self.organs.trainer else {},
+            "memory": self.organs.memory.stats() if self.organs.memory else {},
+            "act_count": self.act_count,
+            "canon_id": getattr(self.organs.canon, "canon_id", None),
+            "integration": "full_embedded_organism",
+            "succotash": succ,
+            "engines_count": len(self.list_engines()),
+            "models_count": len(self.list_models()),
+            "engines_source": "https://github.com/FreddyCreates/potential-succotash",
+            "python_organ": (
+                self.organs.python.info() if self.organs.python is not None else None
+            ),
+            "capabilities": [
+                "generate", "reason", "code", "work", "chrome",
+                "monaco", "jupyter", "search", "mcp", "teach",
+                "scripture", "constitutional", "self_train", "memory",
+                "route_engines", "list_engines", "list_models", "succotash_corpus",
+                "python", "autocycle",
+            ],
+        }

@@ -1,0 +1,27 @@
+{
+  "schema": "auro.native_llm.model_config.v1",
+  "model_id": "Auro-8B",
+  "family_id": "Auro",
+  "status": "development-target-not-trained-checkpoint",
+  "parameter_target": 8000000000,
+  "tier": "general",
+  "architecture": {
+    "family": "decoder-only-transformer",
+    "objective": "causal-language-modeling",
+    "hidden_size": 4096,
+    "layers": 32,
+    "attention_heads": 32,
+    "kv_heads": 8,
+    "intermediate_size": 14336,
+    "activation": "silu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 32768,
+    "vocab_size_target": 128000
+  },
+  "subagent_roles": ["reason", "plan", "critique", "spectral_explain"],
+  "can_embed_subagents": true,
+  "embeddable_tiers": ["edge", "specialist"],
+  "purpose": "general reasoning lane — plans, critique, spectral explanation with embedded specialists",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving"]
+}

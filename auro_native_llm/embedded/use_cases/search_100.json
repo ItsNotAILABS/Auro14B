@@ -1,0 +1,1707 @@
+{
+  "schema": "auro.use_cases.v1",
+  "domain": "search",
+  "count": 100,
+  "cases": [
+    {
+      "id": "SEARCH-001",
+      "domain": "search",
+      "name": "search_case_1",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral embeddings case1",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-002",
+      "domain": "search",
+      "name": "search_case_2",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Auro model family case2",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-003",
+      "domain": "search",
+      "name": "search_case_3",
+      "steps": [
+        {
+          "op": "search",
+          "query": "golden ratio phi case3",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-004",
+      "domain": "search",
+      "name": "search_case_4",
+      "steps": [
+        {
+          "op": "search",
+          "query": "doctrine governance case4",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-005",
+      "domain": "search",
+      "name": "search_case_5",
+      "steps": [
+        {
+          "op": "search",
+          "query": "chrome CDP case5",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-006",
+      "domain": "search",
+      "name": "search_case_6",
+      "steps": [
+        {
+          "op": "search",
+          "query": "mixture of experts case6",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-007",
+      "domain": "search",
+      "name": "search_case_7",
+      "steps": [
+        {
+          "op": "search",
+          "query": "helix vector case7",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-008",
+      "domain": "search",
+      "name": "search_case_8",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Nahuatl teotl case8",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-009",
+      "domain": "search",
+      "name": "search_case_9",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Latin ratio lumen case9",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-010",
+      "domain": "search",
+      "name": "search_case_10",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Sanskrit rta satya case10",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-011",
+      "domain": "search",
+      "name": "search_case_11",
+      "steps": [
+        {
+          "op": "search",
+          "query": "token governor case11",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-012",
+      "domain": "search",
+      "name": "search_case_12",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral GPT case12",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-013",
+      "domain": "search",
+      "name": "search_case_13",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Monte Carlo case13",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-014",
+      "domain": "search",
+      "name": "search_case_14",
+      "steps": [
+        {
+          "op": "search",
+          "query": "connectome case14",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-015",
+      "domain": "search",
+      "name": "search_case_15",
+      "steps": [
+        {
+          "op": "search",
+          "query": "TAURUS memory case15",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-016",
+      "domain": "search",
+      "name": "search_case_16",
+      "steps": [
+        {
+          "op": "search",
+          "query": "MESIE case16",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-017",
+      "domain": "search",
+      "name": "search_case_17",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral embeddings case17",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-018",
+      "domain": "search",
+      "name": "search_case_18",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Auro model family case18",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-019",
+      "domain": "search",
+      "name": "search_case_19",
+      "steps": [
+        {
+          "op": "search",
+          "query": "golden ratio phi case19",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-020",
+      "domain": "search",
+      "name": "search_case_20",
+      "steps": [
+        {
+          "op": "search",
+          "query": "doctrine governance case20",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-021",
+      "domain": "search",
+      "name": "search_case_21",
+      "steps": [
+        {
+          "op": "search",
+          "query": "chrome CDP case21",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-022",
+      "domain": "search",
+      "name": "search_case_22",
+      "steps": [
+        {
+          "op": "search",
+          "query": "mixture of experts case22",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-023",
+      "domain": "search",
+      "name": "search_case_23",
+      "steps": [
+        {
+          "op": "search",
+          "query": "helix vector case23",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-024",
+      "domain": "search",
+      "name": "search_case_24",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Nahuatl teotl case24",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-025",
+      "domain": "search",
+      "name": "search_case_25",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Latin ratio lumen case25",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-026",
+      "domain": "search",
+      "name": "search_case_26",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Sanskrit rta satya case26",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-027",
+      "domain": "search",
+      "name": "search_case_27",
+      "steps": [
+        {
+          "op": "search",
+          "query": "token governor case27",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-028",
+      "domain": "search",
+      "name": "search_case_28",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral GPT case28",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-029",
+      "domain": "search",
+      "name": "search_case_29",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Monte Carlo case29",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-030",
+      "domain": "search",
+      "name": "search_case_30",
+      "steps": [
+        {
+          "op": "search",
+          "query": "connectome case30",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-031",
+      "domain": "search",
+      "name": "search_case_31",
+      "steps": [
+        {
+          "op": "search",
+          "query": "TAURUS memory case31",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-032",
+      "domain": "search",
+      "name": "search_case_32",
+      "steps": [
+        {
+          "op": "search",
+          "query": "MESIE case32",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-033",
+      "domain": "search",
+      "name": "search_case_33",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral embeddings case33",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-034",
+      "domain": "search",
+      "name": "search_case_34",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Auro model family case34",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-035",
+      "domain": "search",
+      "name": "search_case_35",
+      "steps": [
+        {
+          "op": "search",
+          "query": "golden ratio phi case35",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-036",
+      "domain": "search",
+      "name": "search_case_36",
+      "steps": [
+        {
+          "op": "search",
+          "query": "doctrine governance case36",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-037",
+      "domain": "search",
+      "name": "search_case_37",
+      "steps": [
+        {
+          "op": "search",
+          "query": "chrome CDP case37",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-038",
+      "domain": "search",
+      "name": "search_case_38",
+      "steps": [
+        {
+          "op": "search",
+          "query": "mixture of experts case38",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-039",
+      "domain": "search",
+      "name": "search_case_39",
+      "steps": [
+        {
+          "op": "search",
+          "query": "helix vector case39",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-040",
+      "domain": "search",
+      "name": "search_case_40",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Nahuatl teotl case40",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-041",
+      "domain": "search",
+      "name": "search_case_41",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Latin ratio lumen case41",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-042",
+      "domain": "search",
+      "name": "search_case_42",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Sanskrit rta satya case42",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-043",
+      "domain": "search",
+      "name": "search_case_43",
+      "steps": [
+        {
+          "op": "search",
+          "query": "token governor case43",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-044",
+      "domain": "search",
+      "name": "search_case_44",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral GPT case44",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-045",
+      "domain": "search",
+      "name": "search_case_45",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Monte Carlo case45",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-046",
+      "domain": "search",
+      "name": "search_case_46",
+      "steps": [
+        {
+          "op": "search",
+          "query": "connectome case46",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-047",
+      "domain": "search",
+      "name": "search_case_47",
+      "steps": [
+        {
+          "op": "search",
+          "query": "TAURUS memory case47",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-048",
+      "domain": "search",
+      "name": "search_case_48",
+      "steps": [
+        {
+          "op": "search",
+          "query": "MESIE case48",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-049",
+      "domain": "search",
+      "name": "search_case_49",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral embeddings case49",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-050",
+      "domain": "search",
+      "name": "search_case_50",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Auro model family case50",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-051",
+      "domain": "search",
+      "name": "search_case_51",
+      "steps": [
+        {
+          "op": "search",
+          "query": "golden ratio phi case51",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-052",
+      "domain": "search",
+      "name": "search_case_52",
+      "steps": [
+        {
+          "op": "search",
+          "query": "doctrine governance case52",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-053",
+      "domain": "search",
+      "name": "search_case_53",
+      "steps": [
+        {
+          "op": "search",
+          "query": "chrome CDP case53",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-054",
+      "domain": "search",
+      "name": "search_case_54",
+      "steps": [
+        {
+          "op": "search",
+          "query": "mixture of experts case54",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-055",
+      "domain": "search",
+      "name": "search_case_55",
+      "steps": [
+        {
+          "op": "search",
+          "query": "helix vector case55",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-056",
+      "domain": "search",
+      "name": "search_case_56",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Nahuatl teotl case56",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-057",
+      "domain": "search",
+      "name": "search_case_57",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Latin ratio lumen case57",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-058",
+      "domain": "search",
+      "name": "search_case_58",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Sanskrit rta satya case58",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-059",
+      "domain": "search",
+      "name": "search_case_59",
+      "steps": [
+        {
+          "op": "search",
+          "query": "token governor case59",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-060",
+      "domain": "search",
+      "name": "search_case_60",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral GPT case60",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-061",
+      "domain": "search",
+      "name": "search_case_61",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Monte Carlo case61",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-062",
+      "domain": "search",
+      "name": "search_case_62",
+      "steps": [
+        {
+          "op": "search",
+          "query": "connectome case62",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-063",
+      "domain": "search",
+      "name": "search_case_63",
+      "steps": [
+        {
+          "op": "search",
+          "query": "TAURUS memory case63",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-064",
+      "domain": "search",
+      "name": "search_case_64",
+      "steps": [
+        {
+          "op": "search",
+          "query": "MESIE case64",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-065",
+      "domain": "search",
+      "name": "search_case_65",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral embeddings case65",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-066",
+      "domain": "search",
+      "name": "search_case_66",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Auro model family case66",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-067",
+      "domain": "search",
+      "name": "search_case_67",
+      "steps": [
+        {
+          "op": "search",
+          "query": "golden ratio phi case67",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-068",
+      "domain": "search",
+      "name": "search_case_68",
+      "steps": [
+        {
+          "op": "search",
+          "query": "doctrine governance case68",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-069",
+      "domain": "search",
+      "name": "search_case_69",
+      "steps": [
+        {
+          "op": "search",
+          "query": "chrome CDP case69",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-070",
+      "domain": "search",
+      "name": "search_case_70",
+      "steps": [
+        {
+          "op": "search",
+          "query": "mixture of experts case70",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-071",
+      "domain": "search",
+      "name": "search_case_71",
+      "steps": [
+        {
+          "op": "search",
+          "query": "helix vector case71",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-072",
+      "domain": "search",
+      "name": "search_case_72",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Nahuatl teotl case72",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-073",
+      "domain": "search",
+      "name": "search_case_73",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Latin ratio lumen case73",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-074",
+      "domain": "search",
+      "name": "search_case_74",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Sanskrit rta satya case74",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-075",
+      "domain": "search",
+      "name": "search_case_75",
+      "steps": [
+        {
+          "op": "search",
+          "query": "token governor case75",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-076",
+      "domain": "search",
+      "name": "search_case_76",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral GPT case76",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-077",
+      "domain": "search",
+      "name": "search_case_77",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Monte Carlo case77",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-078",
+      "domain": "search",
+      "name": "search_case_78",
+      "steps": [
+        {
+          "op": "search",
+          "query": "connectome case78",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-079",
+      "domain": "search",
+      "name": "search_case_79",
+      "steps": [
+        {
+          "op": "search",
+          "query": "TAURUS memory case79",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-080",
+      "domain": "search",
+      "name": "search_case_80",
+      "steps": [
+        {
+          "op": "search",
+          "query": "MESIE case80",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-081",
+      "domain": "search",
+      "name": "search_case_81",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral embeddings case81",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-082",
+      "domain": "search",
+      "name": "search_case_82",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Auro model family case82",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-083",
+      "domain": "search",
+      "name": "search_case_83",
+      "steps": [
+        {
+          "op": "search",
+          "query": "golden ratio phi case83",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-084",
+      "domain": "search",
+      "name": "search_case_84",
+      "steps": [
+        {
+          "op": "search",
+          "query": "doctrine governance case84",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-085",
+      "domain": "search",
+      "name": "search_case_85",
+      "steps": [
+        {
+          "op": "search",
+          "query": "chrome CDP case85",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-086",
+      "domain": "search",
+      "name": "search_case_86",
+      "steps": [
+        {
+          "op": "search",
+          "query": "mixture of experts case86",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-087",
+      "domain": "search",
+      "name": "search_case_87",
+      "steps": [
+        {
+          "op": "search",
+          "query": "helix vector case87",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-088",
+      "domain": "search",
+      "name": "search_case_88",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Nahuatl teotl case88",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-089",
+      "domain": "search",
+      "name": "search_case_89",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Latin ratio lumen case89",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-090",
+      "domain": "search",
+      "name": "search_case_90",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Sanskrit rta satya case90",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-091",
+      "domain": "search",
+      "name": "search_case_91",
+      "steps": [
+        {
+          "op": "search",
+          "query": "token governor case91",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-092",
+      "domain": "search",
+      "name": "search_case_92",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral GPT case92",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-093",
+      "domain": "search",
+      "name": "search_case_93",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Monte Carlo case93",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-094",
+      "domain": "search",
+      "name": "search_case_94",
+      "steps": [
+        {
+          "op": "search",
+          "query": "connectome case94",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-095",
+      "domain": "search",
+      "name": "search_case_95",
+      "steps": [
+        {
+          "op": "search",
+          "query": "TAURUS memory case95",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-096",
+      "domain": "search",
+      "name": "search_case_96",
+      "steps": [
+        {
+          "op": "search",
+          "query": "MESIE case96",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-097",
+      "domain": "search",
+      "name": "search_case_97",
+      "steps": [
+        {
+          "op": "search",
+          "query": "spectral embeddings case97",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-098",
+      "domain": "search",
+      "name": "search_case_98",
+      "steps": [
+        {
+          "op": "search",
+          "query": "Auro model family case98",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-099",
+      "domain": "search",
+      "name": "search_case_99",
+      "steps": [
+        {
+          "op": "search",
+          "query": "golden ratio phi case99",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    },
+    {
+      "id": "SEARCH-100",
+      "domain": "search",
+      "name": "search_case_100",
+      "steps": [
+        {
+          "op": "search",
+          "query": "doctrine governance case100",
+          "online": false,
+          "top_k": 3
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_hits": 0
+      }
+    }
+  ]
+}

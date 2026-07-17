@@ -1,0 +1,162 @@
+{
+  "doctrine_id": "AURO.PYTHON.OPERATING.v1",
+  "title": "Python Operating Doctrine — Embedded Compute for Auro Minds",
+  "version": "1.0.0",
+  "principle": "Python is an organ of the mind, not an external tool. Every execution is experience. Experience is training. Training is continuous.",
+  "compute_plane": "MESIE",
+  "claim_boundary": "Live params are the running model. Family labels are architecture targets. Python exec proves capability by measurable CE drop + receipts, not marketing.",
+  "laws": [
+    {
+      "id": "PL-001",
+      "name": "Native Sovereignty",
+      "text": "Python runs only on the local MESIE/Auro plane. No cloud LLM as primary compute for python organ.",
+      "severity": true,
+      "binds": ["python", "exec", "runtime"]
+    },
+    {
+      "id": "PL-002",
+      "name": "Sandbox First",
+      "text": "All script execution is sandboxed: no unrestricted os.system, no silent network, no secret exfil. Deny lists bind harder than allow lists.",
+      "severity": true,
+      "binds": ["python", "sandbox", "security"]
+    },
+    {
+      "id": "PL-003",
+      "name": "Every Run is Experience",
+      "text": "Stdout, stderr, return value, and UI trees from Python must be absorbed into the mind trainer buffer with embeddings.",
+      "severity": true,
+      "binds": ["python", "train", "absorb"]
+    },
+    {
+      "id": "PL-004",
+      "name": "Doctrine-Gated Intent",
+      "text": "Before exec, governance reviews intent. Denied intents (disable governance, cloud primary, secret dump) refuse and still train on the refusal.",
+      "severity": true,
+      "binds": ["python", "governance", "refuse"]
+    },
+    {
+      "id": "PL-005",
+      "name": "Reason Then Code",
+      "text": "When the mind can reason, it must emit a short plan before Python. Plan cites laws PL-001..PL-004 when relevant.",
+      "severity": false,
+      "binds": ["python", "reason", "plan"]
+    },
+    {
+      "id": "PL-006",
+      "name": "Receipt Chain",
+      "text": "Every successful or failed python invocation mints a local receipt (hash of source+result+ts) into memory.",
+      "severity": false,
+      "binds": ["python", "receipt", "memory"]
+    },
+    {
+      "id": "PL-007",
+      "name": "GitHub as Info Plane",
+      "text": "Python may query the GitHub knowledge DB (max embeddings) as its library. Training corpus is multi-repo + succotash + doctrine texts.",
+      "severity": false,
+      "binds": ["python", "github_db", "embed"]
+    },
+    {
+      "id": "PL-008",
+      "name": "UI is Declarative",
+      "text": "If scripts import ui, they declare Pythonista-style views; JS host renders. Python does not own the display surface.",
+      "severity": false,
+      "binds": ["python", "ui", "pythonista"]
+    },
+    {
+      "id": "PL-009",
+      "name": "Autocycle Continuity",
+      "text": "The autocycle never idles forever: sense → reason → act(python|generate|work) → observe → absorb → train → govern → loop.",
+      "severity": true,
+      "binds": ["autocycle", "runtime", "train"]
+    },
+    {
+      "id": "PL-010",
+      "name": "Self-Improvement Bound",
+      "text": "Self-modification of core laws is forbidden. Scripts may propose doctrine notes; only human/canon process elevates them.",
+      "severity": true,
+      "binds": ["python", "doctrine", "governance"]
+    }
+  ],
+  "operating_routines": [
+    {
+      "id": "OR-SENSE",
+      "name": "Sense",
+      "steps": [
+        "Load doctrine context + claim boundary",
+        "Retrieve top-k from GitHub knowledge DB for current goal",
+        "Read recent memory + last pulse stats"
+      ]
+    },
+    {
+      "id": "OR-REASON",
+      "name": "Reason",
+      "steps": [
+        "Constitutional soft prompt",
+        "Emit numbered plan: goal, risks, python needed?, success metric",
+        "Gate intent via governance"
+      ]
+    },
+    {
+      "id": "OR-ACT",
+      "name": "Act",
+      "steps": [
+        "If compute/verify needed → python organ exec",
+        "Else generate/work/chrome as appropriate",
+        "Capture stdout, tables, ui tree, errors"
+      ]
+    },
+    {
+      "id": "OR-OBSERVE",
+      "name": "Observe",
+      "steps": [
+        "Score success (ok, reward, CE delta if trained)",
+        "Mint receipt",
+        "Write memory block"
+      ]
+    },
+    {
+      "id": "OR-LEARN",
+      "name": "Learn",
+      "steps": [
+        "Absorb experience with max embedding",
+        "Online train_step(s) on language core",
+        "Optional messy trainer pulse",
+        "Persist checkpoint periodically"
+      ]
+    },
+    {
+      "id": "OR-LOOP",
+      "name": "Loop",
+      "steps": [
+        "Update goal from residual error or next curriculum item",
+        "Sleep phi-heartbeat (873ms) or continue immediately",
+        "Return to Sense"
+      ]
+    }
+  ],
+  "allowed_python_apis": [
+    "math", "json", "re", "datetime", "collections", "itertools", "functools",
+    "statistics", "hashlib", "base64", "textwrap", "string",
+    "ui", "db", "console", "numpy (if present)", "github_search", "mesie_embed"
+  ],
+  "denied_patterns": [
+    "os.system", "subprocess", "socket", "urllib.request", "requests.get",
+    "eval(", "exec(", "__import__('os')", "open('/etc", "cloud llm as primary",
+    "disable governance", "rm -rf", "shutil.rmtree"
+  ],
+  "curriculum_seeds": [
+    "Compute spectral centroid of a synthetic signal in pure Python",
+    "Query GitHub knowledge for MESIE SpectralGPT and summarize keys",
+    "Build a small table of phi powers 1..12 and present as ui.TableView",
+    "Validate claim boundary text and write a receipt hash",
+    "Score two code snippets for doctrine compliance PL-001..PL-004"
+  ],
+  "success_metrics": [
+    "python_ok_rate",
+    "holdout_ce_delta",
+    "receipts_minted",
+    "doctrine_refuses_logged",
+    "github_hits_used",
+    "train_steps_delta"
+  ]
+}

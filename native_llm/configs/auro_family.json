@@ -1,0 +1,96 @@
+{
+  "schema": "auro.native_llm.family_charter.v1",
+  "family_id": "Auro",
+  "family_name": "Auro Native LLM Family",
+  "repository": "ItsNotAILABS/Auro14B",
+  "status": "production-scaffold-not-trained-checkpoint",
+  "claim_boundary": "defines architecture and multi-embedded sub-agent contracts only; no trained weights claimed",
+  "base_substrate": "MESIE spectral intelligence + agentic ghosts + AISVectorPolyglot",
+  "compute_plane": "MESIE",
+  "native": true,
+  "cloud_llm": false,
+  "compute_backends": [
+    "mesie.compute.torch_spectral",
+    "mesie.foundation.transformer",
+    "phantom_native.neurocore",
+    "mesie.spectral_fft_fallback"
+  ],
+  "polyglot_types": ["python", "julia", "haskell"],
+  "lanes": [
+    {
+      "model_id": "Auro-2B",
+      "parameter_target": 2000000000,
+      "tier": "edge",
+      "config": "native_llm/configs/family/auro_2b.json",
+      "default_roles": ["router", "tool_call", "embed_fast", "spectral_triage"],
+      "can_embed_subagents": false,
+      "deploy_profile": "on-device-edge"
+    },
+    {
+      "model_id": "Auro-4B",
+      "parameter_target": 4000000000,
+      "tier": "specialist",
+      "config": "native_llm/configs/family/auro_4b.json",
+      "default_roles": ["code_edit", "spectral_match", "json_struct", "tool_plan"],
+      "can_embed_subagents": true,
+      "embeddable_tiers": ["edge"],
+      "deploy_profile": "laptop-specialist"
+    },
+    {
+      "model_id": "Auro-8B",
+      "parameter_target": 8000000000,
+      "tier": "general",
+      "config": "native_llm/configs/family/auro_8b.json",
+      "default_roles": ["reason", "plan", "critique", "spectral_explain"],
+      "can_embed_subagents": true,
+      "embeddable_tiers": ["edge", "specialist"],
+      "deploy_profile": "workstation-general"
+    },
+    {
+      "model_id": "Auro-14B",
+      "parameter_target": 14000000000,
+      "tier": "orchestrator",
+      "config": "native_llm/configs/family/auro_14b.json",
+      "default_roles": ["orchestrator", "council_chair", "instruct_dev", "multi_agent_router"],
+      "can_embed_subagents": true,
+      "embeddable_tiers": ["edge", "specialist", "general"],
+      "deploy_profile": "dev-integration-primary"
+    },
+    {
+      "model_id": "Auro-100B",
+      "parameter_target": 100000000000,
+      "tier": "frontier",
+      "config": "native_llm/configs/family/auro_100b.json",
+      "default_roles": ["frontier_research", "long_horizon", "safety_review", "deep_council"],
+      "can_embed_subagents": true,
+      "embeddable_tiers": ["edge", "specialist", "general", "orchestrator"],
+      "deploy_profile": "cluster-frontier"
+    }
+  ],
+  "multi_embedded_subagents": {
+    "schema": "auro.native_llm.multi_embedded_subagents.v1",
+    "description": "Larger Auro lanes host smaller Auro lanes as embedded sub-agents with receipted dispatch",
+    "routing_policy": "role-then-tier-then-capacity",
+    "shared_memory": "TAURUS + MESIE spectral embeddings",
+    "spawn_backend": "mesie.agentic.AgentSpawner",
+    "required_fields": [
+      "parent_model_id",
+      "child_model_id",
+      "role",
+      "task_id",
+      "embedding",
+      "receipt"
+    ]
+  },
+  "type_contracts": {
+    "python": "auro_native_llm.types",
+    "julia": "bindings/julia/AuroFamily/src/AuroFamily.jl",
+    "haskell": "bindings/haskell/AuroFamily.hs"
+  },
+  "legacy_lanes_retained": [
+    {
+      "model_id": "Auro-200B-Base",
+      "note": "retained as optional ultra-frontier architecture target; primary family cap is 100B"
+    }
+  ]
+}

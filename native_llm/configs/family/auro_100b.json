@@ -1,0 +1,40 @@
+{
+  "schema": "auro.native_llm.model_config.v1",
+  "model_id": "Auro-100B",
+  "family_id": "Auro",
+  "status": "architecture-target-not-trained-checkpoint",
+  "parameter_target": 100000000000,
+  "tier": "frontier",
+  "architecture": {
+    "family": "decoder-only-transformer",
+    "objective": "causal-language-modeling",
+    "hidden_size": 12288,
+    "layers": 80,
+    "attention_heads": 96,
+    "kv_heads": 16,
+    "intermediate_size": 32768,
+    "ffn_multiple": 2.67,
+    "activation": "silu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 131072,
+    "vocab_size_target": 256000
+  },
+  "subagent_roles": ["frontier_research", "long_horizon", "safety_review", "deep_council"],
+  "can_embed_subagents": true,
+  "embeddable_tiers": ["edge", "specialist", "general", "orchestrator"],
+  "training_targets": {
+    "pretraining_tokens_target": 4000000000000,
+    "minimum_viable_tokens": 500000000000,
+    "precision": ["bf16", "fp8-where-validated"],
+    "parallelism": ["data", "tensor", "pipeline", "sequence"],
+    "checkpoint_policy": "save-sharded-checkpoints-with-manifest-and-eval-receipts"
+  },
+  "safety_boundary": {
+    "claim_policy": "do-not-claim-trained-until-checkpoint-and-eval-receipts-exist",
+    "public_release": false,
+    "required_gates": ["GATE_IDENTITY", "GATE_CAPABILITY", "GATE_PROOF", "GATE_CONTAINMENT", "GATE_MODEL_EVAL"]
+  },
+  "purpose": "frontier native pretraining lane with full multi-embedded sub-agent council",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving", "safety"]
+}

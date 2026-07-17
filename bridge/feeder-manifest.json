@@ -4,8 +4,11 @@
   "repository": "ItsNotAILABS/Auro14B",
   "visibility": "public",
   "priority": "critical-model-feed",
-  "status": "connected-native-llm-scaffold",
+  "status": "connected-native-llm-family-scaffold",
   "base_system": "MESIE / Multi-Element Spectral Intelligence Engine",
+  "model_family": ["Auro-2B", "Auro-4B", "Auro-8B", "Auro-14B", "Auro-100B"],
+  "multi_embedded_subagents": true,
+  "polyglot_types": ["python", "julia", "haskell"],
   "feeds_root": "ItsNotAILABS/NOVA-private-root",
   "root_destinations": [
     "integrations/feeder-repos/auro14b/",
@@ -14,6 +17,8 @@
   ],
   "allowed_feed_types": [
     "model_config",
+    "family_charter",
+    "subagent_dispatch_receipt",
     "tokenizer_config",
     "data_mixture_manifest",
     "training_plan",

@@ -1,0 +1,7 @@
+name = "AuroFamily"
+uuid = "a14b0f00-au14-4b00-8b00-100bauro0001"
+version = "0.1.0"
+authors = ["Alfredo Medina <alfredo@itsnotailabs.com>"]
+
+[compat]
+julia = "1.9"
