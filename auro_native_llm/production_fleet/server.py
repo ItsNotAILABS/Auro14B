@@ -10,9 +10,17 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/health":
             self._json(200,{"ok":True,"service":"nova-production-fleet"})
+        elif self.path == "/v1/capabilities":
+            self._json(200,self.runtime.capabilities.manifest())
         else: self._json(404,{"error":"not_found"})
 
     def do_POST(self):
+        if self.path == "/v1/capabilities/call":
+            try:
+                length=int(self.headers.get("content-length","0")); body=json.loads(self.rfile.read(length) or b"{}")
+                self._json(200,self.runtime.capabilities.call(str(body.get("name","")),dict(body.get("arguments") or {}),approved=bool(body.get("approved",False))))
+            except Exception as exc: self._json(400,{"error":"capability_call_failed","detail":str(exc)[:500]})
+            return
         if self.path != "/v1/respond":
             self._json(404,{"error":"not_found"}); return
         try:
