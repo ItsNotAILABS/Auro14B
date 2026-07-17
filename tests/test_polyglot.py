@@ -80,3 +80,29 @@ def test_mind_polyglot_organ():
     r = mind.polyglot("phi", n=5)
     assert r.ok is True, r.error
     assert "polyglot" in mind.info()["capabilities"]
+
+
+def test_entangled_roles_and_train():
+    from auro_native_llm.polyglot.entangled import get_orchestrator, RoleKind
+    from auro_native_llm.organism.family import build_mind
+    import numpy as np
+
+    orch = get_orchestrator()
+    roster = orch.roster()
+    assert roster["entangled"] is True
+    kinds = set(roster["by_kind"].keys())
+    assert "engine" in kinds and "transformer" in kinds
+    assert "orchestrator" in kinds and "teacher" in kinds
+    # engines route
+    eng = orch.run_engine("spectral_energy", x=[1.0, 0, -1, 0, 1])
+    assert eng.get("ok") is True or eng.get("energy") is not None
+    xf = orch.transform_text("MESIE SpectralGPT Auro polyglot")
+    assert xf.get("ok") is True
+    assert xf["fused"].size > 0
+    # mind entangled train
+    mind = build_mind("Auro-2B", lite=True)
+    out = mind.train_entangled("ratio phi spectral MESIE teach with julia haskell", steps=2)
+    assert out["ok"] is True
+    assert out["steps"] == 2
+    assert out["last"]["student"]["ce"] >= 0
+    assert "accel_backend" in out["last"]["student"] or out["last"]["student"].get("loss") is not None

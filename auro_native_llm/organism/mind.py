@@ -13,6 +13,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+import numpy as np
+
 from auro_native_llm.model.auro_lm import AuroLanguageModel, AuroGenerateResult
 from auro_native_llm.model.config import AuroLMConfig, family_config
 from auro_native_llm.organism.modules import EmbeddedOrgans, build_organs
@@ -651,6 +653,51 @@ class AuroMind:
             )
         )
 
+    def polyglot_roster(self) -> Dict[str, Any]:
+        """Engines / transformers / orchestrators / teachers roster."""
+        from auro_native_llm.polyglot.entangled import get_orchestrator
+
+        return get_orchestrator().roster()
+
+    def train_entangled(
+        self,
+        text: str,
+        *,
+        steps: int = 1,
+        lr: float = 2e-3,
+    ) -> Dict[str, Any]:
+        """Train student with polyglot council (engines+teachers) entangled."""
+        from auro_native_llm.polyglot.entangled import get_orchestrator
+
+        tok = self.language.tokenizer
+        ids = tok.encode(text, add_bos=True, add_eos=True, max_length=min(96, self.config.max_seq_len))
+        if len(ids) < 8:
+            ids = ids + [tok.pad_id] * (8 - len(ids))
+        arr = np.array([ids], dtype=np.int64)
+        orch = get_orchestrator()
+        history = []
+        for _ in range(max(1, steps)):
+            history.append(
+                orch.council_train_step(
+                    self.language, arr, arr, lr=lr, text_for_meaning=text[:400]
+                )
+            )
+        # absorb teaching text
+        self._absorb(
+            f"ENTANGLED_TRAIN steps={steps} text={text[:500]} council={history[-1].get('council')}",
+            "polyglot_train",
+            reward=0.88,
+            meta={"entangled": True, "n": len(history)},
+        )
+        return {
+            "ok": True,
+            "steps": len(history),
+            "last": history[-1],
+            "roster": orch.roster(),
+            "train_steps": self.language.train_steps,
+            "params": self.language.num_params,
+        }
+
     def polyglot(self, action: str = "suite", **kw: Any) -> MindResult:
         """Run Julia + Haskell + Python + CUDA plane compute; absorb into trainer."""
         t0 = time.perf_counter()
@@ -743,5 +790,7 @@ class AuroMind:
                 "scripture", "constitutional", "self_train", "memory",
                 "route_engines", "list_engines", "list_models", "succotash_corpus",
                 "python", "autocycle", "polyglot", "julia", "haskell", "cuda_plane",
+                "polyglot_roster", "train_entangled",
+                "engines", "transformers", "orchestrators", "teachers",
             ],
         }

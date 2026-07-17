@@ -369,23 +369,33 @@ class AuroLanguageModel:
         dlogits = dlogits.reshape(B, T, V)
 
         # LM head: logits = h @ W  => dW = h.T @ dlogits, dh = dlogits @ W.T
+        # Use CUDA plane matmul when available (torch_cuda / cupy / numpy BLAS)
         h2 = h.reshape(-1, h.shape[-1])
         dl2 = dlogits.reshape(-1, V)
-        dW = h2.T @ dl2
+        try:
+            from auro_native_llm.polyglot.cuda_plane import get_cuda_plane
+
+            plane = get_cuda_plane()
+            dW = plane.matmul(h2.T, dl2)
+            dh = plane.matmul(dl2, self.core.lm_head_weight.T)
+            accel = plane.backend
+        except Exception:
+            dW = h2.T @ dl2
+            dh = dl2 @ self.core.lm_head_weight.T
+            accel = "numpy_direct"
         # tied embeddings: W is embedding.T so update embedding
         emb = self.core.embedding.token_embeddings  # [V, D]
         # d_emb from tied head: dW is [D, V] => d_emb = dW.T
         d_emb_head = dW.T
 
         # embedding input gradient path: scatter dh into token rows
-        dh = dl2 @ self.core.lm_head_weight.T  # [B*T, D]
         dh = dh.reshape(B, T, -1)
         d_emb_in = np.zeros_like(emb)
         tok = ids[:, :T]
-        for b in range(B):
-            for t in range(T):
-                tid = int(np.clip(tok[b, t], 0, emb.shape[0] - 1))
-                d_emb_in[tid] += dh[b, t]
+        # vectorized scatter-add
+        flat_tok = np.clip(tok.reshape(-1), 0, emb.shape[0] - 1).astype(np.int64)
+        flat_dh = dh.reshape(-1, dh.shape[-1])
+        np.add.at(d_emb_in, flat_tok, flat_dh)
 
         # update
         emb_update = d_emb_head + d_emb_in
@@ -405,7 +415,31 @@ class AuroLanguageModel:
         metrics = self.loss_on_batch(ids, labs, text_for_meaning=text_for_meaning)
         metrics["lr"] = lr
         metrics["step"] = float(self.train_steps)
+        metrics["accel_backend"] = accel
         return metrics
+
+    def train_step_entangled(
+        self,
+        input_ids: np.ndarray,
+        label_ids: np.ndarray,
+        *,
+        lr: Optional[float] = None,
+        text_for_meaning: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Train with polyglot engines/transformers/orchestrators/teachers entangled.
+
+        Languages are not external tools — they teach and accelerate the student.
+        """
+        from auro_native_llm.polyglot.entangled import get_orchestrator
+
+        orch = get_orchestrator()
+        return orch.council_train_step(
+            self,
+            input_ids,
+            label_ids,
+            lr=float(lr if lr is not None else self.config.learning_rate),
+            text_for_meaning=text_for_meaning,
+        )
 
     # --------------------------------------------------------------- generate
     def generate(
