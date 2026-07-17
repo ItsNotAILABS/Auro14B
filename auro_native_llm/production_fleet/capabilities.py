@@ -1,7 +1,7 @@
 """Native capability substrate: skills and tool contracts without plugins."""
 from __future__ import annotations
 from dataclasses import asdict, dataclass
-import time
+import os, time
 from typing import Any, Callable
 
 @dataclass(frozen=True)
@@ -31,12 +31,22 @@ BUILTINS=(
  Capability("skill.build","Internal governed build workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("specify acceptance tests","design smallest slice","create capsule","run tests","emit receipt")),
  Capability("skill.reason","Internal logic and decision workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("extract premises","test contradictions","quantify uncertainty","compare alternatives","answer")),
  Capability("skill.memory","Internal continuity workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("identify relevant state","rank memories","check recency and provenance","reinject bounded context")),
+ Capability("wallet.balance","Read an Auro paper-credit balance.","parallax","tool",_obj({"account":{"type":"string"},"asset":{"type":"string"}},("account",))),
+ Capability("wallet.fund_sandbox","Issue paper-only test credits with balanced postings.","parallax","tool",_obj({"account":{"type":"string"},"amount":{"type":"string"},"asset":{"type":"string"}},("account","amount")),True,True),
+ Capability("wallet.transfer_paper","Transfer paper credits between internal accounts.","parallax","tool",_obj({"source":{"type":"string"},"destination":{"type":"string"},"amount":{"type":"string"},"asset":{"type":"string"},"memo":{"type":"string"}},("source","destination","amount")),True,True),
+ Capability("wallet.verify_ledger","Verify all double-entry postings and transaction hashes.","parallax","tool",_obj({})),
+ Capability("office.create_bundle","Create MD, CSV, DOCX, XLSX, PDF, and hash manifest deliverables.","office","tool",_obj({"out_dir":{"type":"string"},"title":{"type":"string"},"sections":{"type":"array"},"table":{"type":"array"},"vault":{"type":"boolean"}},("out_dir","title","sections")),True,True),
 )
 
 class NativeCapabilities:
     def __init__(self,sdk,capabilities=BUILTINS,ledger=None):
         from .receipts import ReceiptLedger
+        from .wallet import PaperWallet
+        from .office import NativeOffice
+        from .vault import IntegrityVault
         self.sdk=sdk; self._items={x.name:x for x in capabilities}; self.ledger=ledger or ReceiptLedger()
+        self.wallet=PaperWallet(os.getenv("AURO_WALLET_LEDGER") or None); self.office=NativeOffice()
+        self.vault=IntegrityVault(os.getenv("AURO_VAULT_ROOT","./state/auro-vault"))
     def manifest(self): return {"schema":"auro.native_capabilities.v1","protocol":"tool-contract-compatible","capabilities":[asdict(x) for x in self._items.values()]}
     def skills_prompt(self):
         return "\n".join(f"{x.name}: {' -> '.join(x.playbook)}" for x in self._items.values() if x.mode=="skill")
@@ -58,6 +68,16 @@ class NativeCapabilities:
         if name=="build.write_file": return self.sdk.capsula.write_file(a["session_id"],a["path"],a["content"])
         if name=="build.run": return self.sdk.capsula.run(a["session_id"])
         if name=="build.manifest": return self.sdk.capsula.manifest(a["session_id"])
+        if name=="wallet.balance": return {"account":a["account"],"asset":a.get("asset","PXCRED"),"balance":self.wallet.balance(a["account"],a.get("asset","PXCRED")),"mode":"paper"}
+        if name=="wallet.fund_sandbox": return self.wallet.fund(a["account"],a["amount"],a.get("asset","PXCRED"))
+        if name=="wallet.transfer_paper": return self.wallet.transfer(a["source"],a["destination"],a["amount"],a.get("asset","PXCRED"),a.get("memo","paper transfer"))
+        if name=="wallet.verify_ledger": return self.wallet.verify()
+        if name=="office.create_bundle":
+            bundle=self.office.create_bundle(a["out_dir"],a["title"],a["sections"],a.get("table") or [])
+            if a.get("vault"):
+                from pathlib import Path
+                bundle["vault_records"]=[self.vault.put(x["name"],Path(x["path"]).read_bytes()) for x in bundle["files"]]
+            return bundle
         if name.startswith("skill."): return {"playbook":list(self._items[name].playbook),"arguments":a}
         raise ValueError(f"No dispatcher for {name}")
 
