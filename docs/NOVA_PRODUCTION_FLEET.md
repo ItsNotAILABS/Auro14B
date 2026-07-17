@@ -59,3 +59,7 @@ Auro now exposes one internal capability registry rather than requiring a separa
 Built-ins cover BRAIN state, operator snapshots, memory ranking, matrix compute, CAPSULA build sessions, research, reasoning, building, and continuity. New capabilities join the same registry; the model does not need a new prompting convention or external plugin wrapper for each one. Mutating build calls remain approval-gated and all calls return receipts.
 
 Set `AURO_EXECUTION_TOKEN` before starting the server. Requests using `execute: true` or `approved: true` must send `Authorization: Bearer <token>`. An unset token denies all HTTP execution; it never disables the gate. Keep the server bound to `127.0.0.1` unless it is placed behind authenticated TLS infrastructure.
+
+## Continuous receipt chain
+
+Set `AURO_RECEIPT_LEDGER=./state/auro-receipts.jsonl` to persist a SHA-256-linked ledger. Every capability result and final model response records its sequence, payload hash, previous receipt hash, and receipt hash. `GET /v1/receipts` returns the recent chain and `GET /v1/receipts/verify` replays chain integrity. A tampered persisted ledger fails closed during startup.

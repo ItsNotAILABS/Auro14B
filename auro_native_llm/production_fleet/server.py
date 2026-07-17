@@ -16,6 +16,10 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200,{"ok":True,"service":"nova-production-fleet"})
         elif self.path == "/v1/capabilities":
             self._json(200,self.runtime.capabilities.manifest())
+        elif self.path == "/v1/receipts/verify":
+            self._json(200,self.runtime.capabilities.ledger.verify())
+        elif self.path.startswith("/v1/receipts"):
+            self._json(200,{"receipts":self.runtime.capabilities.ledger.tail(20)})
         else: self._json(404,{"error":"not_found"})
 
     def do_POST(self):
