@@ -36,4 +36,18 @@ Actions are proposals by default. `--execute` only marks bounded MatDaemon/CAPSU
 - MatDaemon: embedding similarity, memory and agent routing compute.
 - CAPSULA: approved code/build capsule execution.
 
+## Injected organ SDK
+
+`AuroOrganSDK` gives the model one stable Python surface over all four systems:
+
+```python
+from auro_native_llm.production_fleet import AuroOrganSDK, NovaRuntime
+
+sdk = AuroOrganSDK()
+print(sdk.manifest())
+answer = NovaRuntime(sdk=sdk).respond("Rank these memories, build the selected capsule, and report the evidence", execute=True)
+```
+
+Environment endpoints: `BRAIN_AI_URL`, `NOVA_URL`, `MATDAEMON_URL`, and `CAPSULA_URL`. MatDaemon calls must use its declared `matdaemon_*` tools. CAPSULA is restricted to session creation, file writes, runs, manifests, and deploy plans. BRAIN AI remains state/continuity input; NOVA owns authorization.
+
 The native Auro checkpoint should not be the default chat model until fixed-prompt generation and holdout gates pass. Medina-Native-8B supplies the immediate usable inference lane while native Auro training continues.
