@@ -1,0 +1,37 @@
+name: Auro Consolidation
+
+on:
+  pull_request:
+    paths:
+      - "auro_foundry/**"
+      - "tests/test_auro_consolidation.py"
+      - "pyproject.toml"
+      - ".github/workflows/auro-consolidation.yml"
+  push:
+    branches: [main]
+
+jobs:
+  consolidation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install consolidation runtime
+        run: python -m pip install -e ".[dev]"
+      - name: Compile consolidation modules
+        run: python -m compileall -q auro_foundry
+      - name: Run consolidation tests
+        run: pytest -q tests/test_auro_consolidation.py
+      - name: Verify commands
+        run: |
+          auro-consolidate manifest --workspace artifacts/ci
+          auro-consolidate workers --capability benchmark
+      - name: Upload receipts
+        uses: actions/upload-artifact@v4
+        with:
+          name: auro-consolidation-receipts
+          path: artifacts/ci
