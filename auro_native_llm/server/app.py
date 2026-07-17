@@ -15,11 +15,13 @@ from auro_native_llm.work.agent import WorkAgent
 from auro_native_llm.chrome.tools import ChromeToolbelt
 
 _UI = Path(__file__).with_name("static") / "index.html"
+_PORTAL_UI = Path(__file__).with_name("static") / "portal.html"
 
 # shared agent (lite + mock chrome by default for safe local)
 _AGENT = WorkAgent(lite=True, chrome_mock=True, use_scripture=True)
 _CHROME = ChromeToolbelt(mock=True)
 _MIND = None
+_PORTAL = None
 
 
 def _json_response(handler: BaseHTTPRequestHandler, code: int, payload: Dict[str, Any]) -> None:
@@ -64,6 +66,19 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
+        if path in ("/portal", "/portal.html", "/ui/portal"):
+            html = (
+                _PORTAL_UI.read_text(encoding="utf-8")
+                if _PORTAL_UI.exists()
+                else "<h1>Portal UI missing</h1>"
+            )
+            body = html.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if path in ("/health", "/v1/health"):
             _json_response(
                 self,
@@ -75,6 +90,8 @@ class Handler(BaseHTTPRequestHandler):
                     "native": True,
                     "chrome": _CHROME.health(),
                     "model_id": _AGENT.model_id,
+                    "portal": "/portal",
+                    "alpha": ["multi_site", "interior_mcp", "chaos_cuda", "polyglot"],
                 },
             )
             return
@@ -265,6 +282,45 @@ class Handler(BaseHTTPRequestHandler):
                 _json_response(self, 200, mind.generate(body.get("prompt") or args.get("prompt") or "").to_dict())
             else:
                 _json_response(self, 400, {"error": f"unknown mind action {action}"})
+            return
+
+        # --- Interior MCP portal + multi-site agents ---
+        if path in ("/v1/portal", "/portal/api"):
+            from auro_native_llm.organism.family import build_mind
+            from auro_native_llm.embedded.portal import build_portal
+
+            global _MIND, _PORTAL
+            if _MIND is None:
+                _MIND = build_mind(body.get("model", "Auro-2B"), lite=True, chrome_mock=True)
+            if _PORTAL is None or body.get("action") == "spin":
+                _PORTAL = build_portal(_MIND, chrome_mock=bool(body.get("chrome_mock", True)))
+            portal = _PORTAL
+            action = body.get("action", "manifest")
+            if action == "spin":
+                out = portal.spin()
+                _json_response(self, 200, out)
+                return
+            if action == "manifest":
+                _json_response(self, 200, portal.manifest())
+                return
+            if action == "list_tools":
+                _json_response(self, 200, portal.list_tools())
+                return
+            if action == "call":
+                tool = body.get("tool") or body.get("name")
+                args = body.get("arguments") or body.get("args") or {}
+                _json_response(self, 200, portal.call(str(tool), args))
+                return
+            if action == "multi_site":
+                urls = body.get("urls") or ["https://example.com"]
+                obj = body.get("objective") or "survey"
+                _json_response(
+                    self,
+                    200,
+                    _MIND.multi_site(obj, urls, chrome_mock=bool(body.get("chrome_mock", True))),
+                )
+                return
+            _json_response(self, 400, {"error": f"unknown portal action {action}"})
             return
 
         # --- GitHub knowledge DB POST ops ---

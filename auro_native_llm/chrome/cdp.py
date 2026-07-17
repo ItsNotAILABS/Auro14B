@@ -250,18 +250,54 @@ class ChromeCDP:
         self.tabs: Dict[str, ChromeTab] = {}
 
     def _chrome_path(self) -> str:
+        """Resolve Chrome or Edge on Windows/macOS/Linux (incl. ARM64 paths)."""
         system = platform.system()
+        env = os.environ.get("AURO_CHROME_PATH") or os.environ.get("CHROME_PATH")
+        if env and os.path.exists(env):
+            return env
         if system == "Windows":
-            for p in (
+            candidates = [
                 r"C:\Program Files\Google\Chrome\Application\chrome.exe",
                 r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
                 os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
+                os.path.expandvars(r"%ProgramFiles%\Google\Chrome\Application\chrome.exe"),
+                os.path.expandvars(r"%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"),
+                # Edge often present when Chrome is not
+                r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+                os.path.expandvars(r"%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"),
+                os.path.expandvars(r"%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"),
+                os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe"),
+                # Chromium / Brave
+                os.path.expandvars(r"%LOCALAPPDATA%\Chromium\Application\chrome.exe"),
+                os.path.expandvars(r"%LOCALAPPDATA%\BraveSoftware\Brave-Browser\Application\brave.exe"),
+            ]
+            for p in candidates:
+                if p and os.path.exists(p):
+                    return p
+            # last resort: PATH
+            import shutil
+
+            for name in ("chrome", "msedge", "brave", "chromium"):
+                found = shutil.which(name)
+                if found:
+                    return found
+            return "chrome"
+        if system == "Darwin":
+            for p in (
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+                "/Applications/Chromium.app/Contents/MacOS/Chromium",
             ):
                 if os.path.exists(p):
                     return p
-            return "chrome"
-        if system == "Darwin":
-            return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            return "google-chrome"
+        for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "microsoft-edge"):
+            import shutil
+
+            found = shutil.which(name)
+            if found:
+                return found
         return "google-chrome"
 
     def is_available(self) -> bool:

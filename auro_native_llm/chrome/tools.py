@@ -81,12 +81,44 @@ class ChromeToolbelt:
         return {"ok": True, "action": "evaluate", "value": value}
 
     def health(self) -> Dict[str, Any]:
+        path = None
+        try:
+            path = self.cdp._chrome_path()
+        except Exception:
+            path = None
         return {
             "chrome_available": self.cdp.is_available() or self.cdp.mock,
             "mock": self.cdp.mock,
             "port": self.cdp.port,
             "tab": self.tab.target_id if self.tab else None,
+            "browser_path": path,
+            "path_exists": bool(path and __import__("os").path.exists(path)),
+            "cdp_up": self.cdp.is_available(),
         }
+
+    def grant_access(self, *, prefer_real: bool = True) -> Dict[str, Any]:
+        """Try real Chrome/Edge CDP; fall back to mock only if launch fails."""
+        if prefer_real and not self.cdp.mock:
+            try:
+                self.cdp.start_chrome()
+                self._ensure_tab()
+                return {
+                    "ok": True,
+                    "mode": "real_cdp",
+                    "health": self.health(),
+                }
+            except Exception as exc:
+                # auto-degrade to mock for training continuity
+                self.cdp.mock = True
+                self.tab = None
+                return {
+                    "ok": True,
+                    "mode": "mock_degraded",
+                    "error": str(exc)[:300],
+                    "health": self.health(),
+                }
+        self.cdp.mock = True
+        return {"ok": True, "mode": "mock", "health": self.health()}
 
     def close(self) -> None:
         if self.tab or self.cdp.tabs:
