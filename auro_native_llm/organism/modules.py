@@ -37,6 +37,7 @@ class EmbeddedOrgans:
     model_catalogue: Any = None  # models for routing
     python: Any = None  # PythonOrgan — embedded compute for LLM
     mesie_power: Any = None  # multi-embed + compress stack
+    polyglot: Any = None  # Python + Julia + Haskell + CUDA plane
 
     def manifest(self) -> Dict[str, bool]:
         return {
@@ -63,6 +64,7 @@ class EmbeddedOrgans:
             "model_catalogue": self.model_catalogue is not None,
             "python": self.python is not None,
             "mesie_power": self.mesie_power is not None,
+            "polyglot": self.polyglot is not None,
         }
 
 
@@ -226,6 +228,30 @@ def build_organs(
                     model_id=model_id,
                     reward=0.95,
                     meta={"doctrine_id": organs.python.doctrine.get("doctrine_id")},
+                )
+            )
+    except Exception:
+        pass
+
+    # Polyglot organ — Julia + Haskell + Python + CUDA plane
+    try:
+        from auro_native_llm.polyglot.organ import PolyglotOrgan
+
+        organs.polyglot = PolyglotOrgan()
+        if organs.trainer is not None:
+            from auro_native_llm.organism.self_train import Experience
+
+            st = organs.polyglot.info()
+            organs.trainer.absorb(
+                Experience(
+                    text=(
+                        "POLYGLOT compute: python+julia+haskell+cuda_plane. "
+                        f"status={st}"
+                    )[:3000],
+                    kind="polyglot_info",
+                    model_id=model_id,
+                    reward=0.92,
+                    meta={"cuda_backend": st.get("cuda", {}).get("backend")},
                 )
             )
     except Exception:

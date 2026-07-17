@@ -651,6 +651,53 @@ class AuroMind:
             )
         )
 
+    def polyglot(self, action: str = "suite", **kw: Any) -> MindResult:
+        """Run Julia + Haskell + Python + CUDA plane compute; absorb into trainer."""
+        t0 = time.perf_counter()
+        if self.organs.polyglot is None:
+            return MindResult(
+                ok=False,
+                kind="polyglot",
+                model_id=self.model_id,
+                error="polyglot organ unavailable",
+                latency_ms=(time.perf_counter() - t0) * 1000.0,
+            )
+        organ = self.organs.polyglot
+        if action == "health":
+            res = organ.health_all()
+        elif action == "spectral":
+            res = organ.spectral_energy_all(kw.get("x"))
+        elif action == "phi":
+            res = organ.phi_powers_all(int(kw.get("n", 12)))
+        elif action == "embed":
+            res = organ.multi_embed_all(str(kw.get("text", "MESIE Auro")))
+        elif action == "train_step":
+            res = organ.accelerated_train_step(
+                int(kw.get("dim", 64)), int(kw.get("batch", 8))
+            )
+        else:
+            res = organ.suite()
+        absorb = self._absorb(
+            res.training_text,
+            "polyglot",
+            reward=0.9 if res.ok else 0.4,
+            meta={"action": action, "cuda": res.meta},
+        )
+        if self.organs.trainer is not None and res.ok:
+            pulse = self.organs.trainer.train_on_model(self.language, steps=1)
+        else:
+            pulse = absorb.get("train_pulse")
+        return MindResult(
+            ok=res.ok,
+            kind="polyglot",
+            model_id=self.model_id,
+            output=res.to_dict(),
+            train_pulse=pulse if isinstance(pulse, dict) else absorb.get("train_pulse"),
+            memory_wrote=absorb.get("memory_wrote", False),
+            latency_ms=(time.perf_counter() - t0) * 1000.0,
+            error=None if res.ok else "polyglot suite partial failure",
+        )
+
     # ---------------------------------------------------------------- identity
     def info(self) -> Dict[str, Any]:
         live = self.language.num_params
@@ -695,6 +742,6 @@ class AuroMind:
                 "monaco", "jupyter", "search", "mcp", "teach",
                 "scripture", "constitutional", "self_train", "memory",
                 "route_engines", "list_engines", "list_models", "succotash_corpus",
-                "python", "autocycle",
+                "python", "autocycle", "polyglot", "julia", "haskell", "cuda_plane",
             ],
         }
