@@ -38,6 +38,7 @@ class EmbeddedOrgans:
     python: Any = None  # PythonOrgan — embedded compute for LLM
     mesie_power: Any = None  # multi-embed + compress stack
     polyglot: Any = None  # Python + Julia + Haskell + CUDA plane
+    brains: Any = None  # MiniBrainCluster code/research/math + heart
 
     def manifest(self) -> Dict[str, bool]:
         return {
@@ -65,6 +66,7 @@ class EmbeddedOrgans:
             "python": self.python is not None,
             "mesie_power": self.mesie_power is not None,
             "polyglot": self.polyglot is not None,
+            "brains": self.brains is not None,
         }
 
 
@@ -254,6 +256,27 @@ def build_organs(
                     meta={"cuda_backend": st.get("cuda", {}).get("backend")},
                 )
             )
+    except Exception:
+        pass
+
+    # Mini brains + heart (BRAIN-AI + SOLUS) — code / research / math teachers
+    try:
+        from auro_native_llm.brain.organs import build_brain_cluster
+
+        organs.brains = build_brain_cluster()
+        if organs.trainer is not None:
+            from auro_native_llm.organism.self_train import Experience
+
+            for lesson in organs.brains.teacher.lesson_batch(3):
+                organs.trainer.absorb(
+                    Experience(
+                        text=lesson,
+                        kind="mini_brain_lesson",
+                        model_id=model_id,
+                        reward=0.9,
+                        meta={"lineage": organs.brains.lineage},
+                    )
+                )
     except Exception:
         pass
 

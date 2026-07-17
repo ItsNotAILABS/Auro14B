@@ -659,6 +659,35 @@ class AuroMind:
 
         return get_orchestrator().roster()
 
+    def teach_domains(self, *, steps_per_lesson: int = 1) -> Dict[str, Any]:
+        """Mini brains (code/research/math) + heart teach the student model now."""
+        if self.organs.brains is None:
+            from auro_native_llm.brain.organs import build_brain_cluster
+
+            self.organs.brains = build_brain_cluster()
+        report = self.organs.brains.teacher.teach_and_train(
+            self, steps_per_lesson=steps_per_lesson
+        )
+        report["cuda"] = None
+        try:
+            from auro_native_llm.polyglot.cuda_plane import get_cuda_plane
+
+            report["cuda"] = get_cuda_plane(refresh=True).info()
+        except Exception:
+            pass
+        report["polyglot"] = (
+            self.organs.polyglot.info() if self.organs.polyglot else None
+        )
+        report["brains"] = self.organs.brains.info()
+        return report
+
+    def heart_pulse(self) -> Dict[str, Any]:
+        if self.organs.brains is None:
+            from auro_native_llm.brain.organs import build_brain_cluster
+
+            self.organs.brains = build_brain_cluster()
+        return self.organs.brains.pulse_all()
+
     def train_entangled(
         self,
         text: str,
@@ -792,5 +821,10 @@ class AuroMind:
                 "python", "autocycle", "polyglot", "julia", "haskell", "cuda_plane",
                 "polyglot_roster", "train_entangled",
                 "engines", "transformers", "orchestrators", "teachers",
+                "teach_domains", "heart_pulse", "mini_brain", "mini_heart",
+                "chaos_cuda", "code", "research", "math",
             ],
+            "brains": (
+                self.organs.brains.info() if self.organs.brains is not None else None
+            ),
         }

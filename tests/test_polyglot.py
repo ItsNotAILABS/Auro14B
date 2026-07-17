@@ -15,6 +15,7 @@ def test_cuda_plane_detects():
         "torch_mps",
         "torch_cpu",
         "cupy_cuda",
+        "chaos_cuda",
         "numpy",
     )
     a = __import__("numpy").random.randn(32, 32)
