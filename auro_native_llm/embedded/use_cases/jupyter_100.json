@@ -1,0 +1,2607 @@
+{
+  "schema": "auro.use_cases.v1",
+  "domain": "jupyter",
+  "count": 100,
+  "cases": [
+    {
+      "id": "JUPYTER-001",
+      "domain": "jupyter",
+      "name": "jupyter_case_1",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 1"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 1\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-002",
+      "domain": "jupyter",
+      "name": "jupyter_case_2",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 2"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 2\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-003",
+      "domain": "jupyter",
+      "name": "jupyter_case_3",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 3"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 3\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-004",
+      "domain": "jupyter",
+      "name": "jupyter_case_4",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 4"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 4\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-005",
+      "domain": "jupyter",
+      "name": "jupyter_case_5",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 5"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 5\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-006",
+      "domain": "jupyter",
+      "name": "jupyter_case_6",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 6"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 6\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-007",
+      "domain": "jupyter",
+      "name": "jupyter_case_7",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 7"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 7\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-008",
+      "domain": "jupyter",
+      "name": "jupyter_case_8",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 8"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 8\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-009",
+      "domain": "jupyter",
+      "name": "jupyter_case_9",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 9"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 9\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-010",
+      "domain": "jupyter",
+      "name": "jupyter_case_10",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 10"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 10\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-011",
+      "domain": "jupyter",
+      "name": "jupyter_case_11",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 11"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 11\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-012",
+      "domain": "jupyter",
+      "name": "jupyter_case_12",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 12"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 12\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-013",
+      "domain": "jupyter",
+      "name": "jupyter_case_13",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 13"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 13\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-014",
+      "domain": "jupyter",
+      "name": "jupyter_case_14",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 14"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 14\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-015",
+      "domain": "jupyter",
+      "name": "jupyter_case_15",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 15"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 15\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-016",
+      "domain": "jupyter",
+      "name": "jupyter_case_16",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 16"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 16\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-017",
+      "domain": "jupyter",
+      "name": "jupyter_case_17",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 17"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 17\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-018",
+      "domain": "jupyter",
+      "name": "jupyter_case_18",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 18"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 18\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-019",
+      "domain": "jupyter",
+      "name": "jupyter_case_19",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 19"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 19\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-020",
+      "domain": "jupyter",
+      "name": "jupyter_case_20",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 20"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 20\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-021",
+      "domain": "jupyter",
+      "name": "jupyter_case_21",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 21"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 21\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-022",
+      "domain": "jupyter",
+      "name": "jupyter_case_22",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 22"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 22\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-023",
+      "domain": "jupyter",
+      "name": "jupyter_case_23",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 23"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 23\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-024",
+      "domain": "jupyter",
+      "name": "jupyter_case_24",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 24"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 24\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-025",
+      "domain": "jupyter",
+      "name": "jupyter_case_25",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 25"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 25\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-026",
+      "domain": "jupyter",
+      "name": "jupyter_case_26",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 26"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 26\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-027",
+      "domain": "jupyter",
+      "name": "jupyter_case_27",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 27"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 27\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-028",
+      "domain": "jupyter",
+      "name": "jupyter_case_28",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 28"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 28\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-029",
+      "domain": "jupyter",
+      "name": "jupyter_case_29",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 29"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 29\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-030",
+      "domain": "jupyter",
+      "name": "jupyter_case_30",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 30"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 30\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-031",
+      "domain": "jupyter",
+      "name": "jupyter_case_31",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 31"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 31\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-032",
+      "domain": "jupyter",
+      "name": "jupyter_case_32",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 32"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 32\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-033",
+      "domain": "jupyter",
+      "name": "jupyter_case_33",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 33"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 33\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-034",
+      "domain": "jupyter",
+      "name": "jupyter_case_34",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 34"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 34\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-035",
+      "domain": "jupyter",
+      "name": "jupyter_case_35",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 35"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 35\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-036",
+      "domain": "jupyter",
+      "name": "jupyter_case_36",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 36"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 36\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-037",
+      "domain": "jupyter",
+      "name": "jupyter_case_37",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 37"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 37\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-038",
+      "domain": "jupyter",
+      "name": "jupyter_case_38",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 38"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 38\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-039",
+      "domain": "jupyter",
+      "name": "jupyter_case_39",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 39"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 39\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-040",
+      "domain": "jupyter",
+      "name": "jupyter_case_40",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 40"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 40\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-041",
+      "domain": "jupyter",
+      "name": "jupyter_case_41",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 41"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 41\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-042",
+      "domain": "jupyter",
+      "name": "jupyter_case_42",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 42"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 42\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-043",
+      "domain": "jupyter",
+      "name": "jupyter_case_43",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 43"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 43\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-044",
+      "domain": "jupyter",
+      "name": "jupyter_case_44",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 44"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 44\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-045",
+      "domain": "jupyter",
+      "name": "jupyter_case_45",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 45"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 45\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-046",
+      "domain": "jupyter",
+      "name": "jupyter_case_46",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 46"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 46\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-047",
+      "domain": "jupyter",
+      "name": "jupyter_case_47",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 47"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 47\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-048",
+      "domain": "jupyter",
+      "name": "jupyter_case_48",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 48"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 48\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-049",
+      "domain": "jupyter",
+      "name": "jupyter_case_49",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 49"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 49\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-050",
+      "domain": "jupyter",
+      "name": "jupyter_case_50",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 50"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 50\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-051",
+      "domain": "jupyter",
+      "name": "jupyter_case_51",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 51"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 51\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-052",
+      "domain": "jupyter",
+      "name": "jupyter_case_52",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 52"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 52\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-053",
+      "domain": "jupyter",
+      "name": "jupyter_case_53",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 53"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 53\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-054",
+      "domain": "jupyter",
+      "name": "jupyter_case_54",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 54"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 54\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-055",
+      "domain": "jupyter",
+      "name": "jupyter_case_55",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 55"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 55\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-056",
+      "domain": "jupyter",
+      "name": "jupyter_case_56",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 56"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 56\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-057",
+      "domain": "jupyter",
+      "name": "jupyter_case_57",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 57"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 57\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-058",
+      "domain": "jupyter",
+      "name": "jupyter_case_58",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 58"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 58\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-059",
+      "domain": "jupyter",
+      "name": "jupyter_case_59",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 59"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 59\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-060",
+      "domain": "jupyter",
+      "name": "jupyter_case_60",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 60"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 60\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-061",
+      "domain": "jupyter",
+      "name": "jupyter_case_61",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 61"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 61\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-062",
+      "domain": "jupyter",
+      "name": "jupyter_case_62",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 62"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 62\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-063",
+      "domain": "jupyter",
+      "name": "jupyter_case_63",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 63"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 63\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-064",
+      "domain": "jupyter",
+      "name": "jupyter_case_64",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 64"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 64\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-065",
+      "domain": "jupyter",
+      "name": "jupyter_case_65",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 65"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 65\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-066",
+      "domain": "jupyter",
+      "name": "jupyter_case_66",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 66"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 66\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-067",
+      "domain": "jupyter",
+      "name": "jupyter_case_67",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 67"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 67\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-068",
+      "domain": "jupyter",
+      "name": "jupyter_case_68",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 68"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 68\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-069",
+      "domain": "jupyter",
+      "name": "jupyter_case_69",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 69"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 69\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-070",
+      "domain": "jupyter",
+      "name": "jupyter_case_70",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 70"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 70\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-071",
+      "domain": "jupyter",
+      "name": "jupyter_case_71",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 71"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 71\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-072",
+      "domain": "jupyter",
+      "name": "jupyter_case_72",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 72"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 72\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-073",
+      "domain": "jupyter",
+      "name": "jupyter_case_73",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 73"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 73\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-074",
+      "domain": "jupyter",
+      "name": "jupyter_case_74",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 74"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 74\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-075",
+      "domain": "jupyter",
+      "name": "jupyter_case_75",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 75"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 75\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-076",
+      "domain": "jupyter",
+      "name": "jupyter_case_76",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 76"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 76\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-077",
+      "domain": "jupyter",
+      "name": "jupyter_case_77",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 77"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 77\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-078",
+      "domain": "jupyter",
+      "name": "jupyter_case_78",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 78"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 78\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-079",
+      "domain": "jupyter",
+      "name": "jupyter_case_79",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 79"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 79\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-080",
+      "domain": "jupyter",
+      "name": "jupyter_case_80",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 80"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 80\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-081",
+      "domain": "jupyter",
+      "name": "jupyter_case_81",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 81"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 81\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-082",
+      "domain": "jupyter",
+      "name": "jupyter_case_82",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 82"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 82\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-083",
+      "domain": "jupyter",
+      "name": "jupyter_case_83",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 83"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 83\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-084",
+      "domain": "jupyter",
+      "name": "jupyter_case_84",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 84"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 84\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-085",
+      "domain": "jupyter",
+      "name": "jupyter_case_85",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 85"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 85\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-086",
+      "domain": "jupyter",
+      "name": "jupyter_case_86",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 86"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 86\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-087",
+      "domain": "jupyter",
+      "name": "jupyter_case_87",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 87"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 87\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-088",
+      "domain": "jupyter",
+      "name": "jupyter_case_88",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 88"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 88\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-089",
+      "domain": "jupyter",
+      "name": "jupyter_case_89",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 89"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 89\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-090",
+      "domain": "jupyter",
+      "name": "jupyter_case_90",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 90"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 90\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-091",
+      "domain": "jupyter",
+      "name": "jupyter_case_91",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 91"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 91\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-092",
+      "domain": "jupyter",
+      "name": "jupyter_case_92",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 92"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 92\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-093",
+      "domain": "jupyter",
+      "name": "jupyter_case_93",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 93"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 93\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-094",
+      "domain": "jupyter",
+      "name": "jupyter_case_94",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 94"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 94\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-095",
+      "domain": "jupyter",
+      "name": "jupyter_case_95",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 95"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 95\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-096",
+      "domain": "jupyter",
+      "name": "jupyter_case_96",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 96"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 96\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-097",
+      "domain": "jupyter",
+      "name": "jupyter_case_97",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 97"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 97\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-098",
+      "domain": "jupyter",
+      "name": "jupyter_case_98",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 98"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 98\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-099",
+      "domain": "jupyter",
+      "name": "jupyter_case_99",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 99"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 99\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    },
+    {
+      "id": "JUPYTER-100",
+      "domain": "jupyter",
+      "name": "jupyter_case_100",
+      "steps": [
+        {
+          "op": "create",
+          "title": "NB 100"
+        },
+        {
+          "op": "add_cell",
+          "source": "a = 100\nb = a * 2\nb",
+          "cell_type": "code"
+        },
+        {
+          "op": "execute_last"
+        },
+        {
+          "op": "export"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "has_ipynb": true
+      }
+    }
+  ]
+}

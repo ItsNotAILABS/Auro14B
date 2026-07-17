@@ -4,23 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mesie"
-version = "0.5.0"
-description = "MESIE spectral intelligence and Auro Foundry repository-native text model training, generation, and serving"
+version = "0.6.0"
+description = "MESIE and Auro Foundry repository-federated model training, evaluation, coding, and serving"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [{name = "Alfredo Medina", email = "alfredo@itsnotailabs.com"}]
-keywords = ["spectral intelligence", "MESIE", "Auro", "LLM", "text generation", "training", "transformers"]
-classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Science/Research",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
-]
+keywords = ["spectral intelligence", "MESIE", "Auro", "LLM", "training", "benchmarks", "coding harness"]
 dependencies = ["numpy>=2.0"]
 
 [project.optional-dependencies]
@@ -29,6 +19,7 @@ ml = ["transformers>=4.45", "torch>=2.4; platform_machine != 'arm64'"]
 ai = ["scipy>=1.14", "scikit-learn>=1.5", "networkx>=3.4", "transformers>=4.45", "torch>=2.4; platform_machine != 'arm64'"]
 intelligence = ["scipy>=1.14", "pandas>=2.2", "scikit-learn>=1.5", "networkx>=3.4", "transformers>=4.45", "torch>=2.4; platform_machine != 'arm64'"]
 foundry = ["torch>=2.4", "numpy>=2.0"]
+benchmarks = ["lm-eval>=0.4.8"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0", "build>=1.2", "twine>=6.0"]
 julia = ["juliacall>=0.9"]
 
@@ -43,6 +34,22 @@ auro-eval = "auro_native_llm.eval.run:main"
 auro-serve = "auro_native_llm.serve.local:main"
 auro-foundry = "auro_foundry.app:main"
 auro-foundry-serve = "auro_foundry.server:main"
+auro-consolidate = "auro_foundry.consolidate:main"
+auro-family = "auro_native_llm.cli_family:main"
+auro-lm = "auro_native_llm.model.cli:main"
+auro-train = "auro_native_llm.model.train:main"
+auro-scripture = "auro_native_llm.scripture.cli:main"
+auro-work = "auro_native_llm.work.cli:main"
+auro-api = "auro_native_llm.server.app:main"
+auro-mind = "auro_native_llm.organism.cli:main"
+auro-value-train = "auro_native_llm.organism.value_train:main"
+auro-corpus = "auro_native_llm.corpus.cli:main"
+auro-production = "auro_native_llm.organism.production:main"
+auro-autocycle = "auro_native_llm.organism.autocycle:main"
+auro-power-train = "auro_native_llm.mesie_power.power_train:main"
+auro-fleet = "auro_native_llm.production_fleet.cli:main"
+auro-fleet-serve = "auro_native_llm.production_fleet.server:main"
+auro-use = "auro_native_llm.use:main"
 
 [project.urls]
 Homepage = "https://github.com/ItsNotAILABS/Auro14B"
