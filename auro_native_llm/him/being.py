@@ -96,7 +96,15 @@ class HIM:
                 "power_stack",
                 "google_envelope",
                 "github",
+                "web3_install",
+                "web3_api",
             ],
+            "web3": {
+                "applet": "him-web3",
+                "install": "npm run install:applet -- ethers viem",
+                "api": "http://127.0.0.1:8787/api/*",
+                "security": "RPC keys server-side only",
+            },
         }
 
     # ---------------------------------------------------------------- agent loop
@@ -130,6 +138,23 @@ class HIM:
             actions.append({"tool": "power_stack", "why": "coupled physics+econ engines"})
         if any(k in low for k in ("google", "mail", "collab", "browser")):
             actions.append({"tool": "google", "why": "sandbox workspace"})
+        if any(
+            k in low
+            for k in (
+                "web3",
+                "ethereum",
+                "ethers",
+                "viem",
+                "blockchain",
+                "rpc",
+                "alchemy",
+                "infura",
+                "smart contract",
+                "on-chain",
+                "block number",
+            )
+        ):
+            actions.append({"tool": "web3", "why": "secure him-web3 API / packages"})
         # ensure at least hybrid answer
         if not any(a["tool"] == "colony_generate" for a in actions):
             actions.insert(0, {"tool": "colony_generate", "why": "default voice"})
@@ -225,6 +250,31 @@ class HIM:
                 if hasattr(mind, "google"):
                     g = mind.google("status")
                     return {"ok": True, "tool": tool, "text": str(g)[:500], "meta": {}}
+            if tool == "web3":
+                from auro_native_llm.him.web3_tools import HimWeb3Tools
+
+                w3 = HimWeb3Tools()
+                st = w3.status()
+                health = w3.api_health()
+                block = w3.block_number() if health.get("ok") and health.get("rpc_configured") else {}
+                text = json.dumps(
+                    {
+                        "web3_status": st,
+                        "api_health": health,
+                        "block_number": block,
+                        "architecture": (
+                            "React → /api/* → ethers/viem on server; "
+                            "keys only in him-web3/.env"
+                        ),
+                    },
+                    default=str,
+                )[:2000]
+                return {
+                    "ok": bool(st.get("ok")),
+                    "tool": tool,
+                    "text": text,
+                    "meta": {"rpc": health.get("rpc_configured")},
+                }
             # default hybrid
             ans, meth = hybrid_answer(goal, mind)
             return {"ok": is_usable_text(ans), "tool": "hybrid", "text": ans, "meta": {"method": meth}}

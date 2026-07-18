@@ -1,0 +1,27 @@
+{
+  "name": "him-web3",
+  "version": "1.0.0",
+  "description": "HIM full-stack web3 applet — secure server RPC + React UI",
+  "private": true,
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "install:applet": "node scripts/install_applet_package.js",
+    "server": "node server/index.js",
+    "dev:server": "node --watch server/index.js",
+    "dev:client": "npm run dev --prefix client",
+    "build:client": "npm run build --prefix client",
+    "start": "node server/index.js",
+    "setup": "npm install && npm install --prefix client"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "express": "^4.21.2",
+    "viem": "^2.23.2"
+  }
+}
