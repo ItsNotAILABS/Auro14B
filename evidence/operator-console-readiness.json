@@ -1,0 +1,18 @@
+{
+  "schema": "auro.operator_console.readiness.v1",
+  "date": "2026-07-18",
+  "status": "production-surface",
+  "scope": "operator console and governed runtime surface; not model intelligence",
+  "gates": {
+    "product_charter": "implemented",
+    "portable_design_system": "implemented",
+    "live_runtime_api": "implemented",
+    "approval_gated_mutation": "implemented",
+    "receipt_verification": "implemented",
+    "responsive_accessible_ui": "implemented",
+    "defensive_browser_headers": "implemented",
+    "parameter_claim_boundary": "implemented",
+    "live_custody": "out_of_scope",
+    "trained_14b_checkpoint": "not_claimed"
+  }
+}
