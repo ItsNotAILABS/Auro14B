@@ -25,7 +25,9 @@ const trainingRows = await him.research.exportApprovedTraining();
 
 ## Model boundary
 
-Transformers.js loads ONNX artifacts. `HIM-native-v0` currently uses the repository's auditable NumPy context-MLP format; it is not falsely labeled as Transformers.js compatible. The next checkpoint promotion must export a supported causal architecture to ONNX, place all artifacts under the local model directory, run a browser generation test with networking disabled, and hash the resulting bundle.
+Transformers.js loads local ONNX artifacts first. Because `HIM-native-v0` uses the repository's auditable NumPy context-MLP format, the extension includes a local JavaScript float32 inference fallback for that checkpoint. It does not label the fallback as Transformers.js. The next checkpoint promotion must export a supported causal architecture to ONNX, place all artifacts under the local model directory, run a browser generation test with networking disabled, and hash the resulting bundle.
+
+Build the unpacked Chrome extension with `npm run build`, then load the generated `dist/` directory from `chrome://extensions` using **Load unpacked**. No host permissions are requested.
 
 ## Verify
 
