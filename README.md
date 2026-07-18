@@ -149,6 +149,11 @@ An optional Cloudflare outside plane is defined in
 Dynamic Workers, Sandbox SDK, Browser Run, durable Agents/Think, and Workers
 Observability. It is disabled by default and remote mutation remains separately
 approval-gated. See `docs/cloudflare_runtime.md`.
+
+`mobile-runtime/` adds an Expo SDK 54 multi-device client that runs immediately
+in Expo Go, connects to the Auro/MESIE API over the LAN, attaches accelerometer
+state as a native sense, and displays response receipts. Install Expo Go from
+<https://expo.dev/go>; use a development/EAS build for production distribution.
 | `github` | `gh` / MCP identity |
 | `web3` | Secure him-web3 API + package install |
 | `vault` | Multi-ledger sealed secrets (metadata by default) |
