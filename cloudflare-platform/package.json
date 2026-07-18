@@ -1,0 +1,1 @@
+{"name":"him-cloudflare-platform","private":true,"version":"0.1.0","type":"module","scripts":{"dev":"wrangler dev","deploy":"wrangler deploy","typecheck":"tsc --noEmit","test":"node --test test/*.test.mjs","check":"npm run typecheck && npm test"},"dependencies":{"@cloudflare/workers-types":"latest"},"devDependencies":{"typescript":"latest","wrangler":"latest"}}
