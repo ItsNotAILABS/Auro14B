@@ -86,17 +86,19 @@ class Handler(BaseHTTPRequestHandler):
                 "service": "auro-him-api",
                 "model_endpoint": {"id": endpoint.id, "model": endpoint.model, "base_url_configured": bool(endpoint.base_url)},
                 "receipt_chain": self.runtime.capabilities.ledger.verify(),
+                "model_fleet": self.runtime.model_orchestrator.manifest(),
             })
         elif path == "/v1":
             self._require_api_auth()
             self._json(200, self._discovery())
         elif path == "/v1/models":
             self._require_api_auth()
-            self._json(200, {"object": "list", "data": [self._model()]})
+            self._json(200, {"object": "list", "data": self._models()})
         elif path.startswith("/v1/models/"):
             self._require_api_auth()
-            model = self._model()
-            if path.removeprefix("/v1/models/") != model["id"]:
+            requested = path.removeprefix("/v1/models/")
+            model = next((x for x in self._models() if requested in {x["id"],x.get("auro_endpoint_id")}), None)
+            if model is None:
                 raise ApiError(404, "model_not_found", "The requested model is not configured.")
             self._json(200, model)
         elif path == "/v1/capabilities":
@@ -156,7 +158,7 @@ class Handler(BaseHTTPRequestHandler):
             if body.get("stream"):
                 raise ApiError(400, "streaming_not_supported", "Set stream=false; streaming is not implemented yet.")
             requested_model = str(body.get("model") or self.runtime.endpoint.model)
-            if requested_model not in {self.runtime.endpoint.model, self.runtime.endpoint.id, "auro-him"}:
+            if requested_model not in {x for model in self._models() for x in (model["id"],model.get("auro_endpoint_id"))} | {"auro-him"}:
                 raise ApiError(404, "model_not_found", "The requested model is not configured.")
             execute = bool(body.get("auro_execute", False))
             if execute:
@@ -229,18 +231,24 @@ class Handler(BaseHTTPRequestHandler):
             raise ApiError(413, "message_too_large", f"Message exceeds {MAX_MESSAGE_CHARS} characters.")
         return message
 
-    def _model(self) -> dict[str, Any]:
-        endpoint = self.runtime.endpoint
-        return {
-            "id": endpoint.model,
+    def _models(self) -> list[dict[str, Any]]:
+        return [{
+            "id": model["model"],
             "object": "model",
-            "owned_by": "ItsNotAILABS",
-            "auro_endpoint_id": endpoint.id,
-            "role": endpoint.role,
-            "parameter_count": endpoint.parameter_count,
-            "parameter_count_verified": endpoint.parameter_count is not None,
+            "owned_by": "ItsNotAILABS" if model["provider"] == "repository-native-open-weights" else model["provider"],
+            "auro_endpoint_id": model["id"],
+            "role": model["role"],
+            "provider": model["provider"],
+            "capabilities": model["capabilities"],
+            "local": model["local"],
+            "parameter_count": model["parameter_count"],
+            "parameter_count_verified": model["parameter_count_verified"],
+            "identity_verified": model["identity_verified"],
             "agent_count_is_not_parameter_count": True,
-        }
+        } for model in self.runtime.model_orchestrator.manifest()["models"]]
+
+    def _model(self) -> dict[str, Any]:
+        return self._models()[0]
 
     def _discovery(self) -> dict[str, Any]:
         return {
