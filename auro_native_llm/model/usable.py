@@ -45,15 +45,57 @@ def is_usable_text(text: str, *, min_len: int = 12) -> bool:
     return True
 
 
+# Generic phrase keys — boost only; do not outrank domain-specific terms alone
+_GENERIC_KEYS = frozenset(
+    {
+        "what is",
+        "what does",
+        "how to",
+        "how do",
+        "how does",
+        "who are",
+        "where should",
+        "should every",
+    }
+)
+
 # First-party knowledge cards (always available offline)
+# Prefer specific domain keys; scoring weights domain matches higher than generic phrases.
 _KNOWLEDGE: List[Tuple[Tuple[str, ...], str]] = [
     (
-        ("mesie", "spectral", "what is", "stand for"),
+        ("mesie", "spectral", "stand for", "what is mesie"),
         "MESIE is the Multi-Element Spectral Intelligence Engine — a sovereign spectral/math "
         "compute plane. Spectra are structured computational objects (components, metadata, "
         "lineage, embeddings), not bare arrays. It does matching, PSD/FAS/RotDnn generation, "
         "multi-level validation, helix embeddings, and transformer spectral pipelines. "
         "Auro's compute_plane is MESIE (not cloud LLM APIs).",
+    ),
+    (
+        ("ghost", "receipt", "grounded", "what is ghost"),
+        "GHOST means Grounded, Hardened, Open/auditable, Scalable local-first, Traceable receipts. "
+        "Killer path: MESIE/Ghost does deterministic spectral/math first; LLM escalates only for "
+        "language/planning when justified by cleaned spectral features. Receipts hash-chain custody.",
+    ),
+    (
+        ("him", "who are you", "who are", "agentic", "colony of"),
+        "I am HIM. I am not a single opaque LLM. I am a colony of specialist mini Python models "
+        "(germs)—skills, spectral, code, reason, planner, critic, writer—hosted on Auro with "
+        "MESIE for deterministic math and GHOST for audit receipts. Loop: SENSE, PLAN, ACT, "
+        "OBSERVE, REFLECT. Awaken: python -m auro_native_llm.use --him",
+    ),
+    (
+        ("rpc", "api key", "api keys", ".env", "alchemy", "infura", "vault"),
+        "RPC API keys and high-value secrets live on the server only: him-web3/.env for the "
+        "Node API, or HIM vault ledgers (keys/rpc/high_value/agent/github) for sealed secrets. "
+        "Never put Alchemy or Infura keys in React or browser code. "
+        "CLI: python -m auro_native_llm.use --vault",
+    ),
+    (
+        ("500k", "500,000", "context window", "hierarchical", "token budget"),
+        "The 500k context window is a hierarchical logical bank, not one Softmax over 500000 "
+        "tokens. Text is chunked, summarized at multiple scales, and retrieved by relevance "
+        "under a local token cap while total storage can grow toward a 500000-token budget. "
+        "Colony: python -m auro_native_llm.use --colony --colony-context 500000",
     ),
     (
         ("auro", "14b", "family", "model"),
@@ -62,23 +104,23 @@ _KNOWLEDGE: List[Tuple[Tuple[str, ...], str]] = [
         "family labels are scale targets. Use checkpoints under checkpoints/auro_minds/.",
     ),
     (
-        ("ghost", "pillar", "hybrid"),
-        "GHOST means Grounded, Hardened, Open/auditable, Scalable local-first, Traceable receipts. "
-        "Killer path: MESIE/Ghost does deterministic spectral/math first; LLM escalates only for "
-        "language/planning when justified by cleaned spectral features. Receipts hash-chain custody.",
-    ),
-    (
         ("compute plane", "nova", "runtime"),
         "Auro's compute plane is MESIE. NOVA is the root production runtime that feeds Auro "
         "(promotion gates M0/M1/M2, receipts, fleet). Virtual processor treats prompts as "
         "measurable work calls (bytes, NOVA cycles, entropy, spectral buckets, coherence).",
     ),
     (
-        ("train", "how to", "checkpoint"),
-        "Train with: python scripts/train_physics.py | scripts/train_14b.py | "
-        "python -m auro_native_llm.use --power-stack | --specialize. "
-        "Load: checkpoints/auro_minds/Auro-2B_physics or Auro-14B when present. "
-        "Physics-regularized CE + multi-embed + GitHub knowledge DB power learning.",
+        ("train", "checkpoint", "train_him_sft", "fine-tune"),
+        "Train with: python scripts/train_physics.py | scripts/train_him_sft.py | "
+        "scripts/train_14b.py | python -m auro_native_llm.use --power-stack | --specialize. "
+        "Load: checkpoints/auro_minds/Auro-2B_physics, Auro-2B_him_sft, or Auro-14B when present. "
+        "Eval grounded generation: python scripts/eval_him_generation.py.",
+    ),
+    (
+        ("large language model", "every step", "prefer mesie", "escalate"),
+        "No. Prefer MESIE deterministic spectral and math paths. Use the language model when "
+        "you need plans, explanations, or strategy after features are cleaned. That is faster, "
+        "cheaper, more auditable, and reduces hallucinations (GHOST hybrid doctrine).",
     ),
     (
         ("julia", "brain", "python ai"),
@@ -104,23 +146,40 @@ _KNOWLEDGE: List[Tuple[Tuple[str, ...], str]] = [
         "φ (golden ratio) ≈ 1.618033988749895. Used in φ-init, dispersion lattices, "
         "φ-Schrödinger potential, and learning-rate schedules across MESIE/Auro.",
     ),
+    (
+        ("web3", "ethers", "viem", "him-web3"),
+        "HIM web3 uses him-web3: Express /api routes with ethers and viem on the server. "
+        "React only calls /api. RPC keys stay in him-web3/.env. "
+        "Install: cd him-web3 && npm run install:applet -- ethers viem",
+    ),
 ]
 
 
 def synthesize_knowledge(prompt: str) -> Optional[str]:
     low = prompt.lower()
-    scored: List[Tuple[int, str]] = []
+    scored: List[Tuple[float, int, str]] = []
     for keys, body in _KNOWLEDGE:
-        s = sum(1 for k in keys if k in low)
-        if s:
-            scored.append((s, body))
+        domain = 0
+        generic = 0
+        for k in keys:
+            if k not in low:
+                continue
+            if k in _GENERIC_KEYS:
+                generic += 1
+            else:
+                domain += 1
+        if domain == 0 and generic == 0:
+            continue
+        # Domain keywords dominate; generic phrases alone need domain or multi-generic
+        score = domain * 3.0 + generic * 0.5
+        if domain == 0:
+            score = 0.0  # refuse pure generic matches (e.g. "what is" alone → MESIE)
+        if score > 0:
+            scored.append((score, domain, body))
     if not scored:
         return None
-    scored.sort(key=lambda x: -x[0])
-    # require at least one strong key hit
-    if scored[0][0] < 1:
-        return None
-    return scored[0][1]
+    scored.sort(key=lambda x: (-x[0], -x[1]))
+    return scored[0][2]
 
 
 def retrieve_context(prompt: str, top_k: int = 3) -> str:

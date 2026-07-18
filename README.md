@@ -124,6 +124,7 @@ python scripts/smoke_usable_llm.py
 | `google` | Sandbox Chrome/mail/drive + collab |
 | `github` | `gh` / MCP identity |
 | `web3` | Secure him-web3 API + package install |
+| `vault` | Multi-ledger sealed secrets (metadata by default) |
 
 Python:
 
@@ -176,6 +177,14 @@ See [him-web3/README.md](him-web3/README.md).
 # Physics-regularized train (small live core)
 python scripts/train_physics.py
 
+# HIM supervised Q→A (SFT) on live physics core
+python scripts/train_him_sft.py \
+  --resume checkpoints/auro_minds/Auro-2B_physics \
+  --output checkpoints/auro_minds/Auro-2B_him_sft \
+  --epochs 3
+python scripts/eval_him_generation.py \
+  --resume checkpoints/auro_minds/Auro-2B_him_sft
+
 # Specialize: generative + embed + self-config + skills
 python -m auro_native_llm.use --specialize --specialize-rounds 3 --specialize-steps 20 \
   --resume checkpoints/auro_minds/Auro-2B_continual
@@ -188,14 +197,55 @@ python -m auro_native_llm.use --power-stack --stack-rounds 4 \
 python scripts/train_14b.py --rounds 2 --steps 4
 ```
 
+SFT data: `data/him_sft.jsonl` (MESIE, GHOST, HIM, coding, vault, hybrid doctrine).
+
 Checkpoints (local, gitignored): `checkpoints/auro_minds/`
 
 | Checkpoint | Notes |
 |------------|--------|
 | `Auro-2B_physics` | Recommended chat/default |
+| `Auro-2B_him_sft` | After HIM SFT |
 | `Auro-2B_specialized` | Skills + doctrine |
 | `Auro-2B_continual` | GitHub knowledge train |
 | `Auro-14B` | Large live core when trained |
+
+---
+
+## Secrets vault
+
+Multi-ledger sealed store for high-value material (never log plaintext by default):
+
+| Ledger | Use |
+|--------|-----|
+| `keys` | Signing / API material refs |
+| `rpc` | Alchemy/Infura and chain RPC URLs |
+| `high_value` | Tokens, wallet refs |
+| `agent` | Agent session / mint refs |
+| `github` | PAT refs if needed (prefer OS keyring) |
+
+```bash
+# Metadata health + list
+python -m auro_native_llm.use --vault
+
+# Seal (Windows DPAPI when no password; else PBKDF2-HMAC stream)
+python -m auro_native_llm.use --vault-put rpc alchemy_mainnet "https://…/v2/KEY"
+# $env:AURO_VAULT_PASSWORD="…"   # optional portable passphrase
+# $env:AURO_VAULT_ROOT="…"       # optional root (default ~/.auro_vault)
+```
+
+Module: `auro_native_llm.vault`. HIM tool `vault` returns health/list only.
+
+---
+
+## CI
+
+GitHub Actions workflow [`.github/workflows/him-ci.yml`](.github/workflows/him-ci.yml):
+
+1. Build lite mind → usable chat + coding smoke  
+2. `eval_him_generation.py` knowledge path  
+3. Vault seal/unseal smoke  
+4. HIM `whoami`  
+5. `him-web3` npm install + `/api/health`
 
 ---
 
@@ -212,6 +262,9 @@ python -m auro_native_llm.use --power-stack "…"        # deep engines
 python -m auro_native_llm.use --dual "…"               # Python AI + Julia brain
 python -m auro_native_llm.use --google                 # sandbox Google envelope
 python -m auro_native_llm.use --github                 # gh sign-in status
+python -m auro_native_llm.use --vault                  # sealed secrets health
+python scripts/train_him_sft.py                        # HIM SFT
+python scripts/eval_him_generation.py                  # grounded generation eval
 python -m auro_native_llm.use --ready                  # NOVA promotion gate
 python -m auro_native_llm.use --discover               # capability-state discovery
 python -m auro_native_llm.use --physics --physics-steps 15

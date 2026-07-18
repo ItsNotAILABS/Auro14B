@@ -98,12 +98,18 @@ class HIM:
                 "github",
                 "web3_install",
                 "web3_api",
+                "vault",
             ],
             "web3": {
                 "applet": "him-web3",
                 "install": "npm run install:applet -- ethers viem",
                 "api": "http://127.0.0.1:8787/api/*",
-                "security": "RPC keys server-side only",
+                "security": "RPC keys server-side only; sealed refs in vault ledgers",
+            },
+            "vault": {
+                "ledgers": ["keys", "rpc", "high_value", "agent", "github"],
+                "module": "auro_native_llm.vault",
+                "reveal": "metadata by default; reveal only in server process",
             },
         }
 
@@ -155,6 +161,22 @@ class HIM:
             )
         ):
             actions.append({"tool": "web3", "why": "secure him-web3 API / packages"})
+        if any(
+            k in low
+            for k in (
+                "vault",
+                "secret",
+                "secrets",
+                "api key",
+                "api keys",
+                "ledger",
+                "password",
+                "mnemonic",
+                "pat ",
+                "sealed",
+            )
+        ):
+            actions.append({"tool": "vault", "why": "multi-ledger sealed secrets (metadata only)"})
         # ensure at least hybrid answer
         if not any(a["tool"] == "colony_generate" for a in actions):
             actions.insert(0, {"tool": "colony_generate", "why": "default voice"})
@@ -274,6 +296,32 @@ class HIM:
                     "tool": tool,
                     "text": text,
                     "meta": {"rpc": health.get("rpc_configured")},
+                }
+            if tool == "vault":
+                from auro_native_llm.vault import get_vault
+
+                v = get_vault()
+                health = v.health()
+                listed = v.list()
+                hint = v.export_rpc_env_hint()
+                # Never include plaintext secrets in agent text
+                text = json.dumps(
+                    {
+                        "health": health,
+                        "list": listed,
+                        "rpc_env_hint": hint,
+                        "doctrine": (
+                            "Vault stores sealed secrets in ledgers keys/rpc/high_value/"
+                            "agent/github. list() is metadata only; reveal only in server process."
+                        ),
+                    },
+                    default=str,
+                )[:2000]
+                return {
+                    "ok": bool(health.get("ledgers")),
+                    "tool": tool,
+                    "text": text,
+                    "meta": {"total": health.get("total"), "root": health.get("root")},
                 }
             # default hybrid
             ans, meth = hybrid_answer(goal, mind)

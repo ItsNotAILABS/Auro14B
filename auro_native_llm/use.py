@@ -119,12 +119,39 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument("--github-repos", action="store_true", help="List repos for authenticated user/org")
     p.add_argument("--github-owner", default="", help="Owner/org for --github-repos")
+    p.add_argument(
+        "--vault",
+        action="store_true",
+        help="Multi-ledger secrets vault health + list (metadata only)",
+    )
+    p.add_argument(
+        "--vault-put",
+        nargs=3,
+        metavar=("LEDGER", "NAME", "SECRET"),
+        help="Seal a secret into a vault ledger (keys|rpc|high_value|agent|github)",
+    )
     p.add_argument("--resume", default="checkpoints/auro_minds/Auro-2B_continual")
     p.add_argument("--max-tokens", type=int, default=96)
     args = p.parse_args(argv)
 
     from auro_native_llm.organism.family import build_mind
     from auro_native_llm.organism.checkpoint import load_mind
+
+    # Vault (no mind required) — never print reveal by default
+    if args.vault or args.vault_put:
+        from auro_native_llm.vault import get_vault
+
+        v = get_vault()
+        vault_out: dict = {"health": v.health()}
+        if args.vault_put:
+            ledger, name, secret = args.vault_put
+            vault_out["put"] = v.put(ledger, name, secret)
+        if args.vault:
+            vault_out["list"] = v.list()
+            vault_out["rpc_env_hint"] = v.export_rpc_env_hint()
+        print(json.dumps(vault_out, indent=2, default=str), flush=True)
+        # Vault-only CLI: do not fall through into default chat (prompt has a default).
+        return 0 if vault_out.get("health") else 1
 
     # GitHub access (CLI + MCP guidance) — no full mind required
     if args.github or args.github_repos:
