@@ -108,6 +108,8 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/v1/receipts":
             self._require_api_auth()
             self._json(200, {"receipts": self.runtime.capabilities.ledger.tail(20)})
+        elif path == "/v1/browser/tasks":
+            self._require_api_auth(); self._json(200,{"tasks":self.runtime.capabilities.browser.list(50)})
         elif path == "/openapi.json":
             self._json(200, self._openapi())
         else:
@@ -127,6 +129,10 @@ class Handler(BaseHTTPRequestHandler):
             )
             self._json(200, result)
             return
+        if path == "/v1/browser/tasks/claim":
+            body=self._body();self._json(200,{"task":self.runtime.capabilities.browser.claim(str(body.get("worker_id") or "chrome"))});return
+        if path.startswith("/v1/browser/tasks/") and path.endswith("/complete"):
+            body=self._body();task_id=path.split("/")[4];self._json(200,self.runtime.capabilities.browser.complete(task_id,body.get("result"),body.get("error")));return
         if path in {"/v1/respond", "/v1/him/respond"}:
             body = self._body()
             message = self._message(body.get("message"))
@@ -299,4 +305,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
