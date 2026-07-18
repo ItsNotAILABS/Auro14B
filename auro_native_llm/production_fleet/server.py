@@ -108,6 +108,14 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/v1/receipts":
             self._require_api_auth()
             self._json(200, {"receipts": self.runtime.capabilities.ledger.tail(20)})
+        elif path.startswith("/v1/downloads/") and path.endswith(".zip"):
+            self._require_api_auth()
+            artifact = self.runtime.capabilities.resolve_download(
+                path.removeprefix("/v1/downloads/").removesuffix(".zip")
+            )
+            if artifact is None:
+                raise ApiError(404, "artifact_not_found", "The requested artifact is not registered.")
+            self._bytes(200, "application/zip", artifact.read_bytes())
         elif path == "/openapi.json":
             self._json(200, self._openapi())
         else:
@@ -237,6 +245,7 @@ class Handler(BaseHTTPRequestHandler):
             "models": "/v1/models",
             "capabilities": "/v1/capabilities",
             "receipts": "/v1/receipts",
+            "downloads": "/v1/downloads/{sha256}.zip",
             "openapi": "/openapi.json",
             "execution_header": "X-Auro-Execution-Token",
         }

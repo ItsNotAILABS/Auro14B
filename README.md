@@ -122,6 +122,27 @@ python scripts/smoke_usable_llm.py
 | `ghost` | Policy + receipt chain |
 | `power_stack` | Physics + economy + algorithms + transformer pulse |
 | `google` | Sandbox Chrome/mail/drive + collab |
+
+## Sovereign browser runtime
+
+`browser-runtime/` is a production-built Transformers.js workspace for custom
+local ONNX models. It disables remote model loading, loads model artifacts from
+`/models/`, loads WASM from `/wasm/`, and runs inference in a Web Worker. The
+companion governed API exposes internal agents, content-addressed storage,
+PDF/XLSX/DOCX/CSV/Markdown bundles, bounded static security scanning, and
+content-addressed Manifest V3 extension downloads.
+
+```bash
+cd browser-runtime
+npm install
+npm run build
+```
+
+Compute planes are explicit: embedded browser ONNX is the default, local
+Auro/MESIE is available through the configured API, and cloud engines are
+opt-in through `AURO_CLOUD_ENGINES_JSON`. There is no silent remote fallback,
+and credential values are never compiled into the browser bundle. See
+`browser-runtime/README.md` for ONNX conversion and packaging.
 | `github` | `gh` / MCP identity |
 | `web3` | Secure him-web3 API + package install |
 | `vault` | Multi-ledger sealed secrets (metadata by default) |
@@ -193,9 +214,26 @@ python -m auro_native_llm.use --specialize --specialize-rounds 3 --specialize-st
 python -m auro_native_llm.use --power-stack --stack-rounds 4 \
   --resume checkpoints/auro_minds/Auro-2B_physics
 
-# Auro-14B live ladder core (~1.5B params; slow on CPU)
-python scripts/train_14b.py --rounds 2 --steps 4
+# Build the provenance-bound Auro + MESIE + Sovereign corpus
+python scripts/build_unified_training_corpus.py \
+  --mesie-root /path/to/Multi-Element-Spectral-Intelligence-Engine-MESIE- \
+  --sovereign-root /path/to/sovereign
+
+# Auro-14B live ladder core (~1.5B live dev params; slow on CPU)
+python scripts/train_14b.py \
+  --sovereign-root /path/to/sovereign \
+  --corpus-jsonl artifacts/auro14b-corpus/corpus.jsonl \
+  --rounds 2 --steps 4
+
+# End-to-end local verification using tiny geometry (not the production checkpoint)
+python scripts/train_14b.py --smoke \
+  --sovereign-root /path/to/sovereign \
+  --corpus-jsonl artifacts/auro14b-corpus/corpus.jsonl \
+  --output checkpoints/auro_minds/Auro-14B-smoke \
+  --rounds 1 --steps 1 --seq-len 32
 ```
+
+Full Auro-14B training now requires the versioned Sovereign consumer contract and the unified corpus. The generated receipts identify the Auro14B, MESIE, and Sovereign commits; every consumed Sovereign file; redactions; corpus hashes; sampled block counts; training metrics; and checkpoint location. Development-only overrides exist, but reports preserve that those inputs were missing.
 
 SFT data: `data/him_sft.jsonl` (MESIE, GHOST, HIM, coding, vault, hybrid doctrine).
 
