@@ -66,6 +66,9 @@ Approved execution additionally uses `X-Auro-Execution-Token`. The API token and
 | `POST /v1/capabilities/call` | governed capability call |
 | `GET /v1/receipts` | recent evidence |
 | `GET /v1/receipts/verify` | hash-chain verification |
+| `GET /v1/browser/tasks` | browser-brain task state and results |
+| `POST /v1/browser/tasks/claim` | Chrome worker claims queued HIM work |
+| `POST /v1/browser/tasks/{id}/complete` | Chrome returns work result and receipt |
 | `GET /openapi.json` | OpenAPI 3.1 discovery document |
 
 Every API response includes `X-Request-ID` and `X-Auro-API-Version`. Client-supplied request IDs are accepted only when short and restricted to alphanumeric, hyphen, and underscore characters.
