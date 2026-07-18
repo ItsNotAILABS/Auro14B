@@ -36,6 +36,9 @@ BUILTINS=(
  Capability("wallet.transfer_paper","Transfer paper credits between internal accounts.","parallax","tool",_obj({"source":{"type":"string"},"destination":{"type":"string"},"amount":{"type":"string"},"asset":{"type":"string"},"memo":{"type":"string"}},("source","destination","amount")),True,True),
  Capability("wallet.verify_ledger","Verify all double-entry postings and transaction hashes.","parallax","tool",_obj({})),
  Capability("office.create_bundle","Create MD, CSV, DOCX, XLSX, PDF, and hash manifest deliverables.","office","tool",_obj({"out_dir":{"type":"string"},"title":{"type":"string"},"sections":{"type":"array"},"table":{"type":"array"},"vault":{"type":"boolean"}},("out_dir","title","sections")),True,True),
+ Capability("browser.task.enqueue","Send governed work to HIM's Chrome brain.","browser-brain","tool",_obj({"kind":{"type":"string"},"payload":{"type":"object"}},("kind","payload")),True,True),
+ Capability("browser.task.status","Read a Chrome brain task result and receipt.","browser-brain","tool",_obj({"task_id":{"type":"string"}},("task_id",))),
+ Capability("browser.tasks.list","List recent Chrome brain work.","browser-brain","tool",_obj({"limit":{"type":"integer"}})),
 )
 
 class NativeCapabilities:
@@ -44,9 +47,11 @@ class NativeCapabilities:
         from .wallet import PaperWallet
         from .office import NativeOffice
         from .vault import IntegrityVault
+        from .browser_gateway import BrowserTaskBroker
         self.sdk=sdk; self._items={x.name:x for x in capabilities}; self.ledger=ledger or ReceiptLedger()
         self.wallet=PaperWallet(os.getenv("AURO_WALLET_LEDGER") or None); self.office=NativeOffice()
         self.vault=IntegrityVault(os.getenv("AURO_VAULT_ROOT","./state/auro-vault"))
+        self.browser=BrowserTaskBroker()
     def manifest(self): return {"schema":"auro.native_capabilities.v1","protocol":"tool-contract-compatible","capabilities":[asdict(x) for x in self._items.values()]}
     def skills_prompt(self):
         return "\n".join(f"{x.name}: {' -> '.join(x.playbook)}" for x in self._items.values() if x.mode=="skill")
@@ -78,6 +83,9 @@ class NativeCapabilities:
                 from pathlib import Path
                 bundle["vault_records"]=[self.vault.put(x["name"],Path(x["path"]).read_bytes()) for x in bundle["files"]]
             return bundle
+        if name=="browser.task.enqueue": return self.browser.enqueue(a["kind"],a["payload"])
+        if name=="browser.task.status": return self.browser.get(a["task_id"])
+        if name=="browser.tasks.list": return {"tasks":self.browser.list(int(a.get("limit",50)))}
         if name.startswith("skill."): return {"playbook":list(self._items[name].playbook),"arguments":a}
         raise ValueError(f"No dispatcher for {name}")
 
