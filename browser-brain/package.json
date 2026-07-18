@@ -1,0 +1,20 @@
+{
+  "name": "@itsnotailabs/him-browser-brain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check src/*.js extension/*.js",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "3.8.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}

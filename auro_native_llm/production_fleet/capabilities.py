@@ -41,6 +41,9 @@ BUILTINS=(
  Capability("storage.verify","Verify a content-addressed vault record.","vault","tool",_obj({"record":{"type":"object"}},("record",))),
  Capability("security.scan_workspace","Run a bounded static secret and risky-file scan.","security","tool",_obj({"root":{"type":"string"},"max_files":{"type":"integer"}},("root",))),
  Capability("extension.package","Build a content-addressed Manifest V3 extension ZIP.","browser","tool",_obj({"out_dir":{"type":"string"},"name":{"type":"string"},"api_base":{"type":"string"}},("out_dir",)),True,True),
+ Capability("browser.task.enqueue","Send governed work to HIM's Chrome brain.","browser-brain","tool",_obj({"kind":{"type":"string"},"payload":{"type":"object"}},("kind","payload")),True,True),
+ Capability("browser.task.status","Read a Chrome brain task result and receipt.","browser-brain","tool",_obj({"task_id":{"type":"string"}},("task_id",))),
+ Capability("browser.tasks.list","List recent Chrome brain work.","browser-brain","tool",_obj({"limit":{"type":"integer"}})),
 )
 
 class NativeCapabilities:
@@ -49,12 +52,14 @@ class NativeCapabilities:
         from .wallet import PaperWallet
         from .office import NativeOffice
         from .vault import IntegrityVault
+        from .browser_gateway import BrowserTaskBroker
         self.sdk=sdk; self._items={x.name:x for x in capabilities}; self.ledger=ledger or ReceiptLedger()
         self.wallet=PaperWallet(os.getenv("AURO_WALLET_LEDGER") or None); self.office=NativeOffice()
         self.vault=IntegrityVault(os.getenv("AURO_VAULT_ROOT","./state/auro-vault"))
         from .compute import ComputeRegistry
         self.compute=ComputeRegistry()
         self.downloads={}
+        self.browser=BrowserTaskBroker()
     def manifest(self): return {"schema":"auro.native_capabilities.v1","protocol":"tool-contract-compatible","capabilities":[asdict(x) for x in self._items.values()]}
     def skills_prompt(self):
         return "\n".join(f"{x.name}: {' -> '.join(x.playbook)}" for x in self._items.values() if x.mode=="skill")
@@ -98,6 +103,9 @@ class NativeCapabilities:
             self.downloads[result["sha256"]]=result["path"]
             result["download_url"]="/v1/downloads/"+result["sha256"]+".zip"
             return result
+        if name=="browser.task.enqueue": return self.browser.enqueue(a["kind"],a["payload"])
+        if name=="browser.task.status": return self.browser.get(a["task_id"])
+        if name=="browser.tasks.list": return {"tasks":self.browser.list(int(a.get("limit",50)))}
         if name.startswith("skill."): return {"playbook":list(self._items[name].playbook),"arguments":a}
         raise ValueError(f"No dispatcher for {name}")
     def resolve_download(self,digest):
