@@ -1,0 +1,8 @@
+import {BrainStore} from './store.js';import {SecurityMonitor} from './security.js';import {KnowledgeGraph} from './graph.js';import {TransformersLocalRuntime} from './inference.js';import {ResearchCouncil} from './research.js';import {DocumentEngine} from './documents.js';
+export class EmbeddedBrain{
+  constructor(options={}){this.store=new BrainStore(options.storeName);this.security=new SecurityMonitor(this.store,options.security);this.graph=new KnowledgeGraph(this.store);this.inference=new TransformersLocalRuntime(options.inference);this.documents=new DocumentEngine();this.research=new ResearchCouncil({store:this.store,graph:this.graph,inference:this.inference,security:this.security});this.state={phase:'created',cycles:0,lastError:null}}
+  async awaken(){await this.store.open();await this.inference.load();this.state.phase='ready';return this.snapshot()}
+  async think(message){const check=this.security.inspectText(message);await this.security.record({operation:'think',...check});if(!check.allowed)throw new Error('input denied by security monitor');const relevant=(await this.store.getAll('memory')).slice(-8);const result=await this.inference.generate([{role:'system',content:`You are HIM. Relevant local memory: ${JSON.stringify(relevant)}`},{role:'user',content:message}]);await this.store.put('memory',{kind:'conversation',input:message,output:result.text});this.state.cycles++;return {...result,state:this.snapshot()}}
+  snapshot(){return {...this.state,model:this.inference.modelId,remoteModelsAllowed:false}}
+}
+export * from './store.js';export * from './security.js';export * from './graph.js';export * from './research.js';export * from './documents.js';export * from './inference.js';
