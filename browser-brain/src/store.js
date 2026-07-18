@@ -2,8 +2,8 @@ export class BrainStore{
   constructor(name='him-browser-brain'){this.name=name;this.memory=new Map();this.db=null}
   async open(){
     if(typeof indexedDB==='undefined') return this;
-    this.db=await new Promise((resolve,reject)=>{const r=indexedDB.open(this.name,1);r.onupgradeneeded=()=>{
-      const d=r.result;for(const n of ['memory','graph','receipts','research','training'])if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:'id'});
+    this.db=await new Promise((resolve,reject)=>{const r=indexedDB.open(this.name,2);r.onupgradeneeded=()=>{
+      const d=r.result;for(const n of ['memory','graph','receipts','research','training','tasks'])if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:'id'});
     };r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});return this;
   }
   async put(bucket,value){
