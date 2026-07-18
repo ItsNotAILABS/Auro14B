@@ -1,0 +1,25 @@
+{
+  "schema": "auro.byte_tokenizer.v1",
+  "vocab_size": 272,
+  "byte_offset": 16,
+  "control_tokens": [
+    "<pad>",
+    "<bos>",
+    "<eos>",
+    "<system>",
+    "<user>",
+    "<assistant>",
+    "<tool>",
+    "<receipt>",
+    "<spectral>",
+    "<memory>",
+    "<repository>",
+    "<code>",
+    "<test>",
+    "<execution>",
+    "<nova>",
+    "<mesie>"
+  ],
+  "unknown_token": null,
+  "byte_round_trip": true
+}
