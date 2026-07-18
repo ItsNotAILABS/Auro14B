@@ -64,7 +64,7 @@ class MultiModelOrchestrator:
 
     def route(self,messages:list[dict[str,str]],strategy:str="single")->RouteDecision:
         text="\n".join(str(x.get("content","")) for x in messages);task=self.classify(text)
-        ranked=sorted(self.lanes.values(),key=lambda x:(task not in x.capabilities and "general" not in x.capabilities,
+        ranked=sorted(self.lanes.values(),key=lambda x:(task not in x.capabilities,
                     not x.local,x.priority,x.id))
         selected=ranked[0]
         return RouteDecision(task,strategy,selected.id,tuple(x.id for x in ranked),
