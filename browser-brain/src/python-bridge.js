@@ -7,4 +7,6 @@ export class PythonEngineBridge{
   async capability(name,args={},approved=false){return this.request('/v1/capabilities/call',{name,arguments:args,approved},approved)}
   async generateDocuments(spec){return this.capability('office.create_bundle',spec,true)}
   async verifyReceipts(){return this.request('/v1/receipts/verify')}
+  async claimBrowserTask(workerId){return this.request('/v1/browser/tasks/claim',{worker_id:workerId})}
+  async completeBrowserTask(taskId,{result=null,error=null}={}){return this.request(`/v1/browser/tasks/${taskId}/complete`,{result,error})}
 }
