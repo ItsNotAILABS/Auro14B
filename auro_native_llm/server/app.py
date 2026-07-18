@@ -16,12 +16,35 @@ from auro_native_llm.chrome.tools import ChromeToolbelt
 
 _UI = Path(__file__).with_name("static") / "index.html"
 _PORTAL_UI = Path(__file__).with_name("static") / "portal.html"
+_WORKSPACE_UI = Path(__file__).with_name("static") / "workspace.html"
 
 # shared agent (lite + mock chrome by default for safe local)
 _AGENT = WorkAgent(lite=True, chrome_mock=True, use_scripture=True)
 _CHROME = ChromeToolbelt(mock=True)
 _MIND = None
 _PORTAL = None
+_ENVELOPE = None
+
+
+def _get_mind():
+    global _MIND
+    if _MIND is None:
+        try:
+            from auro_native_llm.organism.family import build_mind
+
+            _MIND = build_mind("Auro-2B", lite=True, chrome_mock=True)
+        except Exception:
+            _MIND = None
+    return _MIND
+
+
+def _get_envelope():
+    global _ENVELOPE
+    if _ENVELOPE is None:
+        from auro_native_llm.gworkspace import get_envelope
+
+        _ENVELOPE = get_envelope(_get_mind(), chrome_mock=True)
+    return _ENVELOPE
 
 
 def _json_response(handler: BaseHTTPRequestHandler, code: int, payload: Dict[str, Any]) -> None:
@@ -79,7 +102,39 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
+        if path in ("/workspace", "/workspace.html", "/ui/workspace", "/google"):
+            html = (
+                _WORKSPACE_UI.read_text(encoding="utf-8")
+                if _WORKSPACE_UI.exists()
+                else "<h1>Workspace UI missing — collab + Google sandbox</h1>"
+            )
+            body = html.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if path in ("/v1/google", "/v1/google/health", "/v1/workspace"):
+            try:
+                env = _get_envelope()
+                _json_response(self, 200, env.health())
+            except Exception as exc:
+                _json_response(self, 500, {"ok": False, "error": str(exc)})
+            return
+        if path in ("/v1/collab", "/v1/collab/projects"):
+            try:
+                env = _get_envelope()
+                _json_response(self, 200, {"ok": True, "collab": env.collab.health()})
+            except Exception as exc:
+                _json_response(self, 500, {"ok": False, "error": str(exc)})
+            return
         if path in ("/health", "/v1/health"):
+            gstat = {}
+            try:
+                gstat = _get_envelope().surfaces()
+            except Exception:
+                gstat = {"ok": False}
             _json_response(
                 self,
                 200,
@@ -91,7 +146,16 @@ class Handler(BaseHTTPRequestHandler):
                     "chrome": _CHROME.health(),
                     "model_id": _AGENT.model_id,
                     "portal": "/portal",
-                    "alpha": ["multi_site", "interior_mcp", "chaos_cuda", "polyglot"],
+                    "workspace": "/workspace",
+                    "google_envelope": gstat.get("envelope_id") or gstat,
+                    "alpha": [
+                        "multi_site",
+                        "interior_mcp",
+                        "chaos_cuda",
+                        "polyglot",
+                        "google_envelope",
+                        "collab_workspace",
+                    ],
                 },
             )
             return
@@ -232,6 +296,45 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     out = {"ok": False, "error": f"unknown chrome action {action}"}
                 _json_response(self, 200 if out.get("ok", True) else 400, out)
+            except Exception as exc:
+                _json_response(self, 500, {"ok": False, "error": str(exc)})
+            return
+
+        # Google virtual envelope + collab
+        if path in ("/v1/google/act", "/google/act", "/v1/workspace/act"):
+            try:
+                env = _get_envelope()
+                surface = body.get("surface") or "status"
+                action = body.get("action") or "list"
+                kw = {k: v for k, v in body.items() if k not in ("surface", "action")}
+                out = env.act(surface, action, **kw)
+                _json_response(self, 200 if out.get("ok", True) else 400, out)
+            except Exception as exc:
+                _json_response(self, 500, {"ok": False, "error": str(exc)})
+            return
+
+        if path in ("/v1/collab/post", "/collab/post"):
+            try:
+                mind = _get_mind()
+                env = _get_envelope()
+                text = body.get("text") or body.get("prompt") or ""
+                if mind is not None:
+                    out = env.collab_post(text, author=body.get("author", "user"))
+                else:
+                    out = env.collab.post(text, author=body.get("author", "user"))
+                _json_response(self, 200 if out.get("ok", True) else 400, out)
+            except Exception as exc:
+                _json_response(self, 500, {"ok": False, "error": str(exc)})
+            return
+
+        if path in ("/v1/collab/project", "/collab/project"):
+            try:
+                env = _get_envelope()
+                out = env.collab_project(
+                    body.get("name") or "Project",
+                    body.get("description") or "",
+                )
+                _json_response(self, 200, out)
             except Exception as exc:
                 _json_response(self, 500, {"ok": False, "error": str(exc)})
             return

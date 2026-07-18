@@ -115,4 +115,30 @@ def load_mind(
         mind.act_count = int(meta.get("act_count", 0))
         mind.born_at = float(meta.get("born_at", mind.born_at))
 
+    # Bind installed mesie transformers / intelligence into restored mind
+    try:
+        from auro_native_llm.mesie_runtime import attach_mesie_runtime
+
+        attach_mesie_runtime(mind, lite=True)
+    except Exception:
+        pass
+    try:
+        from auro_native_llm.ghost.supervisor import GhostSupervisor
+
+        mind.ghost = GhostSupervisor(mind)  # type: ignore[attr-defined]
+    except Exception:
+        mind.ghost = None  # type: ignore[attr-defined]
+    try:
+        from auro_native_llm.gworkspace import get_envelope
+
+        mind.gworkspace = get_envelope(mind, chrome_mock=chrome_mock)  # type: ignore[attr-defined]
+    except Exception:
+        mind.gworkspace = None  # type: ignore[attr-defined]
+    try:
+        from auro_native_llm.sdk_runtime.injector import inject_repo_sdks
+
+        inject_repo_sdks(mind)
+    except Exception:
+        pass
+
     return mind

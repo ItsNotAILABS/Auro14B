@@ -207,11 +207,26 @@ class MESIEComputePlane:
         caps = {
             "sovereign_neurocore": False,
             "foundation_transformer": False,
+            "spectral_gpt": False,
             "torch_spectral": False,
             "training_fabric": False,
             "spectral_vectorizer": False,
+            "helix": False,
+            "intelligence_protocols": False,
+            "connectome": False,
+            "pretraining": False,
+            "miniverse": False,
+            "match_validate": False,
+            "generation_psd_fas": False,
             "agentic": False,
+            "mesie_package": False,
         }
+        try:
+            import mesie  # noqa: F401
+
+            caps["mesie_package"] = True
+        except Exception:
+            pass
         try:
             from phantom_native.neurocore import SovereignNeuroCore  # noqa: F401
 
@@ -225,6 +240,12 @@ class MESIEComputePlane:
             )
 
             caps["foundation_transformer"] = True
+        except Exception:
+            pass
+        try:
+            from mesie.foundation import SpectralGPT  # noqa: F401
+
+            caps["spectral_gpt"] = True
         except Exception:
             pass
         try:
@@ -245,6 +266,48 @@ class MESIEComputePlane:
             from mesie.embeddings import SpectralVectorizer  # noqa: F401
 
             caps["spectral_vectorizer"] = True
+        except Exception:
+            pass
+        try:
+            from mesie.helix import HelixEncoder  # noqa: F401
+
+            caps["helix"] = True
+        except Exception:
+            pass
+        try:
+            from mesie import IntelligenceProtocol  # noqa: F401
+
+            caps["intelligence_protocols"] = True
+        except Exception:
+            pass
+        try:
+            from mesie.connectome import build_default_connectome  # noqa: F401
+
+            caps["connectome"] = True
+        except Exception:
+            pass
+        try:
+            from mesie.pretraining import MaskedSpectralModeling  # noqa: F401
+
+            caps["pretraining"] = True
+        except Exception:
+            pass
+        try:
+            from mesie.cognitive.miniverse import RecursiveMemoryContainer  # noqa: F401
+
+            caps["miniverse"] = True
+        except Exception:
+            pass
+        try:
+            from mesie import load_record, validate_record, match_records  # noqa: F401
+
+            caps["match_validate"] = True
+        except Exception:
+            pass
+        try:
+            from mesie.generation import generate_psd, generate_fas  # noqa: F401
+
+            caps["generation_psd_fas"] = True
         except Exception:
             pass
         try:
@@ -280,8 +343,36 @@ class MESIEComputePlane:
         return self._cores[key]
 
     def embed_text(self, text: str, profile: MesieComputeProfile) -> List[float]:
-        """MESIE-native embedding (helix / spectral, not cloud)."""
+        """MESIE-native embedding (installed helix / spectral, not cloud)."""
+        # Prefer bound MesieRuntimeStack (pip-installed mesie transformers stack)
+        try:
+            from auro_native_llm.mesie_runtime import get_mesie_runtime
+
+            rt = get_mesie_runtime(profile.model_id, lite=True)
+            if rt.helix_encoder is not None or rt.vectorizer is not None:
+                return rt.embed_text(text, dim=profile.d_model)
+        except Exception:
+            pass
         signal = text_to_signal(text, profile.d_model)
+        # Direct HelixEncoder from installed mesie
+        if self._capabilities.get("helix"):
+            try:
+                from mesie.helix import HelixEncoder
+
+                proj = HelixEncoder().encode(signal)
+                flat = getattr(proj, "flat_embedding", None)
+                if flat is not None:
+                    vec = np.asarray(flat, dtype=np.float64).ravel()
+                    if vec.size < profile.d_model:
+                        pad = np.zeros(profile.d_model, dtype=np.float64)
+                        pad[: vec.size] = vec
+                        vec = pad
+                    else:
+                        vec = vec[: profile.d_model]
+                    norm = float(np.linalg.norm(vec)) or 1.0
+                    return (vec / norm).tolist()
+            except Exception:
+                pass
         core = self._get_neurocore(profile)
         if core is not None:
             try:
@@ -294,7 +385,7 @@ class MESIEComputePlane:
                 return (vec / norm).tolist()
             except Exception:
                 pass
-        # Helix fallback
+        # Helix-style fallback
         emb = np.zeros(profile.d_model, dtype=np.float64)
         for i, val in enumerate(signal):
             phase = math.sin(i * 0.1) * math.cos((i % profile.d_model) * 0.1)

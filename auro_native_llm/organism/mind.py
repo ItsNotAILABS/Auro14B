@@ -114,7 +114,36 @@ class AuroMind:
             overrides.setdefault("max_seq_len", min(int(tiny["max_seq_len"]), 512))
             overrides.setdefault("vocab_size", min(int(tiny["vocab_size"]), 4096))
         lang = AuroLanguageModel.build(model_id, mode=mode, **overrides)  # type: ignore[arg-type]
-        return cls(lang, chrome_mock=chrome_mock)
+        mind = cls(lang, chrome_mock=chrome_mock)
+        # Runtime: bind installed mesie transformers / intelligence / helix / connectome
+        try:
+            from auro_native_llm.mesie_runtime import attach_mesie_runtime
+
+            attach_mesie_runtime(mind, lite=lite)
+        except Exception:
+            pass
+        # GHOST supervisory plane (MESIE-first hybrid + receipt chain)
+        try:
+            from auro_native_llm.ghost.supervisor import GhostSupervisor
+
+            mind.ghost = GhostSupervisor(mind)  # type: ignore[attr-defined]
+        except Exception:
+            mind.ghost = None  # type: ignore[attr-defined]
+        # Google virtual envelope: AI sandbox + collab workspace
+        try:
+            from auro_native_llm.gworkspace import get_envelope
+
+            mind.gworkspace = get_envelope(mind, chrome_mock=chrome_mock)  # type: ignore[attr-defined]
+        except Exception:
+            mind.gworkspace = None  # type: ignore[attr-defined]
+        # Runtime: inject SDKs from all Medina / ItsNotAILABS / FreddyCreates repos
+        try:
+            from auro_native_llm.sdk_runtime.injector import inject_repo_sdks
+
+            inject_repo_sdks(mind)
+        except Exception:
+            pass
+        return mind
 
     # ---------------------------------------------------------------- absorb
     def _absorb(
@@ -263,6 +292,69 @@ class AuroMind:
 
             self.organs.agent_manager = AgentManager(self)  # type: ignore[attr-defined]
         return self.organs.agent_manager
+
+    def ghost_run(self, intent: str, **kw: Any) -> Dict[str, Any]:
+        """GHOST supervisor: policy → MESIE Ghost Node → optional LLM → receipts."""
+        if getattr(self, "ghost", None) is None:
+            from auro_native_llm.ghost.supervisor import GhostSupervisor
+
+            self.ghost = GhostSupervisor(self)  # type: ignore[attr-defined]
+        return self.ghost.run(intent, **kw).to_dict()  # type: ignore[attr-defined]
+
+    def google_envelope(self, *, chrome_mock: bool = True, force: bool = False) -> Any:
+        """AI's sandboxed Google suite + collab link (Chrome, Gmail, Drive, Search…)."""
+        from auro_native_llm.gworkspace import get_envelope
+
+        env = get_envelope(self, chrome_mock=chrome_mock, force=force)
+        self.gworkspace = env  # type: ignore[attr-defined]
+        return env
+
+    def google(self, surface: str, action: str = "list", **kw: Any) -> Dict[str, Any]:
+        """Unified Google workspace act: mail/drive/chrome/search/collab/calendar/sites."""
+        env = self.google_envelope()
+        out = env.act(surface, action, **kw)
+        # absorb for self-train
+        try:
+            self._absorb(
+                f"GOOGLE[{surface}.{action}] {str(out)[:400]}",
+                "google_workspace",
+                reward=0.75 if out.get("ok") else 0.4,
+                meta={"surface": surface, "action": action},
+            )
+        except Exception:
+            pass
+        return out
+
+    def collab(self, text: str, **kw: Any) -> Dict[str, Any]:
+        """Post into shared user+AI project workspace (AI replies in-thread)."""
+        return self.google("collab", "post", text=text, author=kw.get("author", "user"))
+
+    def dual_think(self, intent: str, *, steps: int = 3, n_cores: int = 0) -> Dict[str, Any]:
+        """Python=AI, Julia=BRAIN with distributed virtual physics cores.
+
+        Environment is not the ceiling. Julia runs physics cores; Python acts.
+        """
+        from auro_native_llm.dual import DualOrganism
+
+        org = DualOrganism(self, n_cores=n_cores)
+        self.dual = org  # type: ignore[attr-defined]
+        return org.think(intent, steps=steps).to_dict()
+
+    def hybrid(self, prompt: str, *, force_mesie_only: bool = False) -> Dict[str, Any]:
+        """GHOST/MESIE killer path: deterministic work first; LLM only if justified."""
+        from auro_native_llm.vproc.hybrid import HybridRuntime
+
+        rt = HybridRuntime(self)
+        self.vproc = rt  # type: ignore[attr-defined]
+        return rt.execute(prompt, force_mesie_only=force_mesie_only, save=True)
+
+    def power_stack(self, prompt: str, *, rounds: int = 5, physics_steps: int = 3) -> Dict[str, Any]:
+        """Deep physics + economic engines + algorithms + transformers together."""
+        from auro_native_llm.engines.orchestra import PowerStack
+
+        stack = PowerStack(self)
+        self.power_stack_engine = stack  # type: ignore[attr-defined]
+        return stack.run(prompt, rounds=rounds, physics_steps=physics_steps)
 
     def ready(self, *, output_dir: str = "artifacts/auro-readiness") -> Dict[str, Any]:
         """NOVA promotion readiness — coding + reasoning measured before any claim."""
@@ -945,8 +1037,28 @@ class AuroMind:
                 "teach_domains", "heart_pulse", "mini_brain", "mini_heart",
                 "chaos_cuda", "code", "research", "math",
                 "portal_open", "multi_site", "interior_mcp", "multi_site_agents",
+                # installed mesie package (pip install mesie / mesie[ml] / mesie[intelligence])
+                "mesie_spectral", "mesie_transformers", "mesie_embeddings",
+                "mesie_helix", "mesie_intelligence", "mesie_connectome",
+                "mesie_pretraining", "mesie_miniverse", "mesie_validation",
+                "mesie_match", "mesie_psd_fas", "sdk_runtime_inject",
+                # GHOST pillars + hybrid MESIE node + receipts
+                "ghost", "ghost_agents", "ghost_mesie_node", "ghost_receipts",
+                "ghost_policy", "ghost_hybrid_llm", "ghost_haunt_detector",
+                # Google virtual envelope + collab
+                "google_envelope", "google_chrome", "google_mail", "google_drive",
+                "google_search", "google_calendar", "google_sites", "collab_workspace",
+                # dual organism
+                "python_ai", "julia_brain", "virtual_physics_cores", "distributed_think",
+                "power_stack", "physics_engines", "economic_engines", "coupled_algorithms",
             ],
             "brains": (
                 self.organs.brains.info() if self.organs.brains is not None else None
             ),
+            "mesie_runtime": (
+                self.mesie_runtime.health()  # type: ignore[attr-defined]
+                if getattr(self, "mesie_runtime", None) is not None
+                else None
+            ),
+            "ghost": bool(getattr(self, "ghost", None)),
         }
