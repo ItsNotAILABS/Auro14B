@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -86,9 +87,14 @@ def test_production_admission_requires_exact_clean_expected_remote(
         remote="git@github.com:FreddyCreates/sovereign.git",
         dirty=False,
     )
+    root = _fixture(tmp_path)
+    contract_sha256 = hashlib.sha256(
+        (root / "integration/training-contract.v1.json").read_bytes()
+    ).hexdigest()
     binding = bind_sovereign(
-        _fixture(tmp_path),
+        root,
         expected_commit=commit,
+        expected_contract_sha256=contract_sha256,
         require_clean=True,
         require_expected_remote=True,
     )
@@ -108,9 +114,14 @@ def test_production_admission_rejects_dirty_source(
         dirty=True,
     )
     with pytest.raises(ValueError, match="dirty"):
+        root = _fixture(tmp_path)
+        contract_sha256 = hashlib.sha256(
+            (root / "integration/training-contract.v1.json").read_bytes()
+        ).hexdigest()
         bind_sovereign(
-            _fixture(tmp_path),
+            root,
             expected_commit=commit,
+            expected_contract_sha256=contract_sha256,
             require_clean=True,
             require_expected_remote=True,
         )
@@ -127,5 +138,26 @@ def test_production_admission_rejects_commit_or_remote_mismatch(
         bind_sovereign(
             _fixture(tmp_path),
             expected_commit=commit,
+            require_expected_remote=True,
+        )
+
+
+def test_production_admission_rejects_contract_digest_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commit = "e" * 40
+    root = _fixture(tmp_path)
+    _mock_git(
+        monkeypatch,
+        commit=commit,
+        remote="https://github.com/FreddyCreates/sovereign.git",
+        dirty=False,
+    )
+    with pytest.raises(ValueError, match="contract digest mismatch"):
+        bind_sovereign(
+            root,
+            expected_commit=commit,
+            expected_contract_sha256="0" * 64,
+            require_clean=True,
             require_expected_remote=True,
         )
