@@ -1,0 +1,11 @@
+{
+  "$schema":"node_modules/wrangler/config-schema.json",
+  "name":"him-cloudflare-platform",
+  "main":"src/index.ts",
+  "compatibility_date":"2026-07-01",
+  "observability":{"enabled":true},
+  "ai":{"binding":"AI"},
+  "durable_objects":{"bindings":[{"name":"SESSIONS","class_name":"HIMSession"}]},
+  "migrations":[{"tag":"v1","new_sqlite_classes":["HIMSession"]}],
+  "vars":{"WORKERS_AI_MODEL":"@cf/meta/llama-3.3-70b-instruct-fp8-fast","EXECUTION_TTL_SECONDS":"300"}
+}
