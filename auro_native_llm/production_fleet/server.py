@@ -232,6 +232,13 @@ class Handler(BaseHTTPRequestHandler):
         return message
 
     def _models(self) -> list[dict[str, Any]]:
+        if not hasattr(self.runtime, "model_orchestrator"):
+            endpoint=self.runtime.endpoint
+            return [{"id":endpoint.model,"object":"model","owned_by":"ItsNotAILABS",
+                     "auro_endpoint_id":endpoint.id,"role":endpoint.role,"provider":"runtime-explicit",
+                     "capabilities":["general"],"local":False,"parameter_count":endpoint.parameter_count,
+                     "parameter_count_verified":endpoint.parameter_count is not None,
+                     "identity_verified":True,"agent_count_is_not_parameter_count":True}]
         return [{
             "id": model["model"],
             "object": "model",
