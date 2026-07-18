@@ -7,6 +7,7 @@ A deployable, Cloudflare-native operator surface: chat planning through Workers 
 ```bash
 npm install
 npx wrangler secret put CLOUDFLARE_API_TOKEN
+npx wrangler secret put OPERATOR_TOKEN
 npx wrangler secret put EXECUTION_SECRET
 npx wrangler deploy
 ```
@@ -15,6 +16,7 @@ Use a least-privilege Cloudflare API token. Set `CLOUDFLARE_ACCOUNT_ID` with `wr
 
 ## Security model
 
+- Every control-plane route requires the independently configured operator token; only health and the static login shell are public.
 - The chat model produces a proposal, never an execution claim.
 - `GET`, `HEAD`, and `OPTIONS` may execute immediately.
 - Mutations require a proposal-bound, HMAC-signed, short-lived grant.
