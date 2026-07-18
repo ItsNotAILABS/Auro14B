@@ -147,6 +147,7 @@ def bind_sovereign(
     required: bool = True,
     max_file_bytes: int = 2 * 1024 * 1024,
     expected_commit: str | None = None,
+    expected_contract_sha256: str | None = None,
     require_clean: bool = False,
     require_expected_remote: bool = False,
 ) -> SovereignBinding | None:
@@ -159,7 +160,9 @@ def bind_sovereign(
         return None
 
     contract_file = resolved / CONTRACT_PATH
-    contract = json.loads(contract_file.read_text(encoding="utf-8"))
+    contract_bytes = contract_file.read_bytes()
+    contract_sha256 = _sha256(contract_bytes)
+    contract = json.loads(contract_bytes.decode("utf-8"))
     if contract.get("schema") != EXPECTED_SCHEMA:
         raise ValueError(f"Unsupported Sovereign contract schema: {contract.get('schema')!r}")
     if contract.get("repository") != EXPECTED_REPOSITORY:
@@ -181,25 +184,39 @@ def bind_sovereign(
     expected_commit = (expected_commit or "").strip().lower() or None
     if expected_commit and (len(expected_commit) != 40 or any(char not in "0123456789abcdef" for char in expected_commit)):
         raise ValueError("expected_commit must be a full 40-character Git commit SHA")
+    expected_contract_sha256 = (expected_contract_sha256 or "").strip().lower() or None
+    if expected_contract_sha256 and (
+        len(expected_contract_sha256) != 64 or
+        any(char not in "0123456789abcdef" for char in expected_contract_sha256)
+    ):
+        raise ValueError("expected_contract_sha256 must be a 64-character SHA-256 digest")
+    if expected_contract_sha256 and contract_sha256 != expected_contract_sha256:
+        raise ValueError(
+            f"Sovereign contract digest mismatch: expected {expected_contract_sha256}, found {contract_sha256}"
+        )
     if expected_commit and commit.lower() != expected_commit:
         raise ValueError(f"Sovereign commit mismatch: expected {expected_commit}, found {commit}")
     if require_clean and dirty:
         raise ValueError("Sovereign checkout is dirty; production training requires a clean source tree")
     if require_expected_remote and not remote_verified:
         raise ValueError(f"Unexpected Sovereign origin remote: {remote!r}")
-    if (require_clean or require_expected_remote or expected_commit) and not commit_is_versioned:
+    if (require_clean or require_expected_remote or expected_commit or expected_contract_sha256) and not commit_is_versioned:
         raise ValueError("Sovereign source is not a versioned Git commit")
     admission = {
         "commit_is_versioned": commit_is_versioned,
         "expected_commit": expected_commit,
         "commit_matches": expected_commit is None or commit.lower() == expected_commit,
+        "contract_sha256": contract_sha256,
+        "expected_contract_sha256": expected_contract_sha256,
+        "contract_matches": expected_contract_sha256 is None or contract_sha256 == expected_contract_sha256,
         "remote_normalized": normalized_remote,
         "remote_verified": remote_verified,
         "clean_required": require_clean,
         "clean": not dirty,
         "production_admitted": bool(
             commit_is_versioned and remote_verified and not dirty and
-            expected_commit and commit.lower() == expected_commit
+            expected_commit and commit.lower() == expected_commit and
+            expected_contract_sha256 and contract_sha256 == expected_contract_sha256
         ),
     }
     excluded = set(contract.get("exclude_parts", []))
