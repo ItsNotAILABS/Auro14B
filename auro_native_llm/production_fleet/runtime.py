@@ -83,6 +83,25 @@ class OpenAICompatibleGenerator:
         return {"text": text, "usage": payload.get("usage", {}), "raw_model": payload.get("model")}
 
 
+class NativeOpenWeightGenerator:
+    """Run a repository-native open-weight checkpoint with no provider call."""
+    def __init__(self, checkpoint: str):
+        from auro_native_llm.open_weights import OpenHIM
+        self.model = OpenHIM.load(checkpoint)
+        self.checkpoint = checkpoint
+
+    def __call__(self, messages: list[dict[str, str]], options: dict[str, Any]) -> dict[str, Any]:
+        prompt = "\n".join(f"<{m.get('role','user')}> {m.get('content','')}" for m in messages) + "\n<assistant>"
+        prompt_tokens = len(self.model.tokenizer.encode(prompt))
+        text = self.model.generate(prompt, max_new_tokens=int(options.get("max_tokens", 256)),
+                                   temperature=float(options.get("temperature", .4)), top_k=16)
+        completion = text[len(prompt):] if text.startswith(prompt) else text
+        completion_tokens = len(self.model.tokenizer.encode(completion))
+        return {"text": completion, "usage": {"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,
+                "total_tokens":prompt_tokens+completion_tokens}, "raw_model":"HIM-native-v0",
+                "provider":"repository-native-open-weights"}
+
+
 class AgentManager:
     def __init__(self, generator: Generator, agents: Iterable[AgentSpec] = DEFAULT_AGENTS, capability_context: str = ""):
         self.generator = generator
@@ -120,8 +139,14 @@ class NovaRuntime:
     """Interpret → deliberate → verify → answer, with action proposals gated."""
 
     def __init__(self, endpoint: ModelEndpoint | None = None, generator: Generator | None = None, sdk=None):
+        native_checkpoint = os.getenv("AURO_NATIVE_CHECKPOINT", "").strip()
+        if endpoint is None and native_checkpoint:
+            from auro_native_llm.open_weights import OpenHIM
+            native = OpenHIM.load(native_checkpoint)
+            endpoint = ModelEndpoint("him-native-v0", "local://open-weights", "HIM-native-v0",
+                                     native.num_parameters, "orchestrator", None)
         self.endpoint = endpoint or ModelEndpoint.from_env()
-        self.generator = generator or OpenAICompatibleGenerator(self.endpoint)
+        self.generator = generator or (NativeOpenWeightGenerator(native_checkpoint) if native_checkpoint else OpenAICompatibleGenerator(self.endpoint))
         if sdk is None:
             from .organ_sdk import AuroOrganSDK
             sdk = AuroOrganSDK()
