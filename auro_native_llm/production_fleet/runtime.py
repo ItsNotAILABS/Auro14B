@@ -12,6 +12,8 @@ import time
 from typing import Any, Callable, Iterable
 from urllib.request import Request, urlopen
 
+from .model_orchestrator import ModelLane, MultiModelOrchestrator
+
 
 Generator = Callable[[list[dict[str, str]], dict[str, Any]], dict[str, Any]]
 
@@ -146,7 +148,9 @@ class NovaRuntime:
             endpoint = ModelEndpoint("him-native-v0", "local://open-weights", "HIM-native-v0",
                                      native.num_parameters, "orchestrator", None)
         self.endpoint = endpoint or ModelEndpoint.from_env()
-        self.generator = generator or (NativeOpenWeightGenerator(native_checkpoint) if native_checkpoint else OpenAICompatibleGenerator(self.endpoint))
+        base_generator = generator or (NativeOpenWeightGenerator(native_checkpoint) if native_checkpoint else OpenAICompatibleGenerator(self.endpoint))
+        self.model_orchestrator = _build_model_orchestrator(self.endpoint, base_generator, native_checkpoint)
+        self.generator = self.model_orchestrator
         if sdk is None:
             from .organ_sdk import AuroOrganSDK
             sdk = AuroOrganSDK()
@@ -159,6 +163,7 @@ class NovaRuntime:
 
     def respond(self, message: str, *, execute: bool = False) -> dict[str, Any]:
         started = time.time()
+        self.model_orchestrator.drain_traces()
         brain_cycle = self.capabilities.brain.cycle(message, importance=.7 if execute else .5, execute_requested=execute)
         council = self.agents.run(message)
         council_json = json.dumps([asdict(x) for x in council], ensure_ascii=False)
@@ -179,6 +184,7 @@ class NovaRuntime:
                     executions.append(self.sdk.execute(action))
                 except Exception as exc:
                     executions.append({"tool":action.get("tool"),"ok":False,"error":str(exc)[:500]})
+        routing_traces = self.model_orchestrator.drain_traces()
         response = {
             "schema": "nova.production.response.v1",
             "answer": str(answer.get("answer", synthesis["text"])).strip(),
@@ -191,6 +197,9 @@ class NovaRuntime:
             "organ_sdk": self.sdk.manifest(),
             "native_capabilities": self.capabilities.manifest(),
             "brain": {"cycle":asdict(brain_cycle),"snapshot":self.capabilities.brain.snapshot()},
+            "model_fleet": self.model_orchestrator.manifest(),
+            "routing_traces": routing_traces,
+            "models_used": sorted({a["lane_id"] for trace in routing_traces for a in trace["attempts"] if a["ok"]}),
             "model": {
                 "endpoint_id": self.endpoint.id,
                 "model": self.endpoint.model,
@@ -263,3 +272,33 @@ def _actions(value: Any) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         return []
     return [x for x in value if isinstance(x, dict) and x.get("tool") in {"matdaemon", "capsula"}]
+
+
+def _build_model_orchestrator(endpoint: ModelEndpoint, base_generator: Generator, native_checkpoint: str = "") -> MultiModelOrchestrator:
+    """Build the real fleet from the primary lane plus AURO_MODEL_FLEET_JSON.
+
+    Registry entries are explicit endpoints; no model is invented or downloaded.
+    """
+    native=bool(native_checkpoint)
+    lanes=[ModelLane(endpoint.id,endpoint.model,endpoint.role,
+        "repository-native-open-weights" if native else "openai-compatible-explicit",
+        base_generator,endpoint.parameter_count,("general","code","math","research","tool"),0,native,True,
+        os.getenv("AURO_NATIVE_CHECKPOINT_SHA256") or None)]
+    raw=os.getenv("AURO_MODEL_FLEET_JSON","").strip()
+    if raw:
+        registry=json.loads(raw)
+        if not isinstance(registry,list): raise ValueError("AURO_MODEL_FLEET_JSON must be a JSON array")
+        for item in registry:
+            if not isinstance(item,dict): raise ValueError("model fleet entries must be objects")
+            model_endpoint=ModelEndpoint(
+                id=str(item["id"]),base_url=str(item["base_url"]),model=str(item["model"]),
+                parameter_count=_optional_int(str(item.get("parameter_count") or "")),
+                role=str(item.get("role","general")),api_key_env=str(item.get("api_key_env") or "") or None)
+            capabilities=tuple(str(x) for x in item.get("capabilities",["general"]))
+            lanes.append(ModelLane(model_endpoint.id,model_endpoint.model,model_endpoint.role,
+                str(item.get("provider","openai-compatible-explicit")),OpenAICompatibleGenerator(model_endpoint),
+                model_endpoint.parameter_count,capabilities,int(item.get("priority",100)),
+                bool(item.get("local",False)),bool(item.get("enabled",True)),item.get("checkpoint_hash")))
+    ids=[x.id for x in lanes]
+    if len(ids)!=len(set(ids)): raise ValueError("model lane ids must be unique")
+    return MultiModelOrchestrator(lanes,allow_hosted_fallback=os.getenv("AURO_ALLOW_HOSTED_FALLBACK","0")=="1")
