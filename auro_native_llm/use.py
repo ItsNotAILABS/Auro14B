@@ -106,6 +106,13 @@ def main(argv: list[str] | None = None) -> int:
         help="Logical context window tokens (default 500k)",
     )
     p.add_argument(
+        "--him",
+        action="store_true",
+        help="Awaken HIM — agentic multi-mini-model being (SENSE→PLAN→ACT→OBSERVE→REFLECT)",
+    )
+    p.add_argument("--him-germs", type=int, default=40)
+    p.add_argument("--him-context", type=int, default=500_000)
+    p.add_argument(
         "--github",
         action="store_true",
         help="GitHub access status (gh sign-in + MCP identity)",
@@ -731,6 +738,39 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps({k: out[k] for k in out if k != "open"}, indent=2)[:4000], flush=True)
         return 0
+
+    if args.him:
+        from auro_native_llm.him import awaken_him
+
+        him = awaken_him(
+            mind, n_germs=args.him_germs, context_tokens=args.him_context
+        )
+        print(json.dumps({"whoami": him.whoami()}, indent=2, default=str), flush=True)
+        rep = him.run(args.prompt, max_actions=5)
+        print(
+            json.dumps(
+                {
+                    "name": rep.get("name"),
+                    "ok": rep.get("ok"),
+                    "method": rep.get("method"),
+                    "plan": rep.get("plan"),
+                    "steps": [
+                        {"phase": s.get("phase"), "ok": s.get("ok")}
+                        for s in (rep.get("steps") or [])
+                    ],
+                    "latency_ms": rep.get("latency_ms"),
+                    "params": (rep.get("whoami") or {}).get("num_params_live"),
+                    "germs": (rep.get("whoami") or {}).get("n_germs"),
+                    "context_window": (rep.get("whoami") or {}).get("context_window_tokens"),
+                    "saved": rep.get("saved"),
+                    "answer": rep.get("answer") or rep.get("text"),
+                },
+                indent=2,
+                default=str,
+            ),
+            flush=True,
+        )
+        return 0 if rep.get("ok") else 2
 
     if args.colony:
         from auro_native_llm.colony import build_colony

@@ -386,6 +386,24 @@ class AuroMind:
         out = c.generate(prompt, **{k: v for k, v in kw.items() if k in ("max_sections",)})
         return out
 
+    def him(self, *, n_germs: int = 40, context_tokens: int = 500_000) -> Any:
+        """Awaken HIM — the agentic multi-mini-model being."""
+        from auro_native_llm.him import awaken_him
+
+        if getattr(self, "_him", None) is None:
+            self._him = awaken_him(
+                self, n_germs=n_germs, context_tokens=context_tokens
+            )  # type: ignore[attr-defined]
+        return self._him
+
+    def him_run(self, goal: str, **kw: Any) -> Dict[str, Any]:
+        """HIM agentic loop: SENSE→PLAN→ACT→OBSERVE→REFLECT."""
+        h = self.him(
+            n_germs=int(kw.pop("n_germs", 40) or 40),
+            context_tokens=int(kw.pop("context_tokens", 500_000) or 500_000),
+        )
+        return h.run(goal, max_actions=int(kw.pop("max_actions", 5) or 5))
+
     def ensure_runtime(self, *, chrome_mock: bool = True) -> None:
         """Lazily attach MESIE/ghost/google when first needed (mature full stack)."""
         if not getattr(self, "_runtime_lazy", False):
@@ -1164,6 +1182,7 @@ class AuroMind:
                 "python_ai", "julia_brain", "virtual_physics_cores", "distributed_think",
                 "power_stack", "physics_engines", "economic_engines", "coupled_algorithms",
                 "colony_llm", "mini_models", "context_500k", "skill_germs",
+                "HIM", "him_agentic", "him_sense_plan_act",
             ],
             "brains": (
                 self.organs.brains.info() if self.organs.brains is not None else None
