@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+import auro_native_llm.sovereign.contract as contract_module
 from auro_native_llm.sovereign import bind_sovereign
 
 
@@ -61,3 +62,70 @@ def test_binding_rejects_wrong_repository(tmp_path: Path) -> None:
 
 def test_optional_missing_binding() -> None:
     assert bind_sovereign("Z:/definitely/missing/sovereign", required=False) is None
+
+
+def _mock_git(monkeypatch: pytest.MonkeyPatch, *, commit: str, remote: str, dirty: bool) -> None:
+    def value(_root: Path, *args: str) -> str | None:
+        if args == ("rev-parse", "HEAD"):
+            return commit
+        if args == ("remote", "get-url", "origin"):
+            return remote
+        if args == ("status", "--porcelain"):
+            return " M doctrine.md" if dirty else None
+        return None
+    monkeypatch.setattr(contract_module, "_git_value", value)
+
+
+def test_production_admission_requires_exact_clean_expected_remote(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commit = "a" * 40
+    _mock_git(
+        monkeypatch,
+        commit=commit,
+        remote="git@github.com:FreddyCreates/sovereign.git",
+        dirty=False,
+    )
+    binding = bind_sovereign(
+        _fixture(tmp_path),
+        expected_commit=commit,
+        require_clean=True,
+        require_expected_remote=True,
+    )
+    assert binding is not None
+    assert binding.receipt()["admission"]["production_admitted"] is True
+    assert binding.receipt()["admission"]["remote_verified"] is True
+
+
+def test_production_admission_rejects_dirty_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commit = "b" * 40
+    _mock_git(
+        monkeypatch,
+        commit=commit,
+        remote="https://github.com/FreddyCreates/sovereign.git",
+        dirty=True,
+    )
+    with pytest.raises(ValueError, match="dirty"):
+        bind_sovereign(
+            _fixture(tmp_path),
+            expected_commit=commit,
+            require_clean=True,
+            require_expected_remote=True,
+        )
+
+
+def test_production_admission_rejects_commit_or_remote_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commit = "c" * 40
+    _mock_git(monkeypatch, commit=commit, remote="https://example.com/fork", dirty=False)
+    with pytest.raises(ValueError, match="commit mismatch"):
+        bind_sovereign(_fixture(tmp_path), expected_commit="d" * 40)
+    with pytest.raises(ValueError, match="Unexpected Sovereign origin"):
+        bind_sovereign(
+            _fixture(tmp_path),
+            expected_commit=commit,
+            require_expected_remote=True,
+        )
