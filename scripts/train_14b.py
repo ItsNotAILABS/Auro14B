@@ -56,6 +56,11 @@ def main(argv: list[str] | None = None) -> int:
         default=os.getenv("AURO_SOVEREIGN_COMMIT"),
         help="Exact 40-character Sovereign commit admitted for production training",
     )
+    p.add_argument(
+        "--sovereign-contract-sha256",
+        default=os.getenv("AURO_SOVEREIGN_CONTRACT_SHA256"),
+        help="Exact SHA-256 digest of the admitted Sovereign training contract",
+    )
     p.add_argument("--sovereign-max-blocks", type=int, default=256)
     p.add_argument(
         "--max-sequences",
@@ -83,14 +88,19 @@ def main(argv: list[str] | None = None) -> int:
     from auro_native_llm.sovereign import bind_sovereign
 
     production_admission = not args.smoke and not args.allow_missing_sovereign
-    if production_admission and not args.sovereign_commit:
+    if production_admission and (not args.sovereign_commit or not args.sovereign_contract_sha256):
         raise ValueError(
-            "Full Auro-14B training requires --sovereign-commit or AURO_SOVEREIGN_COMMIT"
+            "Full Auro-14B training requires both --sovereign-commit "
+            "(or AURO_SOVEREIGN_COMMIT) and --sovereign-contract-sha256 "
+            "(or AURO_SOVEREIGN_CONTRACT_SHA256)"
         )
     sovereign = bind_sovereign(
         args.sovereign_root,
         required=not args.allow_missing_sovereign,
         expected_commit=args.sovereign_commit if production_admission else None,
+        expected_contract_sha256=(
+            args.sovereign_contract_sha256 if production_admission else None
+        ),
         require_clean=production_admission,
         require_expected_remote=production_admission,
     )
