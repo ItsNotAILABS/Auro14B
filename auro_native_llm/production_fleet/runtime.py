@@ -153,11 +153,13 @@ class NovaRuntime:
         self.sdk = sdk
         from .capabilities import NativeCapabilities
         self.capabilities = NativeCapabilities(sdk)
-        capability_context = json.dumps({"organs":sdk.manifest(),"native_capabilities":self.capabilities.manifest()},ensure_ascii=False)
+        capability_context = json.dumps({"organs":sdk.manifest(),"native_capabilities":self.capabilities.manifest(),
+                                         "brain":self.capabilities.brain.snapshot()},ensure_ascii=False)
         self.agents = AgentManager(self.generator, capability_context=capability_context)
 
     def respond(self, message: str, *, execute: bool = False) -> dict[str, Any]:
         started = time.time()
+        brain_cycle = self.capabilities.brain.cycle(message, importance=.7 if execute else .5, execute_requested=execute)
         council = self.agents.run(message)
         council_json = json.dumps([asdict(x) for x in council], ensure_ascii=False)
         synthesis = self.generator(
@@ -188,6 +190,7 @@ class NovaRuntime:
             "executions": executions,
             "organ_sdk": self.sdk.manifest(),
             "native_capabilities": self.capabilities.manifest(),
+            "brain": {"cycle":asdict(brain_cycle),"snapshot":self.capabilities.brain.snapshot()},
             "model": {
                 "endpoint_id": self.endpoint.id,
                 "model": self.endpoint.model,
