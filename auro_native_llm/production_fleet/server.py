@@ -104,6 +104,9 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/v1/capabilities":
             self._require_api_auth()
             self._json(200, self.runtime.capabilities.manifest())
+        elif path == "/v1/context":
+            self._require_api_auth()
+            self._json(200, self.runtime.context.stats())
         elif path == "/v1/receipts/verify":
             self._require_api_auth()
             self._json(200, self.runtime.capabilities.ledger.verify())
@@ -139,6 +142,27 @@ class Handler(BaseHTTPRequestHandler):
             )
             self._json(200, result)
             return
+        if path == "/v1/context/query":
+            body=self._body()
+            pack=self.runtime.context.retrieve(
+                self._message(body.get("query")),
+                token_budget=int(body.get("token_budget") or self.runtime.context.default_budget),
+                top_k=int(body.get("top_k") or 24),
+            )
+            self._json(200,pack.public());return
+        if path == "/v1/context/ingest":
+            self._require_execution_auth()
+            body=self._body()
+            text=body.get("text")
+            if not isinstance(text,str) or not text.strip():
+                raise ApiError(400,"context_text_required","A non-empty context text is required.")
+            result=self.runtime.context.ingest(
+                text,source=str(body.get("source") or "api"),kind=str(body.get("kind") or "document"),
+                importance=float(body.get("importance",.5)),metadata=dict(body.get("metadata") or {}),
+                chunk_tokens=int(body.get("chunk_tokens") or 900),
+                allow_sensitive=bool(body.get("allow_sensitive",False)),
+            )
+            self._json(200,result);return
         if path == "/v1/browser/tasks/claim":
             body=self._body();self._json(200,{"task":self.runtime.capabilities.browser.claim(str(body.get("worker_id") or "chrome"))});return
         if path.startswith("/v1/browser/tasks/") and path.endswith("/complete"):
@@ -264,6 +288,7 @@ class Handler(BaseHTTPRequestHandler):
             "native_response": "/v1/him/respond",
             "openai_compatible": "/v1/chat/completions",
             "models": "/v1/models",
+            "context": {"stats":"/v1/context","query":"/v1/context/query","ingest":"/v1/context/ingest"},
             "capabilities": "/v1/capabilities",
             "receipts": "/v1/receipts",
             "downloads": "/v1/downloads/{sha256}.zip",
@@ -284,6 +309,9 @@ class Handler(BaseHTTPRequestHandler):
                 "/v1/chat/completions": {"post": {"summary": "OpenAI-compatible chat completion"}},
                 "/v1/capabilities": {"get": {"summary": "Native capability contracts"}},
                 "/v1/capabilities/call": {"post": {"summary": "Call a governed native capability"}},
+                "/v1/context": {"get": {"summary": "Virtual context statistics"}},
+                "/v1/context/query": {"post": {"summary": "Retrieve a bounded context working set"}},
+                "/v1/context/ingest": {"post": {"summary": "Persist governed context"}},
                 "/v1/receipts": {"get": {"summary": "Recent receipts"}},
                 "/v1/receipts/verify": {"get": {"summary": "Verify the receipt chain"}},
             },
