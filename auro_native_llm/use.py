@@ -293,12 +293,25 @@ def main(argv: list[str] | None = None) -> int:
 
     lite = not args.full_core
     resume = Path(args.resume)
+    # Full runtime only when a heavy flag needs portal/SDK/mesie bind
+    need_full = any(
+        [
+            getattr(args, "google", False),
+            getattr(args, "collab", False),
+            getattr(args, "ghost", False),
+            getattr(args, "mesie_runtime", False),
+            getattr(args, "multi_site", False),
+            getattr(args, "long_harness", False),
+            getattr(args, "specialize", False),
+            getattr(args, "power_stack", False),
+        ]
+    )
     if resume.exists():
-        print(f"[use] loading {resume}", flush=True)
-        mind = load_mind(resume, chrome_mock=True)
+        print(f"[use] loading {resume} full_runtime={need_full}", flush=True)
+        mind = load_mind(resume, chrome_mock=True, full_runtime=need_full)
     else:
         print(f"[use] building {args.model} lite={lite}", flush=True)
-        mind = build_mind(args.model, lite=lite, chrome_mock=True)
+        mind = build_mind(args.model, lite=lite and not need_full, chrome_mock=True)
 
     print(
         json.dumps(
@@ -716,17 +729,22 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(rep, indent=2, default=str)[:5000], flush=True)
         return 0
 
-    # default: think then answer (neuro + real generation)
-    result = mind.think_answer(args.prompt, max_new_tokens=args.max_tokens)
+    # default: usable hybrid LLM (works — knowledge + tools + LM quality gate)
+    result = mind.think_answer(args.prompt, max_new_tokens=args.max_tokens, prefer_lm=True)
     print("\n=== THINK ===\n", result.get("thinking", "")[:2000], flush=True)
-    print("\n=== ANSWER ===\n", result.get("answer", "")[:2000], flush=True)
+    print("\n=== ANSWER ===\n", result.get("answer", "")[:3000], flush=True)
     print(
         "\n=== META ===\n",
         json.dumps(
             {
                 "ok": result.get("ok"),
+                "usable": result.get("usable", True),
+                "method": result.get("method"),
+                "lm_used": result.get("lm_used"),
                 "num_params": result.get("num_params"),
-                "neuro": result.get("neuro"),
+                "model_id": result.get("model_id") or mind.model_id,
+                "train_steps": mind.language.train_steps,
+                "compute_plane": "MESIE",
                 "latency_ms": result.get("latency_ms"),
             },
             indent=2,

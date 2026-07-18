@@ -67,16 +67,8 @@ class ReasoningOrchestrator:
                 except Exception:
                     pass
 
-        # mind think_answer fallback
-        if self.mind is not None and hasattr(self.mind, "think_answer"):
-            try:
-                r = self.mind.think_answer(p, max_new_tokens=64, think_tokens=24)
-                ans = (r.get("answer") or r.get("text") or "").strip()
-                if ans:
-                    return ans, "neuro_think_answer"
-            except Exception:
-                pass
-
+        # Do NOT call mind.think_answer here — that re-enters hybrid and deadlocks.
+        # Leave unsolved so usable layer can synthesize knowledge / structure.
         return "", "unsolved"
 
     def answer(self, prompt: str) -> str:

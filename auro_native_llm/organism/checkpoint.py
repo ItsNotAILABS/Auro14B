@@ -71,8 +71,15 @@ def load_mind(
     directory: str | Path,
     *,
     chrome_mock: bool = True,
+    full_runtime: bool = False,
 ) -> AuroMind:
-    """Restore a complete mind from checkpoint."""
+    """Restore a complete mind from checkpoint.
+
+    ``full_runtime=False`` (default): fast path for chat/usable LLM — skips
+    heavy MESIE stack bind + multi-repo SDK scan. Set True for portal/SDK/google.
+    """
+    import os
+
     directory = Path(directory)
     language = load_lm_checkpoint(directory / "language")
     mind = AuroMind(language, chrome_mock=chrome_mock)
@@ -93,11 +100,13 @@ def load_mind(
         tr.batch_size = int(data.get("batch_size", tr.batch_size))
         tr.total_train_steps = int(data.get("total_train_steps", 0))
         tr.total_absorbs = int(data.get("total_absorbs", 0))
-        tr.loss_history = list(data.get("loss_history", []))
+        tr.loss_history = list(data.get("loss_history", []))[-200:]
         seeds = data.get("doctrine_seeds") or []
         if seeds:
             tr.seed_doctrine(seeds)
-        for ed in data.get("experiences", []):
+        # Cap restore so chat load stays snappy
+        experiences = list(data.get("experiences") or [])[-200:]
+        for ed in experiences:
             tr.buffer.append(
                 Experience(
                     text=str(ed.get("text", "")),
@@ -115,30 +124,44 @@ def load_mind(
         mind.act_count = int(meta.get("act_count", 0))
         mind.born_at = float(meta.get("born_at", mind.born_at))
 
-    # Bind installed mesie transformers / intelligence into restored mind
+    # Lightweight always-on: physics engine on language (cheap)
     try:
-        from auro_native_llm.mesie_runtime import attach_mesie_runtime
+        from auro_native_llm.physics import get_physics_engine
 
-        attach_mesie_runtime(mind, lite=True)
+        language.physics = get_physics_engine()
     except Exception:
         pass
-    try:
-        from auro_native_llm.ghost.supervisor import GhostSupervisor
 
-        mind.ghost = GhostSupervisor(mind)  # type: ignore[attr-defined]
-    except Exception:
+    full = full_runtime or os.environ.get("AURO_FULL_RUNTIME", "").strip() in ("1", "true", "yes")
+    if full:
+        try:
+            from auro_native_llm.mesie_runtime import attach_mesie_runtime
+
+            attach_mesie_runtime(mind, lite=True)
+        except Exception:
+            pass
+        try:
+            from auro_native_llm.ghost.supervisor import GhostSupervisor
+
+            mind.ghost = GhostSupervisor(mind)  # type: ignore[attr-defined]
+        except Exception:
+            mind.ghost = None  # type: ignore[attr-defined]
+        try:
+            from auro_native_llm.gworkspace import get_envelope
+
+            mind.gworkspace = get_envelope(mind, chrome_mock=chrome_mock)  # type: ignore[attr-defined]
+        except Exception:
+            mind.gworkspace = None  # type: ignore[attr-defined]
+        try:
+            from auro_native_llm.sdk_runtime.injector import inject_repo_sdks
+
+            inject_repo_sdks(mind, max_packages=80)
+        except Exception:
+            pass
+    else:
+        # Lazy placeholders — attach on first use via mind methods
         mind.ghost = None  # type: ignore[attr-defined]
-    try:
-        from auro_native_llm.gworkspace import get_envelope
-
-        mind.gworkspace = get_envelope(mind, chrome_mock=chrome_mock)  # type: ignore[attr-defined]
-    except Exception:
         mind.gworkspace = None  # type: ignore[attr-defined]
-    try:
-        from auro_native_llm.sdk_runtime.injector import inject_repo_sdks
-
-        inject_repo_sdks(mind)
-    except Exception:
-        pass
+        mind._runtime_lazy = True  # type: ignore[attr-defined]
 
     return mind
