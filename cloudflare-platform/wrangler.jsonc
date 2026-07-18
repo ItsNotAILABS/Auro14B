@@ -7,5 +7,5 @@
   "ai":{"binding":"AI"},
   "durable_objects":{"bindings":[{"name":"SESSIONS","class_name":"HIMSession"}]},
   "migrations":[{"tag":"v1","new_sqlite_classes":["HIMSession"]}],
-  "vars":{"WORKERS_AI_MODEL":"@cf/meta/llama-3.3-70b-instruct-fp8-fast","EXECUTION_TTL_SECONDS":"300"}
+  "vars":{"WORKERS_AI_MODEL":"@cf/meta/llama-3.3-70b-instruct-fp8-fast","EXECUTION_TTL_SECONDS":"300","MONAD_RPC_URL":"https://rpc.monad.xyz"}
 }
