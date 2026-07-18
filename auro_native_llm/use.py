@@ -94,6 +94,18 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--stack-rounds", type=int, default=5)
     p.add_argument("--stack-physics-steps", type=int, default=3)
     p.add_argument(
+        "--colony",
+        action="store_true",
+        help="Colony LLM: many mini Python models + skills + 500k context + real generation",
+    )
+    p.add_argument("--colony-germs", type=int, default=40, help="Extra skill/free germs")
+    p.add_argument(
+        "--colony-context",
+        type=int,
+        default=500_000,
+        help="Logical context window tokens (default 500k)",
+    )
+    p.add_argument(
         "--github",
         action="store_true",
         help="GitHub access status (gh sign-in + MCP identity)",
@@ -719,6 +731,51 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps({k: out[k] for k in out if k != "open"}, indent=2)[:4000], flush=True)
         return 0
+
+    if args.colony:
+        from auro_native_llm.colony import build_colony
+
+        col = build_colony(
+            mind,
+            n_extra_germs=args.colony_germs,
+            context_tokens=args.colony_context,
+        )
+        info = col.info()
+        print(
+            json.dumps(
+                {
+                    "colony": {
+                        "n_germs": info["n_germs"],
+                        "num_params_live": info["num_params_live"],
+                        "context_window_tokens": info["context_window_tokens"],
+                        "context_used": info["context"]["tokens_used"],
+                    }
+                },
+                indent=2,
+            ),
+            flush=True,
+        )
+        out = col.generate(args.prompt)
+        print(
+            json.dumps(
+                {
+                    "ok": out.get("ok"),
+                    "method": out.get("method"),
+                    "num_params_live": out.get("num_params_live"),
+                    "n_germs_active": out.get("n_germs_active"),
+                    "active_germs": out.get("active_germs"),
+                    "context": out.get("context"),
+                    "train": out.get("train"),
+                    "latency_ms": out.get("latency_ms"),
+                    "claim_boundary": out.get("claim_boundary"),
+                    "text": out.get("text"),
+                },
+                indent=2,
+                default=str,
+            ),
+            flush=True,
+        )
+        return 0 if out.get("ok") else 2
 
     if args.team:
         from auro_native_llm.agents.manager import AgentManager

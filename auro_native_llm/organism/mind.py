@@ -367,6 +367,25 @@ class AuroMind:
         """Mature public chat API — always returns usable answer."""
         return self.think_answer(prompt, **kw)
 
+    def colony(self, *, n_extra_germs: int = 16, context_tokens: int = 500_000) -> Any:
+        """Colony of mini Python models (host+germs) with 500k logical context."""
+        from auro_native_llm.colony import build_colony
+
+        if getattr(self, "_colony", None) is None:
+            self._colony = build_colony(
+                self, n_extra_germs=n_extra_germs, context_tokens=context_tokens
+            )  # type: ignore[attr-defined]
+        return self._colony
+
+    def colony_generate(self, prompt: str, **kw: Any) -> Dict[str, Any]:
+        """Generate via multi-mini-model colony (more params, skills, real prose)."""
+        c = self.colony(
+            n_extra_germs=int(kw.pop("n_extra_germs", 16) or 16),
+            context_tokens=int(kw.pop("context_tokens", 500_000) or 500_000),
+        )
+        out = c.generate(prompt, **{k: v for k, v in kw.items() if k in ("max_sections",)})
+        return out
+
     def ensure_runtime(self, *, chrome_mock: bool = True) -> None:
         """Lazily attach MESIE/ghost/google when first needed (mature full stack)."""
         if not getattr(self, "_runtime_lazy", False):
@@ -1144,6 +1163,7 @@ class AuroMind:
                 # dual organism
                 "python_ai", "julia_brain", "virtual_physics_cores", "distributed_think",
                 "power_stack", "physics_engines", "economic_engines", "coupled_algorithms",
+                "colony_llm", "mini_models", "context_500k", "skill_germs",
             ],
             "brains": (
                 self.organs.brains.info() if self.organs.brains is not None else None
