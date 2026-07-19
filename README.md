@@ -150,6 +150,20 @@ Dynamic Workers, Sandbox SDK, Browser Run, durable Agents/Think, and Workers
 Observability. It is disabled by default and remote mutation remains separately
 approval-gated. See `docs/cloudflare_runtime.md`.
 
+The deployable autonomous operator is in `workers/auro-platform/`. It combines
+a React chat UI, Workers AI, durable Think/Agents state, managed Cloudflare API
+MCP, Dynamic Worker Code Mode, Browser Run, extensions, and observability:
+
+```bash
+cd workers/auro-platform
+npm install
+npx wrangler login
+npm run deploy
+```
+
+It defaults to inspection and planning. Cloudflare changes require a narrowly
+scoped API token, the server mutation flag, and an `OPERATOR_APPROVED` turn.
+
 `mobile-runtime/` adds an Expo SDK 54 multi-device client that runs immediately
 in Expo Go, connects to the Auro/MESIE API over the LAN, attaches accelerometer
 state as a native sense, and displays response receipts. Install Expo Go from
