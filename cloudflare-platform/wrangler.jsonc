@@ -4,7 +4,7 @@
   "main":"src/index.ts",
   "compatibility_date":"2026-07-01",
   "observability":{"enabled":true},
-  "assets":{"directory":"./public","binding":"ASSETS","run_worker_first":["/api/*","/v1/*","/operator/*"]},
+  "assets":{"directory":"./public","binding":"ASSETS","run_worker_first":["/api/*","/v1/*","/operator","/operator/*"]},
   "ai":{"binding":"AI"},
   "durable_objects":{"bindings":[{"name":"SESSIONS","class_name":"HIMSession"}]},
   "migrations":[{"tag":"v1","new_sqlite_classes":["HIMSession"]}],
