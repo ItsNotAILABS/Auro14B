@@ -1,0 +1,58 @@
+name: Portable Runtime Gate
+
+on:
+  pull_request:
+    paths:
+      - 'native_llm/fabric/**'
+      - 'scripts/start_local.sh'
+      - 'scripts/replit_start.sh'
+      - '.github/workflows/portable-runtime-gate.yml'
+  push:
+    branches:
+      - main
+      - feature/portable-node-runtime
+    paths:
+      - 'native_llm/fabric/**'
+      - 'scripts/start_local.sh'
+      - 'scripts/replit_start.sh'
+      - '.github/workflows/portable-runtime-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: native_llm/fabric
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: native_llm/fabric/package.json
+      - name: Syntax check
+        run: npm run check
+      - name: Unit and HTTP smoke tests
+        run: npm test
+      - name: Clean start proof
+        run: |
+          node src/index.mjs > /tmp/medina-node-fabric.log 2>&1 &
+          pid=$!
+          trap 'kill $pid || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8787/health > /tmp/health.json; then
+              break
+            fi
+            sleep 1
+          done
+          node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync('/tmp/health.json'));if(!x.ok||!x.receipt_chain_valid)process.exit(1)"
+      - name: Upload release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-runtime-evidence
+          path: |
+            /tmp/health.json
+            /tmp/medina-node-fabric.log
