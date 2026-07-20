@@ -6,6 +6,7 @@ on:
       - 'native_llm/fabric/**'
       - 'scripts/start_local.sh'
       - 'scripts/replit_start.sh'
+      - 'scripts/verify_cutover.sh'
       - '.github/workflows/portable-runtime-gate.yml'
   push:
     branches:
@@ -15,6 +16,7 @@ on:
       - 'native_llm/fabric/**'
       - 'scripts/start_local.sh'
       - 'scripts/replit_start.sh'
+      - 'scripts/verify_cutover.sh'
       - '.github/workflows/portable-runtime-gate.yml'
 
 permissions:
@@ -23,31 +25,34 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: native_llm/fabric
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-          cache-dependency-path: native_llm/fabric/package.json
+      - name: Cutover policy check
+        run: sh scripts/verify_cutover.sh
       - name: Syntax check
+        working-directory: native_llm/fabric
         run: npm run check
       - name: Unit and HTTP smoke tests
+        working-directory: native_llm/fabric
         run: npm test
       - name: Clean start proof
+        working-directory: native_llm/fabric
         run: |
           node src/index.mjs > /tmp/medina-node-fabric.log 2>&1 &
           pid=$!
-          trap 'kill $pid || true' EXIT
+          trap 'kill $pid 2>/dev/null || true' EXIT
+          ready=0
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8787/health > /tmp/health.json; then
+              ready=1
               break
             fi
             sleep 1
           done
+          test "$ready" -eq 1
           node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync('/tmp/health.json'));if(!x.ok||!x.receipt_chain_valid)process.exit(1)"
       - name: Upload release evidence
         uses: actions/upload-artifact@v4
