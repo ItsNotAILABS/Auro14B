@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
+import auro_native_llm.sovereign.contract as contract_module
 from auro_native_llm.sovereign import bind_sovereign
 
 
@@ -61,3 +63,101 @@ def test_binding_rejects_wrong_repository(tmp_path: Path) -> None:
 
 def test_optional_missing_binding() -> None:
     assert bind_sovereign("Z:/definitely/missing/sovereign", required=False) is None
+
+
+def _mock_git(monkeypatch: pytest.MonkeyPatch, *, commit: str, remote: str, dirty: bool) -> None:
+    def value(_root: Path, *args: str) -> str | None:
+        if args == ("rev-parse", "HEAD"):
+            return commit
+        if args == ("remote", "get-url", "origin"):
+            return remote
+        if args == ("status", "--porcelain"):
+            return " M doctrine.md" if dirty else None
+        return None
+    monkeypatch.setattr(contract_module, "_git_value", value)
+
+
+def test_production_admission_requires_exact_clean_expected_remote(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commit = "a" * 40
+    _mock_git(
+        monkeypatch,
+        commit=commit,
+        remote="git@github.com:FreddyCreates/sovereign.git",
+        dirty=False,
+    )
+    root = _fixture(tmp_path)
+    contract_sha256 = hashlib.sha256(
+        (root / "integration/training-contract.v1.json").read_bytes()
+    ).hexdigest()
+    binding = bind_sovereign(
+        root,
+        expected_commit=commit,
+        expected_contract_sha256=contract_sha256,
+        require_clean=True,
+        require_expected_remote=True,
+    )
+    assert binding is not None
+    assert binding.receipt()["admission"]["production_admitted"] is True
+    assert binding.receipt()["admission"]["remote_verified"] is True
+
+
+def test_production_admission_rejects_dirty_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commit = "b" * 40
+    _mock_git(
+        monkeypatch,
+        commit=commit,
+        remote="https://github.com/FreddyCreates/sovereign.git",
+        dirty=True,
+    )
+    with pytest.raises(ValueError, match="dirty"):
+        root = _fixture(tmp_path)
+        contract_sha256 = hashlib.sha256(
+            (root / "integration/training-contract.v1.json").read_bytes()
+        ).hexdigest()
+        bind_sovereign(
+            root,
+            expected_commit=commit,
+            expected_contract_sha256=contract_sha256,
+            require_clean=True,
+            require_expected_remote=True,
+        )
+
+
+def test_production_admission_rejects_commit_or_remote_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commit = "c" * 40
+    _mock_git(monkeypatch, commit=commit, remote="https://example.com/fork", dirty=False)
+    with pytest.raises(ValueError, match="commit mismatch"):
+        bind_sovereign(_fixture(tmp_path), expected_commit="d" * 40)
+    with pytest.raises(ValueError, match="Unexpected Sovereign origin"):
+        bind_sovereign(
+            _fixture(tmp_path),
+            expected_commit=commit,
+            require_expected_remote=True,
+        )
+
+
+def test_production_admission_rejects_contract_digest_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commit = "e" * 40
+    root = _fixture(tmp_path)
+    _mock_git(
+        monkeypatch,
+        commit=commit,
+        remote="https://github.com/FreddyCreates/sovereign.git",
+        dirty=False,
+    )
+    with pytest.raises(ValueError, match="contract digest mismatch"):
+        bind_sovereign(
+            root,
+            expected_commit=commit,
+            expected_contract_sha256="0" * 64,
+            require_clean=True,
+            require_expected_remote=True,
+        )
