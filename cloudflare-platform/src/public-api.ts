@@ -43,7 +43,9 @@ export async function handlePublicApi(request:Request,env:PublicEnv,stub:Receipt
   const body=await request.json() as {messages?:Array<{role?:string;content?:string}>;max_tokens?:number;temperature?:number};
   if(!Array.isArray(body.messages)||body.messages.length===0)return json({error:"messages are required"},400);
   const messages=body.messages.map(item=>({role:item.role||"user",content:String(item.content||"")}));
-  const output=await env.AI.run(env.WORKERS_AI_MODEL as keyof AiModels,{messages,max_tokens:Math.min(2048,Math.max(1,Number(body.max_tokens)||256)),temperature:Math.min(2,Math.max(0,Number(body.temperature)??0.7))} as never) as {response?:string};
+  const rawTemperature=Number(body.temperature);
+  const temperature=Number.isFinite(rawTemperature)?Math.min(2,Math.max(0,rawTemperature)):0.7;
+  const output=await env.AI.run(env.WORKERS_AI_MODEL as keyof AiModels,{messages,max_tokens:Math.min(2048,Math.max(1,Number(body.max_tokens)||256)),temperature} as never) as {response?:string};
   const content=output.response||"";
   const receipt=await stub.append("foundry_chat",{message_count:messages.length,response_length:content.length,model:env.WORKERS_AI_MODEL});
   return json({id:crypto.randomUUID(),object:"chat.completion",created:Math.floor(Date.now()/1000),model:"auro-cloudflare",choices:[{index:0,message:{role:"assistant",content},finish_reason:"stop"}],receipt});
