@@ -18,10 +18,18 @@ class _Capabilities:
  def manifest(self): return {"schema":"test","capabilities":[{"name":"brain.state"}]}
  def call(self,name,arguments,approved=False): return {"ok":True,"capability":name,"approved":approved,"arguments":arguments}
 
+class _Context:
+ default_budget=32000
+ def stats(self):return {"schema":"him.context.virtualization.v1","logical_tokens":123}
+ def retrieve(self,query,token_budget=32000,top_k=24):
+  return SimpleNamespace(public=lambda:{"query":query,"token_budget":token_budget,"injected_tokens":10})
+ def ingest(self,text,**kwargs):return {"ok":True,"tokens":len(text)//4,"source":kwargs["source"]}
+
 class _Runtime:
  def __init__(self):
   self.endpoint=SimpleNamespace(id="auro-test",model="auro-test",role="orchestrator",parameter_count=123)
   self.capabilities=_Capabilities()
+  self.context=_Context()
  def respond(self,message,execute=False):
   return {"schema":"nova.production.response.v1","answer":"HIM: "+message,"confidence":.9,"reasoning_summary":["checked"],"agents":[],"proposed_actions":[],"executions":[],"model":{"model":"auro-test","parameter_count_verified":True},"receipt":{"hash":"abc"}}
 
@@ -85,3 +93,14 @@ def test_streaming_is_explicitly_rejected_with_structured_error():
   else: raise AssertionError("unsupported streaming must fail explicitly")
  finally: _stop(old,server)
 
+def test_context_api_supports_stats_query_and_governed_ingest():
+ old,server,base=_server();prior=os.environ.get("AURO_EXECUTION_TOKEN");os.environ["AURO_EXECUTION_TOKEN"]="exec"
+ try:
+  client=AuroClient(base,execution_token="exec")
+  assert client.context_stats()["logical_tokens"]==123
+  assert client.query_context("needle",token_budget=500)["query"]=="needle"
+  assert client.ingest_context("persistent evidence",source="demo")["source"]=="demo"
+ finally:
+  if prior is None:os.environ.pop("AURO_EXECUTION_TOKEN",None)
+  else:os.environ["AURO_EXECUTION_TOKEN"]=prior
+  _stop(old,server)

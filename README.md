@@ -31,6 +31,24 @@ This repository is the Auro native LLM runtime built on **MESIE** (Multi-Element
 
 ## Quick start
 
+### Talk to HIM today
+
+```bash
+python scripts/launch_him.py
+```
+
+The browser console includes chat, persistent Python context, real model-lane
+inspection, native tools, and receipt verification. For broad fluent chat, point
+the same launcher at a promoted Auro endpoint:
+
+```bash
+python scripts/launch_him.py --base-url http://127.0.0.1:8088/v1 \
+  --model Auro-HIM-14B --parameter-count 14000000000
+```
+
+See `docs/LAUNCH_HIM_TODAY.md`. The bundled 146,576-parameter HIM-native-v0 is
+an open-weight reference checkpoint, not the finished 14B model.
+
 ### Requirements
 
 - Python **3.10+** (3.11 tested)
