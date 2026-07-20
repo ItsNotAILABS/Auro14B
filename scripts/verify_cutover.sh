@@ -11,7 +11,23 @@ fail() {
 [ -f native_llm/fabric/package.json ] || fail 'portable fabric package is required'
 [ -f cloudflare-platform/wrangler.jsonc ] || fail 'Cloudflare production envelope is required'
 
-if grep -RIn --exclude-dir=.git --exclude='REPLIT_RETIREMENT.md' --exclude='replit_start.sh' '@replit/' . >/tmp/replit-packages.txt 2>/dev/null; then
+find . \
+  -path './.git' -prune -o \
+  -path './node_modules' -prune -o \
+  -path './REPLIT_RETIREMENT.md' -prune -o \
+  -path './scripts/replit_start.sh' -prune -o \
+  -type f \( \
+    -name 'package.json' -o \
+    -name 'package-lock.json' -o \
+    -name '*.js' -o \
+    -name '*.mjs' -o \
+    -name '*.cjs' -o \
+    -name '*.ts' -o \
+    -name '*.tsx' -o \
+    -name '*.jsx' \
+  \) -print0 | xargs -0 grep -nH '@replit/' > /tmp/replit-packages.txt 2>/dev/null || true
+
+if [ -s /tmp/replit-packages.txt ]; then
   cat /tmp/replit-packages.txt >&2
   fail 'active @replit package references remain'
 fi
