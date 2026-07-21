@@ -1,9 +1,8 @@
 """Deterministic structured pre-wiring for native Auro checkpoints.
 
-This module adds measurable inductive structure to the native MESIE model at
-birth. It does not claim to encode factual world knowledge without training.
-Instead it establishes stable control, memory, spectral, multimodal, and
-civilization-primitive geometry that training can refine.
+A normalized Walsh-Hadamard basis creates exact, inexpensive orthogonal channels.
+A smaller harmonic residual preserves MESIE's continuous spectral geometry.
+Neither mechanism substitutes for corpus training or benchmark evidence.
 """
 from __future__ import annotations
 
@@ -14,6 +13,13 @@ from typing import Any, Dict, Iterable, List, Sequence
 
 import numpy as np
 
+from auro_native_llm.model.walsh_hadamard import (
+    WalshOrder,
+    diagnose,
+    hadamard_matrix,
+    next_power_of_two,
+    walsh_tensor,
+)
 
 CIVILIZATION_PRIMITIVES: Sequence[str] = (
     "matter", "force", "energy", "space", "time", "structure", "flow",
@@ -34,13 +40,14 @@ CONTROL_FAMILIES: Dict[str, Sequence[str]] = {
 
 @dataclass(frozen=True)
 class PrewiringConfig:
-    version: str = "auro.prewiring.v1"
+    version: str = "auro.prewiring.v2"
     seed: int = 873539
     embedding_strength: float = 0.05
-    spectral_strength: float = 0.03
-    plastic_noise: float = 0.005
+    spectral_strength: float = 0.015
+    plastic_noise: float = 0.003
     invariant_fraction: float = 0.02
     anchored_fraction: float = 0.18
+    walsh_ordering: WalshOrder = "sequency"
     external_model_fallback: bool = False
 
 
@@ -53,18 +60,12 @@ class PrewiringReceipt:
     live_parameter_count: int
     applied_components: List[str]
     tensor_shapes: Dict[str, List[int]]
+    transform_diagnostics: Dict[str, Any]
     manifest_sha256: str
     notes: List[str]
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
-
-
-def _orthogonal_basis(rows: int, cols: int, seed: int) -> np.ndarray:
-    rng = np.random.default_rng(seed)
-    width = max(rows, cols)
-    q, _ = np.linalg.qr(rng.standard_normal((width, width)))
-    return q[:rows, :cols]
 
 
 def _harmonic_lattice(rows: int, cols: int, seed: int) -> np.ndarray:
@@ -91,14 +92,21 @@ def _token_ids(tokenizer: Any, words: Iterable[str]) -> List[int]:
     return found
 
 
-def _manifest(config: PrewiringConfig, model: Any) -> Dict[str, Any]:
+def _manifest(config: PrewiringConfig, model: Any, diagnostics: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "schema": config.version,
         "seed": config.seed,
         "model_id": model.model_id,
         "parameter_target": int(model.config.parameter_target),
         "live_parameter_count": int(model.num_params),
-        "control_families": {k: list(v) for k, v in CONTROL_FAMILIES.items()},
+        "orthogonal_transform": {
+            "name": "normalized_walsh_hadamard",
+            "ordering": config.walsh_ordering,
+            "complexity": "O(n log n)",
+            "multiply_free_butterfly": True,
+            "diagnostics": diagnostics,
+        },
+        "control_families": {key: list(value) for key, value in CONTROL_FAMILIES.items()},
         "civilization_primitives": list(CIVILIZATION_PRIMITIVES),
         "external_model_fallback": False,
         "claims": {
@@ -110,48 +118,61 @@ def _manifest(config: PrewiringConfig, model: Any) -> Dict[str, Any]:
 
 
 def apply_structured_prewiring(model: Any, config: PrewiringConfig | None = None) -> PrewiringReceipt:
-    """Apply deterministic structure to the native Auro model in-place.
-
-    Current MESIE compatibility is deliberately conservative: the embedding and
-    untied LM head are modified through stable public attributes. Additional core
-    tensors can be added later only after their exact semantics are verified.
-    """
+    """Apply deterministic Walsh-Hadamard and MESIE residual structure in-place."""
     cfg = config or PrewiringConfig(seed=int(model.config.seed))
-    applied: List[str] = []
-    shapes: Dict[str, List[int]] = {}
-
     embedding = model.core.embedding.token_embeddings
     rows, cols = embedding.shape
-    lattice = _harmonic_lattice(rows, cols, cfg.seed).astype(embedding.dtype)
-    basis = _orthogonal_basis(min(rows, cols), cols, cfg.seed + 11).astype(embedding.dtype)
+    transform_order = next_power_of_two(cols)
+    diagnostics = diagnose(transform_order, ordering=cfg.walsh_ordering).to_dict()
 
-    structured = lattice * cfg.spectral_strength
-    structured[: basis.shape[0], :] += basis * cfg.embedding_strength
+    structured = walsh_tensor(
+        rows,
+        cols,
+        seed=cfg.seed,
+        ordering=cfg.walsh_ordering,
+    ).astype(embedding.dtype) * cfg.embedding_strength
+    structured += _harmonic_lattice(rows, cols, cfg.seed + 17).astype(embedding.dtype) * cfg.spectral_strength
 
-    family_offset = 0
-    for family_index, words in enumerate(CONTROL_FAMILIES.values()):
-        ids = [i for i in _token_ids(model.tokenizer, words) if i < rows]
+    family_basis = hadamard_matrix(
+        transform_order,
+        normalize=True,
+        ordering=cfg.walsh_ordering,
+    )
+    family_rows: Dict[str, List[int]] = {}
+    for family_index, (family, words) in enumerate(CONTROL_FAMILIES.items()):
+        ids = [token_id for token_id in _token_ids(model.tokenizer, words) if token_id < rows]
         if not ids:
             continue
-        anchor = _harmonic_lattice(1, cols, cfg.seed + 101 * (family_index + 1))[0]
-        anchor = anchor.astype(embedding.dtype)
+        anchor = family_basis[family_index % transform_order, :cols].astype(embedding.dtype)
+        anchor /= max(float(np.linalg.norm(anchor)), 1e-12)
         for token_id in ids:
             structured[token_id] += anchor * cfg.embedding_strength
-        family_offset += len(ids)
+        family_rows[family] = ids
 
     rng = np.random.default_rng(cfg.seed + 29)
     plastic = rng.standard_normal(embedding.shape).astype(embedding.dtype) * cfg.plastic_noise
     model.core.embedding.token_embeddings = embedding + structured + plastic
-    applied.extend(["harmonic_embedding_lattice", "orthogonal_control_basis", "bounded_plasticity"])
-    shapes["token_embeddings"] = list(embedding.shape)
+
+    applied = [
+        "normalized_walsh_hadamard_embedding_basis",
+        "walsh_sequency_control_channels" if cfg.walsh_ordering == "sequency" else "walsh_natural_control_channels",
+        "mesie_harmonic_residual",
+        "bounded_plasticity",
+    ]
+    shapes: Dict[str, List[int]] = {"token_embeddings": list(embedding.shape)}
 
     if not getattr(model.core, "tie_embeddings", True):
         head = model.core.lm_head_weight
-        model.core.lm_head_weight = head + _harmonic_lattice(*head.shape, cfg.seed + 41).astype(head.dtype) * cfg.spectral_strength
-        applied.append("harmonic_lm_head")
+        head_basis = walsh_tensor(
+            *head.shape,
+            seed=cfg.seed + 41,
+            ordering=cfg.walsh_ordering,
+        ).astype(head.dtype)
+        model.core.lm_head_weight = head + head_basis * cfg.embedding_strength
+        applied.append("normalized_walsh_hadamard_lm_head")
         shapes["lm_head_weight"] = list(head.shape)
 
-    manifest = _manifest(cfg, model)
+    manifest = _manifest(cfg, model, diagnostics)
     manifest_json = json.dumps(manifest, sort_keys=True, separators=(",", ":"))
     digest = hashlib.sha256(manifest_json.encode("utf-8")).hexdigest()
     model.prewiring_manifest = manifest
@@ -165,10 +186,12 @@ def apply_structured_prewiring(model: Any, config: PrewiringConfig | None = None
         live_parameter_count=int(model.num_params),
         applied_components=applied,
         tensor_shapes=shapes,
+        transform_diagnostics=diagnostics,
         manifest_sha256=digest,
         notes=[
-            "Structure is an inductive bias, not a substitute for training.",
+            "Walsh-Hadamard structure is an inductive bias, not a substitute for training.",
             "Civilization knowledge must enter through provenance-controlled corpora and evaluation.",
-            f"control_token_rows_touched={family_offset}",
+            f"control_token_rows_touched={sum(len(value) for value in family_rows.values())}",
+            f"control_families_anchored={len(family_rows)}",
         ],
     )
