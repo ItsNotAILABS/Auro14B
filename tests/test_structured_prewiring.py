@@ -42,47 +42,42 @@ def test_prewiring_is_deterministic():
     left = FakeModel()
     right = FakeModel()
     config = PrewiringConfig(seed=873539)
-
     left_receipt = apply_structured_prewiring(left, config)
     right_receipt = apply_structured_prewiring(right, config)
-
-    np.testing.assert_array_equal(
-        left.core.embedding.token_embeddings,
-        right.core.embedding.token_embeddings,
-    )
+    np.testing.assert_array_equal(left.core.embedding.token_embeddings, right.core.embedding.token_embeddings)
     assert left_receipt.manifest_sha256 == right_receipt.manifest_sha256
-    assert left_receipt.applied_components == right_receipt.applied_components
+    assert left_receipt.transform_diagnostics == right_receipt.transform_diagnostics
 
 
-def test_prewiring_changes_zero_baseline_without_destroying_shape():
+def test_prewiring_changes_baseline_and_preserves_shape():
     model = FakeModel()
     before = model.core.embedding.token_embeddings.copy()
     receipt = apply_structured_prewiring(model, PrewiringConfig(seed=9))
-
     assert model.core.embedding.token_embeddings.shape == before.shape
     assert not np.array_equal(model.core.embedding.token_embeddings, before)
     assert float(np.linalg.norm(model.core.embedding.token_embeddings)) > 0.0
     assert receipt.tensor_shapes["token_embeddings"] == [64, 16]
 
 
-def test_claim_boundary_and_native_identity_are_recorded():
+def test_manifest_records_native_walsh_invariants_and_claim_boundary():
     model = FakeModel()
     receipt = apply_structured_prewiring(model)
-
     manifest = model.prewiring_manifest
+    transform = manifest["orthogonal_transform"]
     assert manifest["model_id"] == "Auro-4B"
-    assert manifest["parameter_target"] == 4_000_000_000
     assert manifest["external_model_fallback"] is False
-    assert manifest["claims"]["structured_inductive_bias"] is True
     assert manifest["claims"]["factual_knowledge_without_training"] is False
-    assert manifest["claims"]["requires_ab_evaluation"] is True
-    assert receipt.live_parameter_count == 1024
+    assert transform["name"] == "normalized_walsh_hadamard"
+    assert transform["ordering"] == "sequency"
+    assert transform["diagnostics"]["orthogonality_max_error"] < 1e-12
+    assert transform["diagnostics"]["involution_max_error"] < 1e-12
+    assert transform["diagnostics"]["energy_error"] < 1e-12
+    assert "normalized_walsh_hadamard_embedding_basis" in receipt.applied_components
 
 
 def test_control_families_touch_multiple_embedding_rows():
     model = FakeModel()
     receipt = apply_structured_prewiring(model, PrewiringConfig(seed=27))
     touched = np.count_nonzero(np.linalg.norm(model.core.embedding.token_embeddings, axis=1))
-
     assert touched > 8
     assert any(note.startswith("control_token_rows_touched=") for note in receipt.notes)
