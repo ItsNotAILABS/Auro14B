@@ -4,6 +4,7 @@ import type { NormalizedTask, OperationRequest, RhiManifest } from "./contracts"
 import { nativeChat, nativeGet, relay, type NativeEnv } from "./native-client";
 
 export { OperatorAgent, TeamAgent, RepositoryAgent, FleetAgent, ApprovalSession, ChatSession };
+export { GovernedOperationWorkflow } from "./workflow";
 
 interface Env extends NativeEnv {
   ASSETS: Fetcher;
