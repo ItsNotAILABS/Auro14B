@@ -1,3 +1,4 @@
+import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
 import type { OperationRequest } from "./contracts";
 import { decide } from "./policy";
 
