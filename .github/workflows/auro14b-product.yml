@@ -4,12 +4,16 @@ on:
   pull_request:
     paths:
       - 'auro14b-app/**'
+      - 'scripts/use_auro.py'
+      - 'USE_AURO.cmd'
       - 'docs/production/AURO14B_PRODUCT_MASTER_PLAN.md'
       - '.github/workflows/auro14b-product.yml'
   push:
     branches: [main]
     paths:
       - 'auro14b-app/**'
+      - 'scripts/use_auro.py'
+      - 'USE_AURO.cmd'
       - 'docs/production/AURO14B_PRODUCT_MASTER_PLAN.md'
       - '.github/workflows/auro14b-product.yml'
   workflow_dispatch:
@@ -28,9 +32,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate one-command launcher
+        run: |
+          python -m py_compile scripts/use_auro.py
+          grep -q 'scripts\\use_auro.py' USE_AURO.cmd
+          grep -q 'AURO_NATIVE_BASE_URL' scripts/use_auro.py
+          ! grep -q 'Workers AI' scripts/use_auro.py
       - name: Install dependencies
         working-directory: auro14b-app
         run: npm install --no-audit --no-fund
