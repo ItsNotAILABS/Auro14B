@@ -1,0 +1,45 @@
+name: Auro4B Structured Prewiring
+
+on:
+  pull_request:
+    paths:
+      - 'auro_native_llm/model/prewiring.py'
+      - 'auro_native_llm/model/auro4b.py'
+      - 'scripts/build_auro4b_prewired.py'
+      - 'tests/test_structured_prewiring.py'
+      - '.github/workflows/auro4b-prewiring.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'auro_native_llm/model/prewiring.py'
+      - 'auro_native_llm/model/auro4b.py'
+      - 'scripts/build_auro4b_prewired.py'
+      - 'tests/test_structured_prewiring.py'
+      - '.github/workflows/auro4b-prewiring.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prewiring-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install focused test dependencies
+        run: python -m pip install --upgrade pip numpy pytest
+      - name: Compile structured birth modules
+        run: |
+          python -m py_compile auro_native_llm/model/prewiring.py
+          python -m py_compile auro_native_llm/model/auro4b.py
+          python -m py_compile scripts/build_auro4b_prewired.py
+      - name: Run deterministic prewiring tests
+        run: pytest -q tests/test_structured_prewiring.py
+      - name: Verify claim boundaries
+        run: |
+          grep -q 'factual_knowledge_without_training.*False' auro_native_llm/model/prewiring.py
+          grep -q 'benchmark_superiority_claimed.*False' auro_native_llm/model/auro4b.py
+          grep -q 'external_model_fallback.*False' auro_native_llm/model/prewiring.py
