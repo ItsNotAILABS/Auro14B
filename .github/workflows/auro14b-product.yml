@@ -37,14 +37,18 @@ jobs:
       - name: Build and validate
         working-directory: auro14b-app
         run: npm run check
-      - name: Verify release surface
+      - name: Verify native release surface
         run: |
           test -f auro14b-app/dist/site/index.html
           test -f auro14b-app/dist/site/model-card.html
           test -f auro14b-app/dist/site/release-manifest.json
           test -f auro14b-app/dist/worker/index.js
-          grep -q 'AURO' auro14b-app/dist/site/index.html
-          grep -q 'hosted-compatibility' auro14b-app/wrangler.jsonc
+          grep -q 'NATIVE MULTIMODAL INTELLIGENCE PLATFORM' auro14b-app/dist/site/index.html
+          grep -q 'AURO_NATIVE_BASE_URL' auro14b-app/wrangler.jsonc
+          grep -q 'new_sqlite_classes' auro14b-app/wrangler.jsonc
+          grep -q 'GovernedOperationWorkflow' auro14b-app/wrangler.jsonc
+          ! grep -q '"ai"' auro14b-app/wrangler.jsonc
+          ! grep -q 'Workers AI' auro14b-app/src/index.ts
       - uses: actions/upload-artifact@v4
         with:
           name: auro14b-product-build
