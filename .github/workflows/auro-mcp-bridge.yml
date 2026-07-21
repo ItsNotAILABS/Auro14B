@@ -1,0 +1,48 @@
+name: AURO MCP Bridge
+
+on:
+  pull_request:
+    paths:
+      - 'auro_native_llm/mcp_bridge/**'
+      - 'auro_native_llm/him_mcp.py'
+      - 'scripts/launch_auro_mcp_bridge.py'
+      - 'tests/test_mcp_bridge.py'
+      - '.github/workflows/auro-mcp-bridge.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'auro_native_llm/mcp_bridge/**'
+      - 'auro_native_llm/him_mcp.py'
+      - 'scripts/launch_auro_mcp_bridge.py'
+      - 'tests/test_mcp_bridge.py'
+      - '.github/workflows/auro-mcp-bridge.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  governed-bridge-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install focused dependencies
+        run: python -m pip install --upgrade pip pytest
+      - name: Compile bridge modules
+        run: |
+          python -m py_compile auro_native_llm/mcp_bridge/core.py
+          python -m py_compile auro_native_llm/mcp_bridge/server.py
+          python -m py_compile auro_native_llm/him_mcp.py
+          python -m py_compile scripts/launch_auro_mcp_bridge.py
+      - name: Run governed bridge tests
+        run: PYTHONPATH=. pytest -q tests/test_mcp_bridge.py
+      - name: Verify governance boundaries
+        run: |
+          grep -q 'class BridgePolicy' auro_native_llm/mcp_bridge/core.py
+          grep -q 'confirmation required' auro_native_llm/mcp_bridge/core.py
+          grep -q 'previous_sha256' auro_native_llm/mcp_bridge/core.py
+          grep -q 'allowed_hosts' auro_native_llm/mcp_bridge/core.py
+          grep -q 'structuredContent' auro_native_llm/mcp_bridge/core.py
