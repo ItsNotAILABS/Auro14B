@@ -41,9 +41,11 @@ jobs:
       - name: Validate one-command launcher
         run: |
           python -m py_compile scripts/use_auro.py
-          grep -q 'scripts\\use_auro.py' USE_AURO.cmd
+          grep -Fq 'scripts\use_auro.py' USE_AURO.cmd
           grep -q 'AURO_NATIVE_BASE_URL' scripts/use_auro.py
-          ! grep -q 'Workers AI' scripts/use_auro.py
+          ! grep -q 'env\.AI' scripts/use_auro.py
+          ! grep -q '@cf/' scripts/use_auro.py
+          ! grep -q 'MODEL_ID' scripts/use_auro.py
       - name: Install dependencies
         working-directory: auro14b-app
         run: npm install --no-audit --no-fund
@@ -61,7 +63,8 @@ jobs:
           grep -q 'new_sqlite_classes' auro14b-app/wrangler.jsonc
           grep -q 'GovernedOperationWorkflow' auro14b-app/wrangler.jsonc
           ! grep -q '"ai"' auro14b-app/wrangler.jsonc
-          ! grep -q 'Workers AI' auro14b-app/src/index.ts
+          ! grep -q 'env\.AI' auro14b-app/src/index.ts
+          ! grep -q '@cf/' auro14b-app/src/index.ts
       - uses: actions/upload-artifact@v4
         with:
           name: auro14b-product-build
