@@ -8,6 +8,7 @@ from auro_native_llm.bridges import (
     ReceiptChain,
     ToolSpec,
 )
+from auro_native_llm.bridges.server import handle_mcp
 
 
 class FakeAdapter:
@@ -52,10 +53,7 @@ def test_registry_discovery_execution_denial_and_receipt_chain(tmp_path: Path):
     denied = registry.invoke("fake.deploy_service", {})
     assert denied["denied"] and denied["decision"]["requires_confirmation"]
     assert registry.invoke("fake.deploy_service", {}, confirmed=True)["ok"]
-    receipts = [
-        json.loads(line)
-        for line in (tmp_path / "receipts.jsonl").read_text().splitlines()
-    ]
+    receipts = [json.loads(line) for line in (tmp_path / "receipts.jsonl").read_text().splitlines()]
     assert len(receipts) == 4
     assert all(
         receipts[index]["previous_hash"] == receipts[index - 1]["hash"]
@@ -110,3 +108,42 @@ def test_compact_catalog_and_auro_context_injection():
     assert report["tool_result"]["ok"]
     assert auro.colony.context.items
     assert report["context"]["tools"][0]["name"] == "fake.read_status"
+
+
+def test_inbound_mcp_surface_lists_and_calls_registered_tools():
+    registry = AuroCapabilityRegistry()
+    registry.register(FakeAdapter())
+    registry.refresh()
+    initialized = handle_mcp(
+        registry,
+        {"jsonrpc": "2.0", "id": 1, "method": "initialize"},
+    )
+    assert initialized["result"]["serverInfo"]["name"] == "AURO MCP Server Bridge"
+    listed = handle_mcp(
+        registry,
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+    )
+    assert {tool["name"] for tool in listed["result"]["tools"]} == {
+        "fake.read_status",
+        "fake.deploy_service",
+    }
+    called = handle_mcp(
+        registry,
+        {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {"name": "fake.read_status", "arguments": {"x": 9}},
+        },
+    )
+    assert called["result"]["isError"] is False
+    denied = handle_mcp(
+        registry,
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": {"name": "fake.deploy_service", "arguments": {}},
+        },
+    )
+    assert denied["result"]["isError"] is True
