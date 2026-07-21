@@ -13,29 +13,63 @@ from .runtime import AuroCapabilityRegistry, JSServiceAdapter, MCPHTTPAdapter, R
 def build_registry(config: Dict[str, Any], receipt_path: Path) -> AuroCapabilityRegistry:
     registry = AuroCapabilityRegistry(receipts=ReceiptChain(receipt_path))
     for item in config.get("mcp_servers", []):
-        registry.register(
-            MCPHTTPAdapter(
-                item["name"],
-                item["endpoint"],
-                headers=item.get("headers"),
-                timeout=float(item.get("timeout", 15)),
-            )
-        )
+        registry.register(MCPHTTPAdapter(item["name"], item["endpoint"], headers=item.get("headers"), timeout=float(item.get("timeout", 15))))
     for item in config.get("js_services", []):
-        schema = item.get("schema") or json.loads(
-            Path(item["schema_path"]).read_text(encoding="utf-8")
-        )
-        registry.register(
-            JSServiceAdapter(
-                item["name"],
-                item["base_url"],
-                schema,
-                headers=item.get("headers"),
-                timeout=float(item.get("timeout", 15)),
-            )
-        )
+        schema = item.get("schema") or json.loads(Path(item["schema_path"]).read_text(encoding="utf-8"))
+        registry.register(JSServiceAdapter(item["name"], item["base_url"], schema, headers=item.get("headers"), timeout=float(item.get("timeout", 15))))
     registry.refresh()
     return registry
+
+
+def handle_mcp(registry: AuroCapabilityRegistry, payload: Dict[str, Any]) -> Dict[str, Any]:
+    request_id = payload.get("id")
+    method = payload.get("method")
+    try:
+        if method == "initialize":
+            result = {
+                "protocolVersion": "2025-06-18",
+                "capabilities": {"tools": {"listChanged": True}},
+                "serverInfo": {"name": "AURO MCP Server Bridge", "version": "1"},
+            }
+        elif method == "tools/list":
+            result = {
+                "tools": [
+                    {
+                        "name": name,
+                        "description": tool.description,
+                        "inputSchema": tool.input_schema,
+                        "annotations": {"riskTier": registry.policy.classify(tool)},
+                    }
+                    for name, tool in sorted(registry.tools.items())
+                ]
+            }
+        elif method == "tools/call":
+            params = payload.get("params") or {}
+            call = registry.invoke(
+                params["name"],
+                params.get("arguments"),
+                confirmed=bool(params.get("confirmed")),
+            )
+            result = {
+                "content": [{"type": "text", "text": json.dumps(call, default=str)}],
+                "isError": not bool(call.get("ok")),
+                "structuredContent": call,
+            }
+        elif method == "notifications/initialized":
+            return {}
+        else:
+            return {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {"code": -32601, "message": f"method not found: {method}"},
+            }
+        return {"jsonrpc": "2.0", "id": request_id, "result": result}
+    except Exception as exc:
+        return {
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "error": {"code": -32000, "message": str(exc)[:300]},
+        }
 
 
 def make_handler(registry: AuroCapabilityRegistry):
@@ -62,16 +96,13 @@ def make_handler(registry: AuroCapabilityRegistry):
 
         def do_POST(self):
             payload = self._body()
-            if self.path == "/refresh":
+            if self.path == "/mcp":
+                self._send(200, handle_mcp(registry, payload))
+            elif self.path == "/refresh":
                 self._send(200, registry.refresh())
             elif self.path == "/invoke":
-                result = registry.invoke(
-                    payload["tool"],
-                    payload.get("arguments"),
-                    confirmed=bool(payload.get("confirmed")),
-                )
-                status = 200 if result.get("ok") else 403 if result.get("denied") else 500
-                self._send(status, result)
+                result = registry.invoke(payload["tool"], payload.get("arguments"), confirmed=bool(payload.get("confirmed")))
+                self._send(200 if result.get("ok") else 403 if result.get("denied") else 500, result)
             else:
                 self._send(404, {"ok": False, "error": "not found"})
 
@@ -86,29 +117,12 @@ def main() -> None:
     parser.add_argument("--config", type=Path, default=Path("config/auro_bridge.json"))
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8080)
-    parser.add_argument(
-        "--receipts",
-        type=Path,
-        default=Path("artifacts/bridge/receipts.jsonl"),
-    )
+    parser.add_argument("--receipts", type=Path, default=Path("artifacts/bridge/receipts.jsonl"))
     args = parser.parse_args()
-    config = (
-        json.loads(args.config.read_text(encoding="utf-8"))
-        if args.config.exists()
-        else {"mcp_servers": [], "js_services": []}
-    )
+    config = json.loads(args.config.read_text(encoding="utf-8")) if args.config.exists() else {"mcp_servers": [], "js_services": []}
     registry = build_registry(config, args.receipts)
     server = ThreadingHTTPServer((args.host, args.port), make_handler(registry))
-    print(
-        json.dumps(
-            {
-                "ok": True,
-                "display": f"mcp://localhost:{args.port}",
-                "http": f"http://{args.host}:{args.port}",
-                "tools": len(registry.tools),
-            }
-        )
-    )
+    print(json.dumps({"ok": True, "display": f"mcp://localhost:{args.port}", "mcp": f"http://{args.host}:{args.port}/mcp", "http": f"http://{args.host}:{args.port}", "tools": len(registry.tools)}))
     server.serve_forever()
 
 
