@@ -7,10 +7,13 @@ on:
       - 'auro_native_llm/model/walsh_hadamard.py'
       - 'auro_native_llm/model/sparse_projections.py'
       - 'auro_native_llm/model/auro4b.py'
+      - 'auro_native_llm/experiments/structured_transformer.py'
       - 'scripts/build_auro4b_prewired.py'
+      - 'scripts/benchmark_structured_transformer.py'
       - 'tests/test_structured_prewiring.py'
       - 'tests/test_walsh_hadamard.py'
       - 'tests/test_sparse_projections.py'
+      - 'tests/test_structured_transformer.py'
       - '.github/workflows/auro4b-prewiring.yml'
   push:
     branches: [main]
@@ -19,10 +22,13 @@ on:
       - 'auro_native_llm/model/walsh_hadamard.py'
       - 'auro_native_llm/model/sparse_projections.py'
       - 'auro_native_llm/model/auro4b.py'
+      - 'auro_native_llm/experiments/structured_transformer.py'
       - 'scripts/build_auro4b_prewired.py'
+      - 'scripts/benchmark_structured_transformer.py'
       - 'tests/test_structured_prewiring.py'
       - 'tests/test_walsh_hadamard.py'
       - 'tests/test_sparse_projections.py'
+      - 'tests/test_structured_transformer.py'
       - '.github/workflows/auro4b-prewiring.yml'
   workflow_dispatch:
 
@@ -38,21 +44,27 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install focused test dependencies
-        run: python -m pip install --upgrade pip numpy pytest
+        run: python -m pip install --upgrade pip numpy pytest torch
       - name: Compile structured birth modules
         run: |
           python -m py_compile auro_native_llm/model/walsh_hadamard.py
           python -m py_compile auro_native_llm/model/sparse_projections.py
           python -m py_compile auro_native_llm/model/prewiring.py
           python -m py_compile auro_native_llm/model/auro4b.py
+          python -m py_compile auro_native_llm/experiments/structured_transformer.py
           python -m py_compile scripts/build_auro4b_prewired.py
+          python -m py_compile scripts/benchmark_structured_transformer.py
       - name: Run structured numerical tests
-        run: pytest -q tests/test_walsh_hadamard.py tests/test_sparse_projections.py tests/test_structured_prewiring.py
+        run: pytest -q tests/test_walsh_hadamard.py tests/test_sparse_projections.py tests/test_structured_prewiring.py tests/test_structured_transformer.py
+      - name: Emit structured benchmark smoke receipt
+        run: python scripts/benchmark_structured_transformer.py --steps 2 --output evidence/structured-transformer-smoke.json
       - name: Verify mathematical and claim boundaries
         run: |
           grep -q 'normalized_walsh_hadamard' auro_native_llm/model/prewiring.py
           grep -q 'orthogonality_max_error' auro_native_llm/model/walsh_hadamard.py
           grep -q 'mean_relative_distance_error' auro_native_llm/model/sparse_projections.py
+          grep -q 'benchmark_superiority_claimed: bool = False' auro_native_llm/experiments/structured_transformer.py
+          grep -q 'hallucination_reduction_claimed: bool = False' auro_native_llm/experiments/structured_transformer.py
           grep -q 'factual_knowledge_without_training.*False' auro_native_llm/model/prewiring.py
           grep -q 'benchmark_superiority_claimed.*False' auro_native_llm/model/auro4b.py
           grep -q 'external_model_fallback.*False' auro_native_llm/model/prewiring.py
