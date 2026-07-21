@@ -4,12 +4,16 @@ on:
   pull_request:
     paths:
       - 'auro14b-app/**'
+      - 'scripts/use_auro.py'
+      - 'USE_AURO.cmd'
       - 'docs/production/AURO14B_PRODUCT_MASTER_PLAN.md'
       - '.github/workflows/auro14b-product.yml'
   push:
     branches: [main]
     paths:
       - 'auro14b-app/**'
+      - 'scripts/use_auro.py'
+      - 'USE_AURO.cmd'
       - 'docs/production/AURO14B_PRODUCT_MASTER_PLAN.md'
       - '.github/workflows/auro14b-product.yml'
   workflow_dispatch:
@@ -28,9 +32,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate one-command launcher
+        run: |
+          python -m py_compile scripts/use_auro.py
+          grep -Fq 'scripts\use_auro.py' USE_AURO.cmd
+          grep -q 'AURO_NATIVE_BASE_URL' scripts/use_auro.py
+          ! grep -q 'env\.AI' scripts/use_auro.py
+          ! grep -q '@cf/' scripts/use_auro.py
+          ! grep -q 'MODEL_ID' scripts/use_auro.py
       - name: Install dependencies
         working-directory: auro14b-app
         run: npm install --no-audit --no-fund
@@ -48,7 +63,8 @@ jobs:
           grep -q 'new_sqlite_classes' auro14b-app/wrangler.jsonc
           grep -q 'GovernedOperationWorkflow' auro14b-app/wrangler.jsonc
           ! grep -q '"ai"' auro14b-app/wrangler.jsonc
-          ! grep -q 'Workers AI' auro14b-app/src/index.ts
+          ! grep -q 'env\.AI' auro14b-app/src/index.ts
+          ! grep -q '@cf/' auro14b-app/src/index.ts
       - uses: actions/upload-artifact@v4
         with:
           name: auro14b-product-build
