@@ -1,3 +1,5 @@
+import { DurableObject } from "cloudflare:workers";
+
 export type AgentEnv = { PRODUCT_VERSION: string };
 
 export type CoordinationEvent = {
