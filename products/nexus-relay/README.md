@@ -1,42 +1,32 @@
 # NEXUS Relay
 
-**The self-hosted public-web context API for AI agents.**
+**The hosted public-web context API for AI agents.**
 
-NEXUS Relay runs on your Cloudflare account and converts public web pages, RSS/Atom feeds, and JSON endpoints into normalized, provenance-bearing objects. It exposes the same capability through REST and MCP, so Claude, Codex, ChatGPT-compatible clients, AURO, NOVA, and custom agents can use one endpoint without a mandatory scraping-platform subscription.
+NEXUS Relay runs on the operator's Cloudflare account. Customers receive an API key and call one hosted REST or MCP endpoint. They do not deploy infrastructure.
 
-## What it replaces
+## Customer flow
 
-For the supported public-web use case, Relay can replace recurring subscriptions used only to fetch and clean public URLs or feeds. It is not a promise to bypass authentication, CAPTCHAs, private profiles, platform access controls, or website terms.
+1. Customer subscribes.
+2. Operator issues an `nr_live_...` API key.
+3. Customer downloads `SKILL.md` from the hosted service.
+4. Their agent uses the skill plus the API key.
+5. Relay authenticates, enforces quota and rate limits, records usage, fetches the public source, and returns normalized content with a receipt.
 
 ## Surfaces
 
-- `GET /health`
-- `GET /v1/read?url=https://example.com`
-- `POST /v1/read`
-- `POST /mcp`
+- `GET /health` — public service status and skill URL
+- `GET /SKILL.md` — downloadable agent integration skill
+- `GET /v1/usage` — authenticated usage and remaining allowance
+- `GET /v1/read?url=https://example.com` — authenticated read
+- `POST /v1/read` — authenticated read
+- `POST /mcp` — authenticated MCP server
 
-Every successful read includes the final URL, fetch timestamp, HTTP status, byte count, latency, canonical URL when available, and a SHA-256 hash of normalized content.
-
-## Deploy
-
-```bash
-npm install -g wrangler
-wrangler login
-wrangler deploy
-```
-
-Optional KV cache:
+## Customer request
 
 ```bash
-wrangler kv namespace create CACHE
-# Add the returned binding to wrangler.toml
-```
-
-## REST example
-
-```bash
-curl -X POST https://YOUR-WORKER.workers.dev/v1/read \
-  -H 'content-type: application/json' \
+curl -X POST https://YOUR-DOMAIN/v1/read \
+  -H "Authorization: Bearer $NEXUS_RELAY_API_KEY" \
+  -H "Content-Type: application/json" \
   -d '{"url":"https://example.com/feed.xml","mode":"auto"}'
 ```
 
@@ -46,15 +36,46 @@ curl -X POST https://YOUR-WORKER.workers.dev/v1/read \
 {
   "mcpServers": {
     "nexus-relay": {
-      "url": "https://YOUR-WORKER.workers.dev/mcp"
+      "url": "https://YOUR-DOMAIN/mcp",
+      "headers": {
+        "Authorization": "Bearer ${NEXUS_RELAY_API_KEY}"
+      }
     }
   }
 }
 ```
 
-## Product position
+## Operator deployment
 
-Relay is a substrate, not a marketplace. It does not resell third-party Actors. Operators own the Worker, cache, policies, domains, and bills. Future adapters can add Browser Run, signed webhooks, scheduled watches, D1 history, R2 archives, and paid provider fallbacks behind the same schema.
+```bash
+cd products/nexus-relay
+npm install -g wrangler
+wrangler login
+wrangler d1 create nexus-relay
+# Put the returned database id into wrangler.toml
+wrangler d1 execute nexus-relay --remote --file=schema.sql
+wrangler deploy
+```
+
+Issue a customer key:
+
+```bash
+node scripts/issue-key.mjs customer@example.com developer 1000 30
+```
+
+The script prints the plaintext key once and emits SQL containing only its SHA-256 hash. Deliver the plaintext key securely and never store it in source control.
+
+## Metering model
+
+D1 stores customers, hashed API keys, monthly limits, per-minute limits, and append-only usage events. Every billable `relay_read` returns a billing event ID. Stripe or another billing system can consume aggregated usage later without changing the customer-facing API.
+
+## Current supported source types
+
+- Public HTML pages
+- RSS and Atom feeds
+- Public JSON APIs
+
+Markdown, plain text, CSV, and sitemap modes are included in the downloadable skill contract as the next adapter lane and must not be marketed as live until their parsers are merged and tested.
 
 ## Security boundary
 
@@ -62,5 +83,7 @@ Relay is a substrate, not a marketplace. It does not resell third-party Actors. 
 - Loopback and common private-network targets are blocked.
 - Credentials embedded in URLs are stripped.
 - Response size is bounded.
-- No browser automation or anti-bot bypass is enabled in v0.1.
-- Operators remain responsible for source terms, robots directives, privacy law, retention, and commercial use.
+- Customer keys are stored as SHA-256 hashes.
+- Reads require an active key and are metered.
+- No login bypass, CAPTCHA evasion, private-profile access, or anti-bot circumvention is enabled.
+- The operator remains responsible for source terms, robots directives, privacy law, retention, pricing, and commercial use.
