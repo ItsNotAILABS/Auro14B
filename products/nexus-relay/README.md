@@ -74,8 +74,12 @@ D1 stores customers, hashed API keys, monthly limits, per-minute limits, and app
 - Public HTML pages
 - RSS and Atom feeds
 - Public JSON APIs
+- Markdown files
+- Plain-text files
+- CSV files with bounded row normalization
+- XML sitemaps and sitemap indexes
 
-Markdown, plain text, CSV, and sitemap modes are included in the downloadable skill contract as the next adapter lane and must not be marketed as live until their parsers are merged and tested.
+The same modes are exposed through REST, MCP, `/health`, and the downloadable `SKILL.md` contract.
 
 ## Security boundary
 
