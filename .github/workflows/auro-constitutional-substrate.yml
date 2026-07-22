@@ -1,0 +1,49 @@
+name: AURO Constitutional Substrate Gate
+
+on:
+  pull_request:
+    paths:
+      - 'auro_native_llm/substrate/**'
+      - 'auro_native_llm/model/checkpoint.py'
+      - 'auro_native_llm/organism/checkpoint.py'
+      - 'tests/test_checkpoint_constitution.py'
+      - '.github/workflows/auro-constitutional-substrate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'auro_native_llm/substrate/**'
+      - 'auro_native_llm/model/checkpoint.py'
+      - 'auro_native_llm/organism/checkpoint.py'
+      - 'tests/test_checkpoint_constitution.py'
+      - '.github/workflows/auro-constitutional-substrate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  constitutional-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install focused dependencies
+        run: python -m pip install --upgrade pip numpy pytest
+      - name: Compile substrate and checkpoint bindings
+        run: |
+          python -m py_compile auro_native_llm/substrate/checkpoint_constitution.py
+          python -m py_compile auro_native_llm/model/checkpoint.py
+          python -m py_compile auro_native_llm/organism/checkpoint.py
+      - name: Run constitutional substrate tests
+        run: PYTHONPATH=. pytest -q tests/test_checkpoint_constitution.py
+      - name: Verify constitutional boundaries
+        run: |
+          grep -q 'canonical_checkpoint_identity' auro_native_llm/substrate/checkpoint_constitution.py
+          grep -q 'organism_state_identity_continuity' auro_native_llm/substrate/checkpoint_constitution.py
+          grep -q 'quarantine_rollback_recovery' auro_native_llm/substrate/checkpoint_constitution.py
+          grep -q 'artificial_identity_operations' auro_native_llm/substrate/checkpoint_constitution.py
+          grep -q 'economic_interface_continuity' auro_native_llm/substrate/checkpoint_constitution.py
+          grep -q 'load_and_verify_constitutional_manifest' auro_native_llm/model/checkpoint.py
+          grep -q 'identity_health' auro_native_llm/organism/checkpoint.py
