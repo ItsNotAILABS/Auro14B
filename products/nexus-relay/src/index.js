@@ -1,10 +1,19 @@
-import { normalizeFeed, normalizeHtml, normalizeJson } from "./extract.js";
+import { normalizeCsv, normalizeFeed, normalizeHtml, normalizeJson, normalizeSitemap, normalizeText } from "./extract.js";
 import { handleMcp } from "./mcp.js";
+import { authenticate, checkAndRecordUsage, sha256, usageSummary } from "./auth.js";
+import { NEXUS_RELAY_SKILL } from "./skill.js";
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*" };
+const MODES = new Set(["auto", "html", "feed", "json", "markdown", "text", "csv", "sitemap"]);
 
 function json(value, status = 200, extra = {}) {
   return new Response(JSON.stringify(value, null, 2), { status, headers: { ...JSON_HEADERS, ...extra } });
+}
+
+function errorResponse(error) {
+  const status = Number(error?.status || 400);
+  const headers = error?.retryAfter ? { "retry-after": String(error.retryAfter) } : {};
+  return json({ ok: false, error: String(error?.message || error) }, status, headers);
 }
 
 function isPrivateHost(hostname) {
@@ -26,18 +35,19 @@ function validateUrl(raw) {
   return url;
 }
 
-function detectMode(contentType, text, requested) {
+function detectMode(contentType, text, requested, pathname = "") {
+  if (requested && !MODES.has(requested)) throw new Error(`unsupported mode: ${requested}`);
   if (requested && requested !== "auto") return requested;
   const type = (contentType || "").toLowerCase();
-  if (type.includes("json")) return "json";
-  if (type.includes("rss") || type.includes("atom") || type.includes("xml") || /^\s*<(rss|feed)\b/i.test(text)) return "feed";
+  const path = pathname.toLowerCase();
+  if (type.includes("json") || path.endsWith(".json")) return "json";
+  if (type.includes("csv") || path.endsWith(".csv")) return "csv";
+  if (type.includes("markdown") || path.endsWith(".md") || path.endsWith(".markdown")) return "markdown";
+  if (type.startsWith("text/plain") || path.endsWith(".txt")) return "text";
+  if (/^\s*<(urlset|sitemapindex)\b/i.test(text) || path.includes("sitemap")) return "sitemap";
+  if (type.includes("rss") || type.includes("atom") || /^\s*<(rss|feed)\b/i.test(text)) return "feed";
+  if (type.includes("xml")) return "feed";
   return "html";
-}
-
-async function sha256(value) {
-  const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 async function readPublicUrl(args, env) {
@@ -52,22 +62,27 @@ async function readPublicUrl(args, env) {
   const response = await fetch(target.href, {
     redirect: "follow",
     headers: {
-      "user-agent": "NEXUS-Relay/0.1 (+public-web-context; contact=operator)",
-      accept: "text/html,application/xhtml+xml,application/json,application/rss+xml,application/atom+xml,application/xml;q=0.9,*/*;q=0.5"
+      "user-agent": "NEXUS-Relay/0.2 (+hosted-public-web-context; contact=operator)",
+      accept: "text/html,application/xhtml+xml,application/json,text/markdown,text/plain,text/csv,application/rss+xml,application/atom+xml,application/xml;q=0.9,*/*;q=0.5"
     }
   });
   const length = Number(response.headers.get("content-length") || 0);
-  if (length > maxBytes) throw new Error(`response exceeds max_bytes (${length} > ${maxBytes})`);
+  if (length > maxBytes) throw Object.assign(new Error(`response exceeds max_bytes (${length} > ${maxBytes})`), { status: 413 });
   const buffer = await response.arrayBuffer();
-  if (buffer.byteLength > maxBytes) throw new Error(`response exceeds max_bytes (${buffer.byteLength} > ${maxBytes})`);
+  if (buffer.byteLength > maxBytes) throw Object.assign(new Error(`response exceeds max_bytes (${buffer.byteLength} > ${maxBytes})`), { status: 413 });
   const text = new TextDecoder().decode(buffer);
   const fetchedAt = new Date().toISOString();
-  const mode = detectMode(response.headers.get("content-type"), text, args.mode);
+  const finalUrl = new URL(response.url || target.href);
+  const mode = detectMode(response.headers.get("content-type"), text, args.mode, finalUrl.pathname);
+  const common = { url: response.url, fetchedAt, status: response.status, headers: response.headers };
   let normalized;
-  if (mode === "json") normalized = normalizeJson({ value: JSON.parse(text), url: response.url, fetchedAt, status: response.status, headers: response.headers });
-  else if (mode === "feed") normalized = normalizeFeed({ xml: text, url: response.url, fetchedAt, status: response.status, headers: response.headers });
-  else normalized = normalizeHtml({ html: text, url: response.url, fetchedAt, status: response.status, headers: response.headers });
-  const contentHash = await sha256(JSON.stringify(normalized.content));
+  if (mode === "json") normalized = normalizeJson({ value: JSON.parse(text), ...common });
+  else if (mode === "feed") normalized = normalizeFeed({ xml: text, ...common });
+  else if (mode === "sitemap") normalized = normalizeSitemap({ xml: text, ...common });
+  else if (mode === "csv") normalized = normalizeCsv({ text, ...common });
+  else if (mode === "markdown") normalized = normalizeText({ text, kind: "markdown", ...common });
+  else if (mode === "text") normalized = normalizeText({ text, kind: "text", ...common });
+  else normalized = normalizeHtml({ html: text, ...common });
   const result = {
     ok: response.ok,
     ...normalized,
@@ -78,15 +93,22 @@ async function readPublicUrl(args, env) {
       mode,
       bytes: buffer.byteLength,
       latency_ms: Date.now() - started,
-      content_sha256: contentHash,
+      content_sha256: await sha256(JSON.stringify(normalized.content)),
       fetched_at: fetchedAt
     },
     cache: { hit: false, key: cacheKey }
   };
   if (env.CACHE && response.ok) {
-    await env.CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: Number(env.DEFAULT_CACHE_TTL || 900) });
+    await env.CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: Number(args.cache_ttl || env.DEFAULT_CACHE_TTL || 900) });
   }
   return result;
+}
+
+async function meteredRead(args, env, principal, surface) {
+  const target = validateUrl(args.url);
+  const usage = await checkAndRecordUsage(env, principal, "relay_read", { surface, url_host: target.hostname, requested_mode: args.mode || "auto" });
+  const result = await readPublicUrl(args, env);
+  return { ...result, billing: { event_id: usage.event_id, customer_id: principal.customer_id, plan: principal.plan } };
 }
 
 export default {
@@ -96,22 +118,34 @@ export default {
     }
     const url = new URL(request.url);
     if (url.pathname === "/" || url.pathname === "/health") {
-      return json({ ok: true, product: env.NEXUS_RELAY_NAME || "NEXUS Relay", version: "0.1.0", surfaces: ["REST", "MCP"], doctrine: "public data only; no login bypass; provenance on every response" });
+      return json({ ok: true, product: env.NEXUS_RELAY_NAME || "NEXUS Relay", version: "0.2.0", model: "hosted metered API", supported_modes: [...MODES], surfaces: ["REST", "MCP", "SKILL.md"], skill_url: `${url.origin}/SKILL.md`, doctrine: "public data only; no login bypass; provenance on every response" });
     }
-    if (url.pathname === "/v1/read" && request.method === "GET") {
-      try { return json(await readPublicUrl({ url: url.searchParams.get("url"), mode: url.searchParams.get("mode") || "auto" }, env)); }
-      catch (error) { return json({ ok: false, error: String(error?.message || error) }, 400); }
+    if (url.pathname === "/SKILL.md" && request.method === "GET") {
+      return new Response(NEXUS_RELAY_SKILL, { headers: { "content-type": "text/markdown; charset=utf-8", "content-disposition": "attachment; filename=SKILL.md", "access-control-allow-origin": "*" } });
     }
-    if (url.pathname === "/v1/read" && request.method === "POST") {
-      try { return json(await readPublicUrl(await request.json(), env)); }
-      catch (error) { return json({ ok: false, error: String(error?.message || error) }, 400); }
-    }
-    if (url.pathname === "/mcp" && request.method === "POST") {
-      const payload = await handleMcp(request, (args) => readPublicUrl(args, env));
-      return payload === null ? new Response(null, { status: 202 }) : json(payload);
+    try {
+      if (url.pathname === "/v1/usage" && request.method === "GET") {
+        const principal = await authenticate(request, env);
+        return json({ ok: true, usage: await usageSummary(env, principal) });
+      }
+      if (url.pathname === "/v1/read" && request.method === "GET") {
+        const principal = await authenticate(request, env);
+        return json(await meteredRead({ url: url.searchParams.get("url"), mode: url.searchParams.get("mode") || "auto" }, env, principal, "rest_get"));
+      }
+      if (url.pathname === "/v1/read" && request.method === "POST") {
+        const principal = await authenticate(request, env);
+        return json(await meteredRead(await request.json(), env, principal, "rest_post"));
+      }
+      if (url.pathname === "/mcp" && request.method === "POST") {
+        const principal = await authenticate(request, env);
+        const payload = await handleMcp(request, (args) => meteredRead(args, env, principal, "mcp"));
+        return payload === null ? new Response(null, { status: 202 }) : json(payload);
+      }
+    } catch (error) {
+      return errorResponse(error);
     }
     return json({ ok: false, error: "not found" }, 404);
   }
 };
 
-export { detectMode, isPrivateHost, readPublicUrl, validateUrl };
+export { detectMode, isPrivateHost, meteredRead, readPublicUrl, validateUrl };

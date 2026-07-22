@@ -59,11 +59,7 @@ export function extractJsonLd(html = "") {
   const pattern = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let match;
   while ((match = pattern.exec(html)) !== null && out.length < 8) {
-    try {
-      out.push(JSON.parse(match[1].trim()));
-    } catch {
-      // Ignore malformed JSON-LD.
-    }
+    try { out.push(JSON.parse(match[1].trim())); } catch { /* malformed JSON-LD */ }
   }
   return out;
 }
@@ -75,18 +71,8 @@ export function normalizeHtml({ html, url, fetchedAt, status, headers }) {
     schema: "nexus.relay.document.v1",
     kind: "document",
     source: { url, canonical_url: meta.canonical_url, fetched_at: fetchedAt, status },
-    content: {
-      title: meta.title,
-      description: meta.description,
-      text,
-      text_length: text.length,
-      json_ld: extractJsonLd(html)
-    },
-    transport: {
-      content_type: headers.get("content-type") || "text/html",
-      etag: headers.get("etag"),
-      last_modified: headers.get("last-modified")
-    }
+    content: { title: meta.title, description: meta.description, text, text_length: text.length, json_ld: extractJsonLd(html) },
+    transport: { content_type: headers.get("content-type") || "text/html", etag: headers.get("etag"), last_modified: headers.get("last-modified") }
   };
 }
 
@@ -125,5 +111,66 @@ export function normalizeJson({ value, url, fetchedAt, status, headers }) {
     source: { url, fetched_at: fetchedAt, status },
     content: value,
     transport: { content_type: headers.get("content-type") || "application/json" }
+  };
+}
+
+export function normalizeText({ text, url, fetchedAt, status, headers, kind = "text" }) {
+  return {
+    schema: `nexus.relay.${kind}.v1`,
+    kind,
+    source: { url, fetched_at: fetchedAt, status },
+    content: { text, text_length: text.length },
+    transport: { content_type: headers.get("content-type") || "text/plain" }
+  };
+}
+
+function parseCsvLine(line) {
+  const cells = [];
+  let value = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '"' && quoted && line[i + 1] === '"') { value += '"'; i += 1; }
+    else if (ch === '"') quoted = !quoted;
+    else if (ch === "," && !quoted) { cells.push(value); value = ""; }
+    else value += ch;
+  }
+  cells.push(value);
+  return cells;
+}
+
+export function normalizeCsv({ text, url, fetchedAt, status, headers }) {
+  const lines = text.split(/\r?\n/).filter((line) => line.length).slice(0, 1001);
+  const header = lines.length ? parseCsvLine(lines[0]) : [];
+  const rows = lines.slice(1).map((line) => {
+    const cells = parseCsvLine(line);
+    return Object.fromEntries(header.map((name, index) => [name || `column_${index + 1}`, cells[index] ?? ""]));
+  });
+  return {
+    schema: "nexus.relay.csv.v1",
+    kind: "csv",
+    source: { url, fetched_at: fetchedAt, status },
+    content: { columns: header, rows, row_count: rows.length, truncated: text.split(/\r?\n/).length > 1001 },
+    transport: { content_type: headers.get("content-type") || "text/csv" }
+  };
+}
+
+export function normalizeSitemap({ xml, url, fetchedAt, status, headers }) {
+  const entries = [...xml.matchAll(/<url\b[\s\S]*?<\/url>/gi)].slice(0, 1000).map((match) => ({
+    url: tagValue(match[0], "loc"),
+    last_modified: tagValue(match[0], "lastmod"),
+    change_frequency: tagValue(match[0], "changefreq"),
+    priority: tagValue(match[0], "priority")
+  })).filter((entry) => entry.url);
+  const indexes = [...xml.matchAll(/<sitemap\b[\s\S]*?<\/sitemap>/gi)].slice(0, 1000).map((match) => ({
+    url: tagValue(match[0], "loc"),
+    last_modified: tagValue(match[0], "lastmod")
+  })).filter((entry) => entry.url);
+  return {
+    schema: "nexus.relay.sitemap.v1",
+    kind: "sitemap",
+    source: { url, fetched_at: fetchedAt, status },
+    content: { urls: entries, sitemap_indexes: indexes, item_count: entries.length + indexes.length },
+    transport: { content_type: headers.get("content-type") || "application/xml" }
   };
 }

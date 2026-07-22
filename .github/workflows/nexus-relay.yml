@@ -22,9 +22,14 @@ jobs:
           node-version: '20'
       - run: npm test
       - run: npm run check
-      - name: Verify product boundaries
+      - name: Verify hosted product boundaries
         run: |
-          grep -q 'No browser automation or anti-bot bypass' README.md
-          grep -q 'private-network targets are blocked' README.md
-          grep -q 'tools/list' src/mcp.js
+          grep -q 'hosted public-web context API' README.md
+          grep -q 'Customer keys are stored as SHA-256 hashes' README.md
+          grep -q 'No login bypass' README.md
+          grep -q 'private and loopback network targets are blocked' src/index.js
+          grep -q 'Authorization: Bearer' README.md
+          grep -q 'usage_events' schema.sql
+          grep -q 'NEXUS_RELAY_API_KEY' src/skill.js
           grep -q 'content_sha256' src/index.js
+          grep -q 'tools/list' src/mcp.js
