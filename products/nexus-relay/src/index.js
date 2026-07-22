@@ -1,9 +1,10 @@
-import { normalizeFeed, normalizeHtml, normalizeJson } from "./extract.js";
+import { normalizeCsv, normalizeFeed, normalizeHtml, normalizeJson, normalizeSitemap, normalizeText } from "./extract.js";
 import { handleMcp } from "./mcp.js";
 import { authenticate, checkAndRecordUsage, sha256, usageSummary } from "./auth.js";
 import { NEXUS_RELAY_SKILL } from "./skill.js";
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*" };
+const MODES = new Set(["auto", "html", "feed", "json", "markdown", "text", "csv", "sitemap"]);
 
 function json(value, status = 200, extra = {}) {
   return new Response(JSON.stringify(value, null, 2), { status, headers: { ...JSON_HEADERS, ...extra } });
@@ -34,11 +35,18 @@ function validateUrl(raw) {
   return url;
 }
 
-function detectMode(contentType, text, requested) {
+function detectMode(contentType, text, requested, pathname = "") {
+  if (requested && !MODES.has(requested)) throw new Error(`unsupported mode: ${requested}`);
   if (requested && requested !== "auto") return requested;
   const type = (contentType || "").toLowerCase();
-  if (type.includes("json")) return "json";
-  if (type.includes("rss") || type.includes("atom") || type.includes("xml") || /^\s*<(rss|feed)\b/i.test(text)) return "feed";
+  const path = pathname.toLowerCase();
+  if (type.includes("json") || path.endsWith(".json")) return "json";
+  if (type.includes("csv") || path.endsWith(".csv")) return "csv";
+  if (type.includes("markdown") || path.endsWith(".md") || path.endsWith(".markdown")) return "markdown";
+  if (type.startsWith("text/plain") || path.endsWith(".txt")) return "text";
+  if (/^\s*<(urlset|sitemapindex)\b/i.test(text) || path.includes("sitemap")) return "sitemap";
+  if (type.includes("rss") || type.includes("atom") || /^\s*<(rss|feed)\b/i.test(text)) return "feed";
+  if (type.includes("xml")) return "feed";
   return "html";
 }
 
@@ -55,7 +63,7 @@ async function readPublicUrl(args, env) {
     redirect: "follow",
     headers: {
       "user-agent": "NEXUS-Relay/0.2 (+hosted-public-web-context; contact=operator)",
-      accept: "text/html,application/xhtml+xml,application/json,application/rss+xml,application/atom+xml,application/xml;q=0.9,*/*;q=0.5"
+      accept: "text/html,application/xhtml+xml,application/json,text/markdown,text/plain,text/csv,application/rss+xml,application/atom+xml,application/xml;q=0.9,*/*;q=0.5"
     }
   });
   const length = Number(response.headers.get("content-length") || 0);
@@ -64,11 +72,17 @@ async function readPublicUrl(args, env) {
   if (buffer.byteLength > maxBytes) throw Object.assign(new Error(`response exceeds max_bytes (${buffer.byteLength} > ${maxBytes})`), { status: 413 });
   const text = new TextDecoder().decode(buffer);
   const fetchedAt = new Date().toISOString();
-  const mode = detectMode(response.headers.get("content-type"), text, args.mode);
+  const finalUrl = new URL(response.url || target.href);
+  const mode = detectMode(response.headers.get("content-type"), text, args.mode, finalUrl.pathname);
+  const common = { url: response.url, fetchedAt, status: response.status, headers: response.headers };
   let normalized;
-  if (mode === "json") normalized = normalizeJson({ value: JSON.parse(text), url: response.url, fetchedAt, status: response.status, headers: response.headers });
-  else if (mode === "feed") normalized = normalizeFeed({ xml: text, url: response.url, fetchedAt, status: response.status, headers: response.headers });
-  else normalized = normalizeHtml({ html: text, url: response.url, fetchedAt, status: response.status, headers: response.headers });
+  if (mode === "json") normalized = normalizeJson({ value: JSON.parse(text), ...common });
+  else if (mode === "feed") normalized = normalizeFeed({ xml: text, ...common });
+  else if (mode === "sitemap") normalized = normalizeSitemap({ xml: text, ...common });
+  else if (mode === "csv") normalized = normalizeCsv({ text, ...common });
+  else if (mode === "markdown") normalized = normalizeText({ text, kind: "markdown", ...common });
+  else if (mode === "text") normalized = normalizeText({ text, kind: "text", ...common });
+  else normalized = normalizeHtml({ html: text, ...common });
   const result = {
     ok: response.ok,
     ...normalized,
@@ -91,7 +105,8 @@ async function readPublicUrl(args, env) {
 }
 
 async function meteredRead(args, env, principal, surface) {
-  const usage = await checkAndRecordUsage(env, principal, "relay_read", { surface, url_host: validateUrl(args.url).hostname });
+  const target = validateUrl(args.url);
+  const usage = await checkAndRecordUsage(env, principal, "relay_read", { surface, url_host: target.hostname, requested_mode: args.mode || "auto" });
   const result = await readPublicUrl(args, env);
   return { ...result, billing: { event_id: usage.event_id, customer_id: principal.customer_id, plan: principal.plan } };
 }
@@ -103,7 +118,7 @@ export default {
     }
     const url = new URL(request.url);
     if (url.pathname === "/" || url.pathname === "/health") {
-      return json({ ok: true, product: env.NEXUS_RELAY_NAME || "NEXUS Relay", version: "0.2.0", model: "hosted metered API", surfaces: ["REST", "MCP", "SKILL.md"], skill_url: `${url.origin}/SKILL.md`, doctrine: "public data only; no login bypass; provenance on every response" });
+      return json({ ok: true, product: env.NEXUS_RELAY_NAME || "NEXUS Relay", version: "0.2.0", model: "hosted metered API", supported_modes: [...MODES], surfaces: ["REST", "MCP", "SKILL.md"], skill_url: `${url.origin}/SKILL.md`, doctrine: "public data only; no login bypass; provenance on every response" });
     }
     if (url.pathname === "/SKILL.md" && request.method === "GET") {
       return new Response(NEXUS_RELAY_SKILL, { headers: { "content-type": "text/markdown; charset=utf-8", "content-disposition": "attachment; filename=SKILL.md", "access-control-allow-origin": "*" } });
