@@ -1,0 +1,30 @@
+name: NEXUS Relay Gate
+on:
+  pull_request:
+    paths:
+      - 'products/nexus-relay/**'
+      - '.github/workflows/nexus-relay.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'products/nexus-relay/**'
+      - '.github/workflows/nexus-relay.yml'
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: products/nexus-relay
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm test
+      - run: npm run check
+      - name: Verify product boundaries
+        run: |
+          grep -q 'No browser automation or anti-bot bypass' README.md
+          grep -q 'private-network targets are blocked' README.md
+          grep -q 'tools/list' src/mcp.js
+          grep -q 'content_sha256' src/index.js

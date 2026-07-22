@@ -1,0 +1,11 @@
+{
+  "name": "nexus-relay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/index.js && node --check src/extract.js && node --check src/mcp.js"
+  },
+  "engines": {"node": ">=20"}
+}
