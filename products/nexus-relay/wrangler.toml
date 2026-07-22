@@ -8,10 +8,16 @@ NEXUS_RELAY_NAME = "NEXUS Relay"
 MAX_RESPONSE_BYTES = "1500000"
 DEFAULT_CACHE_TTL = "900"
 
-# Optional bindings:
+# Required hosted-service binding. Create with:
+# wrangler d1 create nexus-relay
+# Then replace database_id below and run:
+# wrangler d1 execute nexus-relay --remote --file=schema.sql
+[[d1_databases]]
+binding = "DB"
+database_name = "nexus-relay"
+database_id = "replace-with-your-d1-database-id"
+
+# Recommended response cache:
 # [[kv_namespaces]]
 # binding = "CACHE"
-# id = "replace-me"
-#
-# [browser]
-# binding = "BROWSER"
+# id = "replace-with-your-kv-id"
