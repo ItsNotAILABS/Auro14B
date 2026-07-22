@@ -1,0 +1,17 @@
+name = "nexus-relay"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+workers_dev = true
+
+[vars]
+NEXUS_RELAY_NAME = "NEXUS Relay"
+MAX_RESPONSE_BYTES = "1500000"
+DEFAULT_CACHE_TTL = "900"
+
+# Optional bindings:
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "replace-me"
+#
+# [browser]
+# binding = "BROWSER"
