@@ -1,0 +1,53 @@
+name: Auro-4B Native Gate
+
+on:
+  pull_request:
+    paths:
+      - "auro_native_llm/model/auro4b.py"
+      - "auro_native_llm/model/auro4b_architecture.py"
+      - "auro_native_llm/model/__init__.py"
+      - "scripts/inspect_auro4b.py"
+      - "tests/test_auro4b_architecture.py"
+      - ".github/workflows/auro4b-native-gate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "auro_native_llm/model/auro4b.py"
+      - "auro_native_llm/model/auro4b_architecture.py"
+      - "scripts/inspect_auro4b.py"
+      - "tests/test_auro4b_architecture.py"
+
+jobs:
+  architecture-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pytest
+      - name: Compile native model lane
+        run: |
+          python -m py_compile \
+            auro_native_llm/model/auro4b.py \
+            auro_native_llm/model/auro4b_architecture.py \
+            scripts/inspect_auro4b.py
+      - name: Run architecture contract tests
+        run: python -m pytest -q tests/test_auro4b_architecture.py
+      - name: Emit full architecture receipt
+        run: |
+          python scripts/inspect_auro4b.py --scale full --output evidence/auro4b-architecture.json
+          python - <<'PY'
+          import json
+          payload = json.load(open('evidence/auro4b-architecture.json'))
+          total = payload['parameter_estimate']['total']
+          assert 3_900_000_000 <= total <= 4_150_000_000
+          assert payload['claims']['trained_general_knowledge'] is False
+          assert payload['claims']['benchmark_superiority'] is False
+          assert payload['checkpoint_constitution'] == 'auro.substrate.checkpoint.v1'
+          print({'parameter_estimate': total, 'status': 'architecture_contract_passed'})
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro4b-architecture-receipt
+          path: evidence/auro4b-architecture.json
