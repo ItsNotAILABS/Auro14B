@@ -25,8 +25,9 @@ def h(v):
 def load():
  p=Path("checkpoints/open/HIM-native-v0")
  if p.exists():
-  return load_mind(p,chrome_mock=True),str(p)
- return build_mind("Auro-156K",lite=True,chrome_mock=True),"built:Auro-156K-lite"
+  try:return load_mind(p,chrome_mock=True),str(p)
+  except Exception:pass
+ return build_mind("Auro-2B",lite=True,chrome_mock=True),"built:Auro-2B-lite"
 
 def main():
  out=Path("artifacts/him-birth-observation");out.mkdir(parents=True,exist_ok=True)
