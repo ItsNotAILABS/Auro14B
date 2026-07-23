@@ -1,0 +1,45 @@
+name: AURO Long Context Gate
+
+on:
+  pull_request:
+    paths:
+      - 'auro_native_llm/context/**'
+      - 'auro_native_llm/model/long_context.py'
+      - 'auro_native_llm/model/__init__.py'
+      - 'tests/test_long_context_envelope.py'
+      - '.github/workflows/auro-long-context.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'auro_native_llm/context/**'
+      - 'auro_native_llm/model/long_context.py'
+      - 'auro_native_llm/model/__init__.py'
+      - 'tests/test_long_context_envelope.py'
+      - '.github/workflows/auro-long-context.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  context-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install focused dependencies
+        run: python -m pip install --upgrade pip numpy pytest
+      - name: Compile long-context surface
+        run: |
+          python -m py_compile auro_native_llm/context/envelope.py
+          python -m py_compile auro_native_llm/model/long_context.py
+      - name: Run 294912-token regression tests
+        run: PYTHONPATH=. pytest -q tests/test_long_context_envelope.py
+      - name: Verify context claim boundaries
+        run: |
+          grep -q 'ACCEPTED_CONTEXT_TOKENS = 294_912' auro_native_llm/context/envelope.py
+          grep -q 'accepted context is not simultaneous dense attention' auro_native_llm/model/long_context.py
+          grep -q 'dense_attention_tokens' auro_native_llm/model/long_context.py
+          grep -q 'truncated_input_tokens' auro_native_llm/context/envelope.py
