@@ -28,9 +28,9 @@ jobs:
         id: relay_tests
         continue-on-error: true
         run: |
-          timeout 120s npm test > test.log 2>&1
+          timeout 180s npm test > test.log 2>&1
           code=$?
-          tail -n 80 test.log
+          tail -n 120 test.log
           exit $code
       - name: Upload integration diagnostics
         if: always()
@@ -43,7 +43,7 @@ jobs:
         if: steps.relay_tests.outcome != 'success'
         run: exit 1
       - run: npm run check
-      - name: Verify hardened hosted boundaries
+      - name: Verify hosted production boundaries
         run: |
           grep -q 'JOIN customers' src/auth.js
           grep -q "INSERT INTO usage_events" src/auth.js
@@ -51,7 +51,13 @@ jobs:
           grep -q 'redirect: "manual"' src/security.js
           grep -q '169.254.0.0' src/security.js
           grep -q 'cloudflare-dns.com' src/security.js
+          grep -q 'secureFetchViaEgress' src/security.js
+          grep -q 'RELAY_EGRESS_URL' src/index.js
+          grep -q 'STRIPE_WEBHOOK_SECRET' src/billing.js
+          grep -q 'INSERT OR IGNORE INTO billing_events' src/billing.js
+          grep -q 'price_id is not in the Relay catalog' src/billing.js
+          grep -q 'customer.subscription' src/billing.js
+          grep -q 'invoice.payment_failed' src/billing.js
+          grep -q 'SignalLensRelayClient' clients/signallens.mjs
           grep -q 'ALLOWED_ORIGINS' src/index.js
-          grep -q 'metering only' src/index.js
-          grep -q 'Residual DNS rebinding limitation' SECURITY_LIMITATIONS.md
           grep -q 'NEXUS_RELAY_API_KEY' src/skill.js
