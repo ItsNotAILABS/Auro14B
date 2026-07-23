@@ -34,3 +34,18 @@ compute planes through `compute.engines`. Configure cloud endpoints with
 `AURO_CLOUD_ENGINES_JSON`; API keys are referenced by environment-variable name
 and are never embedded in the browser bundle. Embedded browser inference is the
 default and there is no automatic remote fallback.
+
+## Parallel workers
+
+The model executes in its own Web Worker. A bounded browser worker pool handles
+text processing, same-policy crawling, and non-executing agent calls without
+blocking the UI. `node/worker-pool.mjs` provides the outside equivalent through
+Node `worker_threads` for heavier processing and crawling jobs:
+
+```bash
+npm run test:workers
+```
+
+Worker tasks use typed envelopes, timeouts, result receipts, and explicit error
+propagation. Browser crawling still follows browser CORS rules; neither pool is
+a security sandbox or an authorization bypass.

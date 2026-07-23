@@ -26,6 +26,9 @@ BUILTINS=(
  Capability("brain.migration_status","Check optional MESIE topology parity without requiring MESIE.","brain","tool",_obj({})),
  Capability("memory.rank_text","Rank memories or documents with MatDaemon.","matdaemon","tool",_obj({"query":{"type":"string"},"candidates":{"type":"array","items":{"type":"string"}},"k":{"type":"integer"}},("query","candidates"))),
  Capability("compute.matmul","Run bounded matrix multiplication with MatDaemon.","matdaemon","tool",_obj({"a":{"type":"array"},"b":{"type":"array"},"backend":{"type":"string"}},("a","b"))),
+ Capability("compute.engines","List embedded, local, and explicitly configured cloud compute planes.","compute","tool",_obj({})),
+ Capability("cloudflare.runtime","Describe the optional Cloudflare MCP, Dynamic Worker, Sandbox, Browser Run, Agent, and observability plane.","cloudflare","tool",_obj({})),
+ Capability("cloudflare.plan","Create a non-executing search-then-execute Cloudflare API MCP recipe.","cloudflare","tool",_obj({"objective":{"type":"string"}},("objective",))),
  Capability("build.create_session","Create a CAPSULA build session.","capsula","tool",_obj({"runtime":{"type":"string"},"name":{"type":["string","null"]}}),True,True),
  Capability("build.write_file","Write a file inside a CAPSULA session.","capsula","tool",_obj({"session_id":{"type":"string"},"path":{"type":"string"},"content":{"type":"string"}},("session_id","path","content")),True,True),
  Capability("build.run","Run a CAPSULA session.","capsula","tool",_obj({"session_id":{"type":"string"}},("session_id",)),True,True),
@@ -54,6 +57,11 @@ class NativeCapabilities:
         self.sdk=sdk; self._items={x.name:x for x in capabilities}; self.ledger=ledger or ReceiptLedger()
         self.wallet=PaperWallet(os.getenv("AURO_WALLET_LEDGER") or None); self.office=NativeOffice()
         self.vault=IntegrityVault(os.getenv("AURO_VAULT_ROOT","./state/auro-vault"))
+        from .compute import ComputeRegistry
+        self.compute=ComputeRegistry()
+        from auro_native_llm.cloudflare import CloudflareRuntimeContract
+        self.cloudflare=CloudflareRuntimeContract()
+        self.downloads={}
         self.browser=BrowserTaskBroker()
         from auro_native_llm.brain import HIMBrain
         self.brain=HIMBrain(os.getenv("AURO_BRAIN_STATE") or "./state/him-brain.json")
@@ -77,6 +85,9 @@ class NativeCapabilities:
         if name=="brain.migration_status": return self.brain.legacy_parity()
         if name=="memory.rank_text": return self.sdk.matdaemon.rank_text(a["query"],a["candidates"],int(a.get("k",5)))
         if name=="compute.matmul": return self.sdk.matdaemon.call("matdaemon_matmul",a)
+        if name=="compute.engines": return self.compute.manifest()
+        if name=="cloudflare.runtime": return self.cloudflare.manifest()
+        if name=="cloudflare.plan": return self.cloudflare.recipe(a["objective"])
         if name=="build.create_session": return self.sdk.capsula.create_session(a.get("runtime","python"),a.get("name"))
         if name=="build.write_file": return self.sdk.capsula.write_file(a["session_id"],a["path"],a["content"])
         if name=="build.run": return self.sdk.capsula.run(a["session_id"])

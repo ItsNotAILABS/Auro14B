@@ -1,0 +1,24 @@
+{
+  "schema": "auro.cloudflare.runtime.v1",
+  "enabled_by_default": false,
+  "mcp": {
+    "name": "cloudflare-api",
+    "url": "https://mcp.cloudflare.com/mcp",
+    "transport": "streamable-http",
+    "tools": ["search", "execute"],
+    "authorization": "oauth-or-scoped-bearer-token"
+  },
+  "planes": {
+    "dynamic_workers": {"binding": "LOADER", "purpose": "isolated on-demand code-mode execution"},
+    "sandbox": {"binding": "Sandbox", "transport": "rpc", "default_session": false, "destroy_after_job": true},
+    "browser_run": {"binding": "BROWSER", "max_chars": 20000, "human_control_for_auth": true},
+    "agents": {"runtime": "durable-object", "harness": "@cloudflare/think", "idempotent_submissions": true},
+    "observability": {"logs": true, "traces": true, "head_sampling_rate": 0.05}
+  },
+  "approval": {
+    "search_is_read_only": true,
+    "execute_requires_operator_approval": true,
+    "allowed_origins": ["https://api.cloudflare.com"],
+    "credential_values_enter_model_context": false
+  }
+}

@@ -161,6 +161,31 @@ Auro/MESIE is available through the configured API, and cloud engines are
 opt-in through `AURO_CLOUD_ENGINES_JSON`. There is no silent remote fallback,
 and credential values are never compiled into the browser bundle. See
 `browser-runtime/README.md` for ONNX conversion and packaging.
+
+An optional Cloudflare outside plane is defined in
+`configs/cloudflare_runtime.json`: Cloudflare API MCP (`search` + `execute`),
+Dynamic Workers, Sandbox SDK, Browser Run, durable Agents/Think, and Workers
+Observability. It is disabled by default and remote mutation remains separately
+approval-gated. See `docs/cloudflare_runtime.md`.
+
+The deployable autonomous operator is in `workers/auro-platform/`. It combines
+a React chat UI, Workers AI, durable Think/Agents state, managed Cloudflare API
+MCP, Dynamic Worker Code Mode, Browser Run, extensions, and observability:
+
+```bash
+cd workers/auro-platform
+npm install
+npx wrangler login
+npm run deploy
+```
+
+It defaults to inspection and planning. Cloudflare changes require a narrowly
+scoped API token, the server mutation flag, and an `OPERATOR_APPROVED` turn.
+
+`mobile-runtime/` adds an Expo SDK 54 multi-device client that runs immediately
+in Expo Go, connects to the Auro/MESIE API over the LAN, attaches accelerometer
+state as a native sense, and displays response receipts. Install Expo Go from
+<https://expo.dev/go>; use a development/EAS build for production distribution.
 | `github` | `gh` / MCP identity |
 | `web3` | Secure him-web3 API + package install |
 | `vault` | Multi-ledger sealed secrets (metadata by default) |

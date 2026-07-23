@@ -23,6 +23,7 @@ from auro_native_llm.model.meaning import MultiMeaningField
 from auro_native_llm.model.phi_math import FIVE_MATH, PHI, phi_init
 from auro_native_llm.model.spectral_fuse import MesieSpectralFuser
 from auro_native_llm.model.tokenizer import AuroTokenizer
+from auro_native_llm.model.delta_attention import DeltaAttentionEngine, MultiSenseAdapter
 
 
 @dataclass
@@ -102,6 +103,13 @@ class AuroLanguageModel:
             self._apply_phi_init()
 
         self.train_steps = 0
+        self.delta_attention = DeltaAttentionEngine(
+            self.config.hidden_dim,
+            max_slots=self.config.delta_max_slots,
+            novelty_threshold=self.config.delta_novelty_threshold,
+            blend=self.config.delta_blend,
+        ) if self.config.use_delta_attention else None
+        self.multi_sense = MultiSenseAdapter(self.config.hidden_dim, seed=self.config.seed)
         self.built_at = time.time()
         # Real physics AI formula engine (dispersion, coherence, Kuramoto, Landau, …)
         try:
@@ -244,6 +252,8 @@ class AuroLanguageModel:
                 "continuous_dim": cfg.continuous_dim,
                 "spectral_input_dim": cfg.spectral_input_dim,
                 "causal": cfg.causal,
+                "delta_attention": bool(self.delta_attention),
+                "delta_max_slots": cfg.delta_max_slots,
             },
             "mesie_core": core_info,
             "meaning_engines": ["latin", "sanskrit", "nahuatl"] if self.meaning else [],
@@ -269,6 +279,11 @@ class AuroLanguageModel:
 
         outputs = self.core.forward(token_ids=ids, modality_id=0)
         hidden = outputs["last_hidden_state"]
+        if self.delta_attention is not None:
+            hidden, delta_receipt = self.delta_attention.fuse(hidden)
+            outputs["last_hidden_state"] = hidden
+            outputs["logits"] = np.einsum("...d,dv->...v", hidden, self.core.lm_head_weight)
+            outputs["delta_attention"] = delta_receipt
 
         spectral_fused = False
         if self.spectral is not None:
@@ -567,6 +582,8 @@ class AuroLanguageModel:
         prefix_ids: Optional[List[int]] = None,
     ) -> Dict[str, Any]:
         ids = prefix_ids or self.tokenizer.encode(prompt, add_bos=True, add_eos=False)
+        if self.delta_attention is not None:
+            self.delta_attention.reset()
         if len(ids) >= self.config.max_seq_len - 1:
             ids = ids[-(self.config.max_seq_len - max_new_tokens - 1) :]
         generated = list(ids)
@@ -607,6 +624,7 @@ class AuroLanguageModel:
             "meaning_hits": meaning_hits,
             "spectral_fused": spectral_fused,
             "neuro": neuro,
+            "delta_attention": self.delta_attention.receipt.to_dict() if self.delta_attention else None,
         }
 
     def generate(
@@ -651,6 +669,8 @@ class AuroLanguageModel:
                 "mode": self.config.mode,
                 "neuro_emergence": pack.get("neuro"),
                 "accel": "neuro+mesie",
+                "delta_attention": pack.get("delta_attention"),
+                "dense_core_kv_cache": False,
             },
         )
 
