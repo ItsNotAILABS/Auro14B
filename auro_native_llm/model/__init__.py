@@ -52,6 +52,7 @@ _config.family_config = family_config
 _config.family_config_from_mesie = family_config_from_mesie
 
 from auro_native_llm.model.auro_lm import AuroLanguageModel, AuroGenerateResult
+from auro_native_llm.model.long_context import AuroLongContextModel, LongContextForward
 from auro_native_llm.model.auro4b import (
     architecture_to_overrides,
     build_auro4b,
@@ -74,6 +75,8 @@ __all__ = [
     "AuroGenerateResult",
     "AuroLMConfig",
     "AuroLanguageModel",
+    "AuroLongContextModel",
+    "LongContextForward",
     "AuroTokenizer",
     "CONTEXT_MULTIPLIER",
     "FULL_ARCHITECTURE",

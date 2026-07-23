@@ -2,21 +2,27 @@
 
 **The hosted public-web context API for AI agents.**
 
-NEXUS Relay runs on the operator's Cloudflare account. Customers receive an API key and call one hosted REST or MCP endpoint. They do not deploy infrastructure.
+NEXUS Relay runs on the operator's infrastructure. Customers receive an API key, download `SKILL.md`, and call one hosted REST or MCP endpoint. They do not deploy Cloudflare or manage the retrieval stack.
 
 ## Customer flow
 
-1. Customer subscribes.
-2. Operator issues an `nr_live_...` API key.
-3. Customer downloads `SKILL.md` from the hosted service.
-4. Their agent uses the skill plus the API key.
-5. Relay authenticates, enforces quota and rate limits, records usage, fetches the public source, and returns normalized content with a receipt.
+1. Customer selects an operator-approved Stripe price.
+2. Relay creates a hosted Checkout Session.
+3. Signed Stripe webhooks synchronize subscription entitlements into D1.
+4. Customer receives an `nr_live_...` API key and downloads `SKILL.md`.
+5. Their agent uses Relay through REST or MCP.
+6. Relay authenticates the key and parent customer, reserves quota atomically, retrieves the public source, completes usage only after success, and returns a provenance receipt.
+7. Failed payment suspends the customer and disables all customer keys.
 
 ## Surfaces
 
-- `GET /health` — public service status and skill URL
+- `GET /health` — public status, billing configuration and egress mode
 - `GET /SKILL.md` — downloadable agent integration skill
-- `GET /v1/usage` — authenticated usage and remaining allowance
+- `GET /v1/usage` — authenticated quota usage
+- `GET /v1/billing` — authenticated subscription and invoice summary
+- `POST /v1/billing/checkout` — authenticated Stripe Checkout creation
+- `POST /v1/billing/portal` — authenticated Stripe customer portal creation
+- `POST /v1/billing/webhook` — signed, idempotent Stripe reconciliation
 - `GET /v1/read?url=https://example.com` — authenticated read
 - `POST /v1/read` — authenticated read
 - `POST /mcp` — authenticated MCP server
@@ -30,64 +36,98 @@ curl -X POST https://YOUR-DOMAIN/v1/read \
   -d '{"url":"https://example.com/feed.xml","mode":"auto"}'
 ```
 
-## MCP configuration
+## Billing configuration
 
-```json
-{
-  "mcpServers": {
-    "nexus-relay": {
-      "url": "https://YOUR-DOMAIN/mcp",
-      "headers": {
-        "Authorization": "Bearer ${NEXUS_RELAY_API_KEY}"
-      }
-    }
-  }
-}
+The price catalog is an explicit entitlement map. Unknown Stripe prices do not activate Relay keys.
+
+```toml
+RELAY_PRICE_CATALOG = '{
+  "price_developer": {"plan":"developer","monthly_limit":1000,"rate_limit_per_minute":30},
+  "price_team": {"plan":"team","monthly_limit":25000,"rate_limit_per_minute":120}
+}'
+```
+
+Set secrets:
+
+```bash
+wrangler secret put STRIPE_SECRET_KEY
+wrangler secret put STRIPE_WEBHOOK_SECRET
+```
+
+Configure the Stripe webhook endpoint as:
+
+```text
+https://YOUR-DOMAIN/v1/billing/webhook
+```
+
+Required events:
+
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.paid`
+- `invoice.payment_failed`
+
+Webhook event IDs are reserved atomically with `INSERT OR IGNORE`. Failed processing removes the reservation so Stripe retries can reconcile it. Completed events retain a SHA-256 digest and result receipt.
+
+## Pinned outbound egress
+
+Worker DNS preflight alone cannot pin the exact destination IP used by a later HTTPS fetch. For the strongest SSRF boundary, deploy `egress/server.mjs` as a small Node service:
+
+```bash
+docker build -t nexus-relay-egress ./egress
+docker run --rm -p 8788:8788 \
+  -e RELAY_EGRESS_SECRET='replace-me' \
+  nexus-relay-egress
+```
+
+Then configure the Worker:
+
+```bash
+wrangler secret put RELAY_EGRESS_SECRET
+# Set RELAY_EGRESS_URL to the private egress /fetch endpoint.
+```
+
+The egress service resolves once, rejects private/reserved A and AAAA results, pins the selected IP through Node's `lookup` callback, preserves TLS SNI and Host verification, validates every redirect independently, bounds response bytes, and authenticates Worker requests with HMAC-SHA256.
+
+## SignalLens canonical perception
+
+`clients/signallens.mjs` is the fail-closed SignalLens adapter. It calls only Relay, requires a Relay receipt and metering event, preserves `content_sha256`, and never silently falls back to an ungoverned direct fetch.
+
+```js
+import { signalLensFromEnv } from "./clients/signallens.mjs";
+const lens = signalLensFromEnv();
+const perception = await lens.read("https://example.com/feed.xml", "auto");
 ```
 
 ## Operator deployment
 
 ```bash
 cd products/nexus-relay
-npm install -g wrangler
-wrangler login
 wrangler d1 create nexus-relay
-# Put the returned database id into wrangler.toml
+# Put the database ID into wrangler.toml.
 wrangler d1 execute nexus-relay --remote --file=schema.sql
 wrangler deploy
 ```
 
-Issue a customer key:
+For an existing database:
 
 ```bash
-node scripts/issue-key.mjs customer@example.com developer 1000 30
+wrangler d1 execute nexus-relay --remote --file=migrations/0002_security_and_atomic_metering.sql
+wrangler d1 execute nexus-relay --remote --file=migrations/0003_billing_control_plane.sql
 ```
 
-The script prints the plaintext key once and emits SQL containing only its SHA-256 hash. Deliver the plaintext key securely and never store it in source control.
+## Supported source types
 
-## Metering model
-
-D1 stores customers, hashed API keys, monthly limits, per-minute limits, and append-only usage events. Every billable `relay_read` returns a billing event ID. Stripe or another billing system can consume aggregated usage later without changing the customer-facing API.
-
-## Current supported source types
-
-- Public HTML pages
-- RSS and Atom feeds
-- Public JSON APIs
-- Markdown files
-- Plain-text files
-- CSV files with bounded row normalization
-- XML sitemaps and sitemap indexes
-
-The same modes are exposed through REST, MCP, `/health`, and the downloadable `SKILL.md` contract.
+Public HTML, RSS/Atom, JSON, Markdown, plain text, CSV, XML sitemaps and sitemap indexes.
 
 ## Security boundary
 
-- Public HTTP(S) only.
-- Loopback and common private-network targets are blocked.
-- Credentials embedded in URLs are stripped.
-- Response size is bounded.
-- Customer keys are stored as SHA-256 hashes.
-- Reads require an active key and are metered.
-- No login bypass, CAPTCHA evasion, private-profile access, or anti-bot circumvention is enabled.
-- The operator remains responsible for source terms, robots directives, privacy law, retention, pricing, and commercial use.
+- Customer API keys and parent customer status are both enforced.
+- Quota reservations are atomic and failed reads do not consume completed usage.
+- Every redirect destination is validated.
+- Pinned egress closes the Worker DNS time-of-check/time-of-use gap when configured.
+- Authenticated routes do not use wildcard CORS.
+- No login bypass, CAPTCHA evasion, private-profile access or anti-bot circumvention is provided.
+- The operator remains responsible for source terms, privacy, retention, taxes, refunds, pricing and Stripe account configuration.
