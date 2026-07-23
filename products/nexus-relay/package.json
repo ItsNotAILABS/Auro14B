@@ -1,11 +1,14 @@
 {
   "name": "nexus-relay",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/index.js && node --check src/extract.js && node --check src/mcp.js && node --check src/auth.js && node --check src/skill.js && node --check scripts/issue-key.mjs"
+    "check": "node --check src/index.js && node --check src/extract.js && node --check src/mcp.js && node --check src/auth.js && node --check src/security.js && node --check src/skill.js && node --check scripts/issue-key.mjs"
+  },
+  "devDependencies": {
+    "miniflare": "^4.20260720.0"
   },
   "engines": {"node": ">=20"}
 }
