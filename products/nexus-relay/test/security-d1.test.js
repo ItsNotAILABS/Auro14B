@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { Miniflare } from "miniflare";
 import { authenticate, reserveUsage, sha256 } from "../src/auth.js";
-import { isBlockedIp, secureFetch, validateUrl } from "../src/security.js";
+import { isBlockedIp, secureFetch, secureFetchViaEgress, validateUrl } from "../src/security.js";
 
 async function database() {
   const mf = new Miniflare({
@@ -13,9 +13,7 @@ async function database() {
   });
   const db = await mf.getD1Database("DB");
   const schema = await readFile(new URL("../schema.sql", import.meta.url), "utf8");
-  for (const statement of schema.split(";").map((item) => item.trim()).filter(Boolean)) {
-    await db.prepare(statement).run();
-  }
+  for (const statement of schema.split(";").map((item) => item.trim()).filter(Boolean)) await db.prepare(statement).run();
   return { mf, db };
 }
 
@@ -44,10 +42,8 @@ test("atomic conditional reservation prevents concurrent quota overflow", async 
     const token = await seed(db, { monthly: 3, rpm: 3 });
     const principal = await authenticate(new Request("https://relay.test", { headers: { authorization: `Bearer ${token}` } }), { DB: db });
     const attempts = await Promise.allSettled(Array.from({ length: 12 }, (_, i) => reserveUsage({ DB: db }, principal, "relay_read", { i })));
-    const accepted = attempts.filter((x) => x.status === "fulfilled");
-    const rejected = attempts.filter((x) => x.status === "rejected");
-    assert.equal(accepted.length, 3);
-    assert.equal(rejected.length, 9);
+    assert.equal(attempts.filter((x) => x.status === "fulfilled").length, 3);
+    assert.equal(attempts.filter((x) => x.status === "rejected").length, 9);
     const row = await db.prepare("SELECT COUNT(*) AS n FROM usage_events").first();
     assert.equal(Number(row.n), 3);
   } finally { await mf.dispose(); }
@@ -64,9 +60,22 @@ test("redirect destinations are revalidated before the next network hop", async 
   assert.equal(outboundCalls, 1);
 });
 
+test("pinned egress calls are HMAC authenticated and preserve receipts", async () => {
+  let captured;
+  const chain = Buffer.from(JSON.stringify(["https://example.com/start", "https://example.com/final"])).toString("base64url");
+  const fetchFn = async (url, options) => {
+    captured = { url, options };
+    return new Response("ok", { status: 200, headers: { "x-relay-final-url": "https://example.com/final", "x-relay-redirect-chain": chain } });
+  };
+  const result = await secureFetchViaEgress("https://example.com/start", { egressUrl: "https://egress.test/fetch", egressSecret: "secret", fetchFn });
+  assert.equal(captured.url, "https://egress.test/fetch");
+  assert.match(captured.options.headers["x-relay-signature"], /^[a-f0-9]{64}$/);
+  assert.equal(result.egress, "pinned-dns");
+  assert.equal(result.finalUrl.href, "https://example.com/final");
+  assert.equal(result.redirectChain.length, 2);
+});
+
 test("blocked address coverage includes link-local reserved and IPv6 private space", () => {
-  for (const ip of ["169.254.1.1", "100.64.0.1", "192.0.2.2", "198.51.100.2", "203.0.113.2", "::1", "fc00::1", "fd12::1", "fe80::1", "ff02::1", "2001:db8::1"]) {
-    assert.equal(isBlockedIp(ip), true, ip);
-  }
+  for (const ip of ["169.254.1.1", "100.64.0.1", "192.0.2.2", "198.51.100.2", "203.0.113.2", "::1", "fc00::1", "fd12::1", "fe80::1", "ff02::1", "2001:db8::1"]) assert.equal(isBlockedIp(ip), true, ip);
   assert.throws(() => validateUrl("http://[fd12::1]/"), /blocked/);
 });
