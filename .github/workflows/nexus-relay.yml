@@ -22,7 +22,8 @@ jobs:
         with:
           node-version: '20'
       - run: npm install
-      - run: npm test
+      - name: Run bounded integration tests
+        run: timeout 120s npm test
       - run: npm run check
       - name: Verify hardened hosted boundaries
         run: |
