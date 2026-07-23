@@ -12,7 +12,10 @@ async function database() {
     d1Databases: { DB: "00000000-0000-0000-0000-000000000001" }
   });
   const db = await mf.getD1Database("DB");
-  await db.exec(await readFile(new URL("../schema.sql", import.meta.url), "utf8"));
+  const schema = await readFile(new URL("../schema.sql", import.meta.url), "utf8");
+  for (const statement of schema.split(";").map((item) => item.trim()).filter(Boolean)) {
+    await db.prepare(statement).run();
+  }
   return { mf, db };
 }
 
