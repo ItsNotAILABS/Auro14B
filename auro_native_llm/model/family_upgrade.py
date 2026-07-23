@@ -38,6 +38,50 @@ def apply_family_upgrade(config: Any) -> Any:
     return config
 
 
+def build_auro156k_config(config_cls: Any, **overrides: Any) -> Any:
+    """Create the smallest executable AURO MoE rung.
+
+    The 156K name remains a target-class label; the exact live count depends on
+    the MESIE implementation and auxiliary heads. Its legacy 256-token context
+    is raised to 1,024 by the same family policy used everywhere else.
+    """
+    config = config_cls(
+        model_id="Auro-156K",
+        tier="seed",
+        parameter_target=156_000,
+        mode="dev",
+        mesie_preset="auro_seed_moe",
+        hidden_dim=64,
+        num_layers=2,
+        num_heads=4,
+        num_kv_heads=2,
+        head_dim=16,
+        ffn_dim=64,
+        vocab_size=1024,
+        max_seq_len=256,
+        use_moe=True,
+        num_experts=8,
+        top_k_experts=2,
+        moe_every=2,
+        use_cross_modal=False,
+        use_spectral_encoder=False,
+        continuous_dim=32,
+        spectral_input_dim=64,
+        num_modalities=1,
+        use_meaning=True,
+        use_spectral_fusion=True,
+        use_helix=True,
+        use_token_governor=True,
+        multi_task=True,
+    )
+    for key, value in overrides.items():
+        if hasattr(config, key):
+            setattr(config, key, value)
+        else:
+            config.extra[key] = value
+    return apply_family_upgrade(config)
+
+
 def upgraded_family_config(base_factory: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     """Call the repository factory and apply the mandatory family policy."""
     return apply_family_upgrade(base_factory(*args, **kwargs))
