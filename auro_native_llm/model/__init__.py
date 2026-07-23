@@ -16,6 +16,7 @@ from auro_native_llm.model.config import (
     mesie_preset_dims,
 )
 from auro_native_llm.model.auro_lm import AuroLanguageModel, AuroGenerateResult
+from auro_native_llm.model.long_context import AuroLongContextModel, LongContextForward
 from auro_native_llm.model.auro4b import (
     architecture_to_overrides,
     build_auro4b,
@@ -38,6 +39,8 @@ __all__ = [
     "AuroGenerateResult",
     "AuroLMConfig",
     "AuroLanguageModel",
+    "AuroLongContextModel",
+    "LongContextForward",
     "AuroTokenizer",
     "FULL_ARCHITECTURE",
     "PROXY_ARCHITECTURE",
