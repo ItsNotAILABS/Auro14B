@@ -1,0 +1,82 @@
+name: AURO Family MoE Context Gate
+
+on:
+  pull_request:
+    paths:
+      - "auro_native_llm/model/__init__.py"
+      - "auro_native_llm/model/family_upgrade.py"
+      - "auro_native_llm/model/auro4b.py"
+      - "auro_native_llm/model/auro4b_architecture.py"
+      - "tests/test_family_moe_context_policy.py"
+      - "tests/test_auro4b_architecture.py"
+      - ".github/workflows/auro-family-moe-context-gate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "auro_native_llm/model/__init__.py"
+      - "auro_native_llm/model/family_upgrade.py"
+      - "auro_native_llm/model/auro4b.py"
+      - "auro_native_llm/model/auro4b_architecture.py"
+
+jobs:
+  family-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile family architecture policy
+        run: |
+          python -m py_compile \
+            auro_native_llm/model/__init__.py \
+            auro_native_llm/model/family_upgrade.py \
+            auro_native_llm/model/auro4b.py \
+            auro_native_llm/model/auro4b_architecture.py
+      - name: Run family and Auro-4B architecture tests
+        run: |
+          python -m pytest -q \
+            tests/test_family_moe_context_policy.py \
+            tests/test_auro4b_architecture.py
+      - name: Emit family policy receipt
+        run: |
+          mkdir -p evidence
+          python - <<'PY'
+          import json
+          from auro_native_llm.model import family_config
+          from auro_native_llm.model.auro4b_architecture import FULL_ARCHITECTURE
+          ids = ["Auro-156K", "Auro-2B", "Auro-4B", "Auro-8B", "Auro-14B", "Auro-100B"]
+          family = {}
+          for model_id in ids:
+              cfg = family_config(model_id, mode="dev")
+              family[model_id] = {
+                  "use_moe": cfg.use_moe,
+                  "num_experts": cfg.num_experts,
+                  "top_k_experts": cfg.top_k_experts,
+                  "max_seq_len": cfg.max_seq_len,
+                  "long_context_quality_verified": cfg.extra["long_context_quality_verified"],
+              }
+          estimate = FULL_ARCHITECTURE.parameter_estimate()
+          payload = {
+              "schema": "auro.family.moe-context.receipt.v1",
+              "context_multiplier": 4,
+              "family": family,
+              "auro4b_active_parameters": estimate["active_total"],
+              "auro4b_stored_parameters": estimate["stored_total"],
+              "claims": {
+                  "long_context_quality_verified": False,
+                  "moe_routing_quality_verified": False,
+              },
+          }
+          assert all(item["use_moe"] for item in family.values())
+          assert all(item["num_experts"] >= 8 for item in family.values())
+          assert 3_900_000_000 <= estimate["active_total"] <= 4_150_000_000
+          with open("evidence/auro-family-moe-context.json", "w") as handle:
+              json.dump(payload, handle, indent=2, sort_keys=True)
+          print(json.dumps(payload, indent=2, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-family-moe-context-receipt
+          path: evidence/auro-family-moe-context.json
