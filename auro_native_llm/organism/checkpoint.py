@@ -60,9 +60,7 @@ def save_mind(mind: AuroMind, directory: str | Path) -> Dict[str, Any]:
         "canon_sha256": getattr(mind.organs.canon, "content_sha256", None), "language_meta": lm_meta,
         "constitutional_manifest": "constitutional_manifest.json", "valuable": True,
     }
-    # Persist the pre-manifest metadata so it can be included in the artifact inventory.
-    (directory / "mind_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
-    files = ["trainer.json", "mind_meta.json"]
+    files = ["trainer.json"]
     if (directory / "memory.json").exists(): files.append("memory.json")
     for relative in ("language/weights.npz", "language/layers.npz", "language/tokenizer.json", "language/config.json", "language/meta.json", "language/constitutional_manifest.json"):
         if (directory / relative).exists(): files.append(relative)
@@ -78,20 +76,10 @@ def save_mind(mind: AuroMind, directory: str | Path) -> Dict[str, Any]:
         promotion_requested=promotion_requested, signing_key=signing_key, authorized_by=authorized_by,
     )
     write_constitutional_manifest(directory, constitutional)
-    # Rewrite persisted metadata after status and authorization are known, then refresh its inventory hash and reseal.
     meta.update({"promotion_status": constitutional.promotion_status, "constitutional_sha256": constitutional.manifest_sha256,
-        "authorization_hmac_sha256": constitutional.authorization_hmac_sha256, "authorized_by": constitutional.authorized_by})
+        "authorization_hmac_sha256": constitutional.authorization_hmac_sha256, "authorized_by": constitutional.authorized_by,
+        "metadata_role": "derived index; sealed artifacts are listed in constitutional_manifest.json"})
     (directory / "mind_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
-    constitutional.files["mind_meta.json"] = {"sha256": __import__("hashlib").sha256((directory / "mind_meta.json").read_bytes()).hexdigest(), "bytes": (directory / "mind_meta.json").stat().st_size}
-    constitutional.seal(signing_key=signing_key, authorized_by=authorized_by)
-    write_constitutional_manifest(directory, constitutional)
-    meta["constitutional_sha256"] = constitutional.manifest_sha256
-    meta["authorization_hmac_sha256"] = constitutional.authorization_hmac_sha256
-    (directory / "mind_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
-    # The final metadata write changes its hash once more; update and seal one final deterministic time.
-    constitutional.files["mind_meta.json"] = {"sha256": __import__("hashlib").sha256((directory / "mind_meta.json").read_bytes()).hexdigest(), "bytes": (directory / "mind_meta.json").stat().st_size}
-    constitutional.seal(signing_key=signing_key, authorized_by=authorized_by)
-    write_constitutional_manifest(directory, constitutional)
     return meta
 
 
