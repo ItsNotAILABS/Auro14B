@@ -34,16 +34,16 @@ jobs:
       - name: Compile substrate and checkpoint bindings
         run: |
           python -m py_compile auro_native_llm/substrate/checkpoint_constitution.py
+          python -m py_compile auro_native_llm/substrate/promotion_evidence.py
           python -m py_compile auro_native_llm/model/checkpoint.py
           python -m py_compile auro_native_llm/organism/checkpoint.py
-      - name: Run constitutional substrate tests
+      - name: Run authorization and checkpoint tests
         run: PYTHONPATH=. pytest -q tests/test_checkpoint_constitution.py
       - name: Verify constitutional boundaries
         run: |
-          grep -q 'canonical_checkpoint_identity' auro_native_llm/substrate/checkpoint_constitution.py
-          grep -q 'organism_state_identity_continuity' auro_native_llm/substrate/checkpoint_constitution.py
-          grep -q 'quarantine_rollback_recovery' auro_native_llm/substrate/checkpoint_constitution.py
-          grep -q 'artificial_identity_operations' auro_native_llm/substrate/checkpoint_constitution.py
-          grep -q 'economic_interface_continuity' auro_native_llm/substrate/checkpoint_constitution.py
-          grep -q 'load_and_verify_constitutional_manifest' auro_native_llm/model/checkpoint.py
-          grep -q 'identity_health' auro_native_llm/organism/checkpoint.py
+          grep -q 'authorization_hmac_sha256' auro_native_llm/substrate/checkpoint_constitution.py
+          grep -q 'hmac.compare_digest' auro_native_llm/substrate/checkpoint_constitution.py
+          grep -q 'AURO_PROMOTION_EVIDENCE' auro_native_llm/model/checkpoint.py
+          grep -q 'allow_quarantined: bool = False' auro_native_llm/model/checkpoint.py
+          grep -q 'allow_quarantined: bool = False' auro_native_llm/organism/checkpoint.py
+          grep -q 'metadata_role' auro_native_llm/organism/checkpoint.py
