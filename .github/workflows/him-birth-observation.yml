@@ -12,6 +12,9 @@ on:
 permissions:
   contents: read
 
+env:
+  OBSERVATION_PROTOCOL: auro.him.birth-observation.v1
+
 jobs:
   observe-him:
     runs-on: ubuntu-24.04
