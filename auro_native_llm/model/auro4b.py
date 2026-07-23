@@ -1,9 +1,10 @@
-"""Auro-4B native construction lane.
+"""Auro-4B native MoE construction lane.
 
 The lane has two modes:
 - proxy: executable ratio-preserving model for CI, tokenizer, checkpoint, API,
   and training-pipeline validation;
-- full: the actual ~4B decoder geometry, materialized only by explicit request.
+- full: the actual ~4B active-parameter MoE geometry, materialized only by
+  explicit request.
 """
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ from auro_native_llm.model.auro4b_architecture import (
     Auro4BArchitecture,
     auro4b_architecture,
 )
+from auro_native_llm.model.family_upgrade import POLICY_VERSION
 
 if TYPE_CHECKING:
     from auro_native_llm.model.auro_lm import AuroLanguageModel
@@ -37,9 +39,10 @@ def architecture_to_overrides(architecture: Auro4BArchitecture) -> Dict[str, Any
         "ffn_dim": architecture.ffn_dim,
         "vocab_size": architecture.vocab_size,
         "max_seq_len": architecture.max_seq_len,
-        "use_moe": False,
-        "num_experts": 1,
-        "top_k_experts": 1,
+        "use_moe": architecture.use_moe,
+        "num_experts": architecture.num_experts,
+        "top_k_experts": architecture.top_k_experts,
+        "moe_every": architecture.moe_every,
         "positional_encoding": architecture.positional_encoding,
         "normalization": architecture.normalization,
         "activation": architecture.activation,
@@ -54,6 +57,15 @@ def architecture_to_overrides(architecture: Auro4BArchitecture) -> Dict[str, Any
             "checkpoint_constitution": architecture.checkpoint_constitution,
             "claims": dict(architecture.claims),
             "parameter_estimate": architecture.parameter_estimate(),
+            "active_parameter_identity": True,
+            "stored_expert_capacity_exceeds_active_compute": True,
+            "family_upgrade_policy": POLICY_VERSION,
+            "context_multiplier": 4,
+            "legacy_max_seq_len": architecture.max_seq_len // 4,
+            "declared_max_seq_len": architecture.max_seq_len,
+            "all_family_members_moe": True,
+            "long_context_quality_verified": False,
+            "long_context_training_required": True,
         },
     }
 
@@ -101,7 +113,7 @@ def write_birth_certificate(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     architecture = getattr(model, "auro4b_architecture", build_auro4b_config("proxy"))
     payload: Dict[str, Any] = {
-        "schema": "auro.model.birth.v2",
+        "schema": "auro.model.birth.v3",
         "model_id": model.model_id,
         "architecture": architecture,
         "parameter_target": int(model.config.parameter_target),
@@ -114,9 +126,11 @@ def write_birth_certificate(
         "checkpoint_constitution": "auro.substrate.checkpoint.v1",
         "claim_boundary": {
             "structured_inductive_bias": receipt is not None,
+            "moe_architecture_enabled": True,
             "trained_general_knowledge": False,
             "dpo_alignment_completed": False,
             "long_context_extrapolation_verified": False,
+            "moe_routing_quality_verified": False,
             "benchmark_superiority_claimed": False,
             "hallucination_reduction_claimed": False,
         },
