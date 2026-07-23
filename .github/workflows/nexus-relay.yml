@@ -9,6 +9,7 @@ on:
     paths:
       - 'products/nexus-relay/**'
       - '.github/workflows/nexus-relay.yml'
+  workflow_dispatch:
 jobs:
   gate:
     runs-on: ubuntu-latest
@@ -17,19 +18,40 @@ jobs:
         working-directory: products/nexus-relay
     steps:
       - uses: actions/checkout@v4
+        with:
+          show-progress: false
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm test
-      - run: npm run check
-      - name: Verify hosted product boundaries
+      - run: npm install --no-audit --no-fund
+      - name: Run bounded integration tests
+        id: relay_tests
+        continue-on-error: true
         run: |
-          grep -q 'hosted public-web context API' README.md
-          grep -q 'Customer keys are stored as SHA-256 hashes' README.md
-          grep -q 'No login bypass' README.md
-          grep -q 'private and loopback network targets are blocked' src/index.js
-          grep -q 'Authorization: Bearer' README.md
-          grep -q 'usage_events' schema.sql
+          timeout 120s npm test > test.log 2>&1
+          code=$?
+          tail -n 80 test.log
+          exit $code
+      - name: Upload integration diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-relay-test-log
+          path: products/nexus-relay/test.log
+          if-no-files-found: error
+      - name: Fail on integration test failure
+        if: steps.relay_tests.outcome != 'success'
+        run: exit 1
+      - run: npm run check
+      - name: Verify hardened hosted boundaries
+        run: |
+          grep -q 'JOIN customers' src/auth.js
+          grep -q "INSERT INTO usage_events" src/auth.js
+          grep -q "status = 'completed'" src/auth.js
+          grep -q 'redirect: "manual"' src/security.js
+          grep -q '169.254.0.0' src/security.js
+          grep -q 'cloudflare-dns.com' src/security.js
+          grep -q 'ALLOWED_ORIGINS' src/index.js
+          grep -q 'metering only' src/index.js
+          grep -q 'Residual DNS rebinding limitation' SECURITY_LIMITATIONS.md
           grep -q 'NEXUS_RELAY_API_KEY' src/skill.js
-          grep -q 'content_sha256' src/index.js
-          grep -q 'tools/list' src/mcp.js
