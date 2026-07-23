@@ -2,6 +2,12 @@ name: HIM Birth Observation
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/run_him_birth_observation.py
+      - auro_native_llm/**
+      - .github/workflows/him-birth-observation.yml
   push:
     branches: [main]
     paths:
