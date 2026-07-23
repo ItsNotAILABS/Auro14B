@@ -17,6 +17,7 @@ from auro_native_llm.model.auro4b_architecture import (
     Auro4BArchitecture,
     auro4b_architecture,
 )
+from auro_native_llm.model.family_upgrade import POLICY_VERSION
 
 if TYPE_CHECKING:
     from auro_native_llm.model.auro_lm import AuroLanguageModel
@@ -58,8 +59,13 @@ def architecture_to_overrides(architecture: Auro4BArchitecture) -> Dict[str, Any
             "parameter_estimate": architecture.parameter_estimate(),
             "active_parameter_identity": True,
             "stored_expert_capacity_exceeds_active_compute": True,
+            "family_upgrade_policy": POLICY_VERSION,
             "context_multiplier": 4,
+            "legacy_max_seq_len": architecture.max_seq_len // 4,
+            "declared_max_seq_len": architecture.max_seq_len,
+            "all_family_members_moe": True,
             "long_context_quality_verified": False,
+            "long_context_training_required": True,
         },
     }
 
