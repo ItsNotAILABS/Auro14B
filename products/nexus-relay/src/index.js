@@ -1,6 +1,7 @@
 import { normalizeCsv, normalizeFeed, normalizeHtml, normalizeJson, normalizeSitemap, normalizeText } from "./extract.js";
 import { handleMcp } from "./mcp.js";
 import { authenticate, completeUsage, releaseUsage, reserveUsage, sha256, usageSummary } from "./auth.js";
+import { billingSummary, createCheckoutSession, createPortalSession, processStripeWebhook } from "./billing.js";
 import { NEXUS_RELAY_SKILL } from "./skill.js";
 import { isBlockedIp, secureFetch, validateUrl } from "./security.js";
 
@@ -58,12 +59,7 @@ async function readPublicUrl(args, env, dependencies = {}) {
     fetchFn: dependencies.fetchFn,
     resolver: dependencies.resolver,
     maxRedirects: Number(env.MAX_REDIRECTS || 5),
-    request: {
-      headers: {
-        "user-agent": "NEXUS-Relay/0.3 (+hosted-public-web-context; contact=operator)",
-        accept: "text/html,application/xhtml+xml,application/json,text/markdown,text/plain,text/csv,application/rss+xml,application/atom+xml,application/xml;q=0.9,*/*;q=0.5"
-      }
-    }
+    request: { headers: { "user-agent": "NEXUS-Relay/0.4 (+hosted-public-web-context; contact=operator)", accept: "text/html,application/xhtml+xml,application/json,text/markdown,text/plain,text/csv,application/rss+xml,application/atom+xml,application/xml;q=0.9,*/*;q=0.5" } }
   });
   const length = Number(response.headers.get("content-length") || 0);
   if (length > maxBytes) throw Object.assign(new Error(`response exceeds max_bytes (${length} > ${maxBytes})`), { status: 413 });
@@ -81,22 +77,7 @@ async function readPublicUrl(args, env, dependencies = {}) {
   else if (mode === "markdown") normalized = normalizeText({ text, kind: "markdown", ...common });
   else if (mode === "text") normalized = normalizeText({ text, kind: "text", ...common });
   else normalized = normalizeHtml({ html: text, ...common });
-  const result = {
-    ok: response.ok,
-    ...normalized,
-    receipt: {
-      schema: "nexus.relay.receipt.v2",
-      request_url: target.href,
-      final_url: finalUrl.href,
-      redirect_chain: redirectChain,
-      mode,
-      bytes: buffer.byteLength,
-      latency_ms: Date.now() - started,
-      content_sha256: await sha256(JSON.stringify(normalized.content)),
-      fetched_at: fetchedAt
-    },
-    cache: { hit: false, key: cacheKey }
-  };
+  const result = { ok: response.ok, ...normalized, receipt: { schema: "nexus.relay.receipt.v2", request_url: target.href, final_url: finalUrl.href, redirect_chain: redirectChain, mode, bytes: buffer.byteLength, latency_ms: Date.now() - started, content_sha256: await sha256(JSON.stringify(normalized.content)), fetched_at: fetchedAt }, cache: { hit: false, key: cacheKey } };
   if (env.CACHE && response.ok) await env.CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: Number(args.cache_ttl || env.DEFAULT_CACHE_TTL || 900) });
   return result;
 }
@@ -120,13 +101,17 @@ export default {
     if (request.method === "OPTIONS") {
       const origin = allowedOrigin(request, env);
       if (!origin) return new Response(null, { status: 403 });
-      return new Response(null, { status: 204, headers: { ...responseHeaders(request, env), "access-control-allow-methods": "GET,POST,OPTIONS", "access-control-allow-headers": "content-type,authorization" } });
+      return new Response(null, { status: 204, headers: { ...responseHeaders(request, env), "access-control-allow-methods": "GET,POST,OPTIONS", "access-control-allow-headers": "content-type,authorization,stripe-signature" } });
     }
     const url = new URL(request.url);
-    if (url.pathname === "/" || url.pathname === "/health") return json(request, env, { ok: true, product: env.NEXUS_RELAY_NAME || "NEXUS Relay", version: "0.3.0", model: "hosted metered API", supported_modes: [...MODES], surfaces: ["REST", "MCP", "SKILL.md"], skill_url: `${url.origin}/SKILL.md`, billing_status: "metering only; subscriptions and payment reconciliation not implemented" });
+    if (url.pathname === "/" || url.pathname === "/health") return json(request, env, { ok: true, product: env.NEXUS_RELAY_NAME || "NEXUS Relay", version: "0.4.0", model: "hosted metered API with subscription control plane", supported_modes: [...MODES], surfaces: ["REST", "MCP", "SKILL.md", "billing"], skill_url: `${url.origin}/SKILL.md`, billing_status: env.STRIPE_SECRET_KEY ? "configured" : "not configured" });
     if (url.pathname === "/SKILL.md" && request.method === "GET") return new Response(NEXUS_RELAY_SKILL, { headers: { ...responseHeaders(request, env, "text/markdown; charset=utf-8"), "content-disposition": "attachment; filename=SKILL.md" } });
     try {
+      if (url.pathname === "/v1/billing/webhook" && request.method === "POST") return json(request, env, { ok: true, ...(await processStripeWebhook(request, env)) });
       if (url.pathname === "/v1/usage" && request.method === "GET") { const principal = await authenticate(request, env); return json(request, env, { ok: true, usage: await usageSummary(env, principal) }); }
+      if (url.pathname === "/v1/billing" && request.method === "GET") { const principal = await authenticate(request, env); return json(request, env, { ok: true, billing: await billingSummary(env, principal) }); }
+      if (url.pathname === "/v1/billing/checkout" && request.method === "POST") { const principal = await authenticate(request, env); return json(request, env, { ok: true, checkout: await createCheckoutSession(env, principal, await request.json()) }); }
+      if (url.pathname === "/v1/billing/portal" && request.method === "POST") { const principal = await authenticate(request, env); return json(request, env, { ok: true, portal: await createPortalSession(env, principal, await request.json()) }); }
       if (url.pathname === "/v1/read" && request.method === "GET") { const principal = await authenticate(request, env); return json(request, env, await meteredRead({ url: url.searchParams.get("url"), mode: url.searchParams.get("mode") || "auto" }, env, principal, "rest_get")); }
       if (url.pathname === "/v1/read" && request.method === "POST") { const principal = await authenticate(request, env); return json(request, env, await meteredRead(await request.json(), env, principal, "rest_post")); }
       if (url.pathname === "/mcp" && request.method === "POST") { const principal = await authenticate(request, env); const payload = await handleMcp(request, (args) => meteredRead(args, env, principal, "mcp")); return payload === null ? new Response(null, { status: 202 }) : json(request, env, payload); }
