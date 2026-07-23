@@ -8,7 +8,7 @@
     "check": "node --check src/index.js && node --check src/extract.js && node --check src/mcp.js && node --check src/auth.js && node --check src/security.js && node --check src/skill.js && node --check scripts/issue-key.mjs"
   },
   "devDependencies": {
-    "miniflare": "^4.20260720.0"
+    "miniflare": "latest"
   },
   "engines": {"node": ">=20"}
 }
