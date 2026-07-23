@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "auro14b-app",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "observability": {"enabled": true},
+  "assets": {"directory": "./dist/site", "binding": "ASSETS", "run_worker_first": ["/api/*"]},
+  "durable_objects": {
+    "bindings": [
+      {"name": "OPERATOR_AGENT", "class_name": "OperatorAgent"},
+      {"name": "TEAM_AGENT", "class_name": "TeamAgent"},
+      {"name": "REPOSITORY_AGENT", "class_name": "RepositoryAgent"},
+      {"name": "FLEET_AGENT", "class_name": "FleetAgent"},
+      {"name": "APPROVAL_SESSION", "class_name": "ApprovalSession"},
+      {"name": "CHAT_SESSION", "class_name": "ChatSession"}
+    ]
+  },
+  "migrations": [{"tag": "v1-native-commercial-control-plane", "new_sqlite_classes": ["OperatorAgent", "TeamAgent", "RepositoryAgent", "FleetAgent", "ApprovalSession", "ChatSession"]}],
+  "workflows": [{"name": "auro-governed-operation", "binding": "GOVERNED_OPERATION", "class_name": "GovernedOperationWorkflow"}],
+  "vars": {"PRODUCT_VERSION": "0.2.0-native", "AURO_NATIVE_BASE_URL": "https://native-auro.invalid", "AURO_NATIVE_MODEL": "auro-him"}
+}

@@ -1,0 +1,57 @@
+name: NEXUS Relay Gate
+on:
+  pull_request:
+    paths:
+      - 'products/nexus-relay/**'
+      - '.github/workflows/nexus-relay.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'products/nexus-relay/**'
+      - '.github/workflows/nexus-relay.yml'
+  workflow_dispatch:
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: products/nexus-relay
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install --no-audit --no-fund
+      - name: Run bounded integration tests
+        id: relay_tests
+        continue-on-error: true
+        run: |
+          timeout 120s npm test > test.log 2>&1
+          code=$?
+          tail -n 80 test.log
+          exit $code
+      - name: Upload integration diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-relay-test-log
+          path: products/nexus-relay/test.log
+          if-no-files-found: error
+      - name: Fail on integration test failure
+        if: steps.relay_tests.outcome != 'success'
+        run: exit 1
+      - run: npm run check
+      - name: Verify hardened hosted boundaries
+        run: |
+          grep -q 'JOIN customers' src/auth.js
+          grep -q "INSERT INTO usage_events" src/auth.js
+          grep -q "status = 'completed'" src/auth.js
+          grep -q 'redirect: "manual"' src/security.js
+          grep -q '169.254.0.0' src/security.js
+          grep -q 'cloudflare-dns.com' src/security.js
+          grep -q 'ALLOWED_ORIGINS' src/index.js
+          grep -q 'metering only' src/index.js
+          grep -q 'Residual DNS rebinding limitation' SECURITY_LIMITATIONS.md
+          grep -q 'NEXUS_RELAY_API_KEY' src/skill.js

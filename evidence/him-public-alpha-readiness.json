@@ -1,0 +1,110 @@
+{
+  "schema": "him.public_alpha.readiness.v1",
+  "generated_at": 1784406459.7977772,
+  "public_alpha_runtime_ready": true,
+  "general_model_release_ready": false,
+  "marketing_posture": "public alpha / hackathon-ready runtime",
+  "checks": [
+    {
+      "id": "checkpoint_integrity",
+      "pass": true,
+      "evidence": {
+        "config.json": "31366d8502ba29cdc535fda845d6ec2b75dd1a2756aa403789b2d2aa5655c6e7",
+        "tokenizer.json": "3d9fda3fb1acd40bf750e47d8502c6d54a8ae936a575eb2ef249ffbbfb31ff72",
+        "weights.npz.b64": "5b701dde391ac13312165b81ea608804f2d413be85a84de50716c4d80403bd1d",
+        "training_report.json": "c98beee586a0cd3d89fffe288801f2f799e51f9c34306703ee1d219057bb9826"
+      }
+    },
+    {
+      "id": "tokenizer_lossless",
+      "pass": true,
+      "evidence": {
+        "schema": "auro.byte_tokenizer.v1",
+        "vocab_size": 272,
+        "byte_offset": 16,
+        "control_tokens": [
+          "<pad>",
+          "<bos>",
+          "<eos>",
+          "<system>",
+          "<user>",
+          "<assistant>",
+          "<tool>",
+          "<receipt>",
+          "<spectral>",
+          "<memory>",
+          "<repository>",
+          "<code>",
+          "<test>",
+          "<execution>",
+          "<nova>",
+          "<mesie>"
+        ],
+        "unknown_token": null,
+        "byte_round_trip": true
+      }
+    },
+    {
+      "id": "parameter_accounting",
+      "pass": true,
+      "evidence": {
+        "measured_parameters": 146576,
+        "family_label_not_parameter_count": true
+      }
+    },
+    {
+      "id": "million_token_context",
+      "pass": true,
+      "evidence": {
+        "logical_tokens": 1110000,
+        "injected_tokens": 699,
+        "budget": 1200,
+        "receipt_hash": "19b944262af3bdc29017e3dbec6d35549dafe301c4af845c867b57e0d7f9cbc7"
+      }
+    },
+    {
+      "id": "specialist_routing",
+      "pass": true,
+      "evidence": {
+        "decision": {
+          "task": "code",
+          "strategy": "single",
+          "selected_lane": "him-coder",
+          "candidates": [
+            "him-coder",
+            "him-general"
+          ],
+          "reason": "selected him-coder: capability=code; local lanes preferred; priority breaks ties"
+        },
+        "attempts": [
+          {
+            "lane_id": "him-coder",
+            "model": "HIM-Coder",
+            "provider": "repository-native-open-weights",
+            "task": "code",
+            "ok": true,
+            "latency_ms": 0.028
+          }
+        ],
+        "elapsed_ms": 0.157,
+        "receipt_hash": "7fa5f2fec1e489eba8e7c8457243f880cbab9e353dd06760d7521931c43291df"
+      }
+    },
+    {
+      "id": "bundled_general_chat_quality",
+      "pass": false,
+      "critical_for": "general_model_release",
+      "evidence": {
+        "heuristic_printable": true,
+        "sample": "<user> What is HIM?\n<assistant> HIM is Auro's open-weight language organism and governed internal-agent runtime",
+        "assessment": "reference checkpoint remains undertrained; production contract gate required"
+      }
+    }
+  ],
+  "critical_blockers": [
+    "Bundled HIM-native-v0 is not a fluent general-purpose checkpoint.",
+    "PyTorch portability suites require the ML test environment.",
+    "A promoted Auro checkpoint needs official benchmark and safety evaluation."
+  ],
+  "elapsed_seconds": 0.615
+}

@@ -1,0 +1,43 @@
+name: AURO Bridge Gate
+
+on:
+  pull_request:
+    paths:
+      - 'auro_native_llm/bridges/**'
+      - 'tests/test_auro_bridges.py'
+      - 'config/auro_bridge.example.json'
+      - '.github/workflows/auro-bridge.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'auro_native_llm/bridges/**'
+      - 'tests/test_auro_bridges.py'
+      - 'config/auro_bridge.example.json'
+      - '.github/workflows/auro-bridge.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bridge-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install focused dependencies
+        run: python -m pip install --upgrade pip pytest numpy torch
+      - name: Compile bridge runtime
+        run: |
+          python -m py_compile auro_native_llm/bridges/runtime.py
+          python -m py_compile auro_native_llm/bridges/server.py
+      - name: Run governed bridge tests
+        run: PYTHONPATH=. pytest -q tests/test_auro_bridges.py
+      - name: Verify policy and receipt boundaries
+        run: |
+          grep -q 'explicit user confirmation required' auro_native_llm/bridges/runtime.py
+          grep -q 'high-risk capability is disabled by default' auro_native_llm/bridges/runtime.py
+          grep -q 'previous_hash' auro_native_llm/bridges/runtime.py
+          grep -q 'mcp://localhost' auro_native_llm/bridges/server.py
