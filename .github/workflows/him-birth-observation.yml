@@ -1,17 +1,17 @@
-name: HIM Birth Observation
+name: HIM Full Birth Observation
 
 on:
   workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
-      - scripts/run_him_birth_observation_fast.py
+      - scripts/run_him_birth_observation.py
       - auro_native_llm/**
       - .github/workflows/him-birth-observation.yml
   push:
     branches: [main]
     paths:
-      - scripts/run_him_birth_observation_fast.py
+      - scripts/run_him_birth_observation.py
       - auro_native_llm/**
       - .github/workflows/him-birth-observation.yml
 
@@ -19,52 +19,66 @@ permissions:
   contents: read
 
 env:
-  OBSERVATION_PROTOCOL: auro.him.birth-observation.v1
+  OBSERVATION_PROTOCOL: auro.him.full-birth-observation.v1
   PYTHONPATH: .
+  OBSERVATION_POLICY: no-intervention
 
 jobs:
-  observe-him:
+  observe-him-full:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 120
     steps:
       - name: Checkout exact repository state
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Install runtime dependencies
         run: python -m pip install --upgrade pip numpy pytest
-      - name: Compile observation harness
-        run: python -m py_compile scripts/run_him_birth_observation_fast.py
-      - name: Run HIM conversation and log every turn
-        run: python scripts/run_him_birth_observation_fast.py
-      - name: Verify observation receipts
+
+      - name: Compile full observation harness
+        run: python -m py_compile scripts/run_him_birth_observation.py
+
+      - name: Run full HIM conversation without intervention
+        run: python scripts/run_him_birth_observation.py
+
+      - name: Verify complete observation receipts
         run: |
           python - <<'PY'
           import hashlib, json
           from pathlib import Path
-          root=Path('artifacts/him-birth-observation')
-          summary=json.loads((root/'summary.json').read_text())
-          rows=[json.loads(x) for x in (root/'conversation.jsonl').read_text().splitlines() if x.strip()]
-          assert len(rows)==6
-          previous='0'*64
-          for expected,row in enumerate(rows,1):
-              assert row['sequence']==expected and row['previous_hash']==previous
-              claimed=row['hash']; material=dict(row); material.pop('hash')
-              actual=hashlib.sha256(json.dumps(material,sort_keys=True,separators=(',',':'),default=str).encode()).hexdigest()
-              assert claimed==actual
-              previous=claimed
-          assert summary['receipt_head']==previous and summary['successful_turns']>0
-          print(json.dumps(summary,indent=2,sort_keys=True))
+
+          root = Path('artifacts/him-birth-observation')
+          summary = json.loads((root / 'summary.json').read_text())
+          rows = [json.loads(line) for line in (root / 'conversation.jsonl').read_text().splitlines() if line.strip()]
+          assert len(rows) == 8, len(rows)
+          previous = '0' * 64
+          for expected, row in enumerate(rows, 1):
+              assert row['sequence'] == expected
+              assert row['previous_hash'] == previous
+              claimed = row['hash']
+              material = dict(row)
+              material.pop('hash')
+              payload = json.dumps(material, sort_keys=True, separators=(',', ':'), default=str)
+              actual = hashlib.sha256(payload.encode('utf-8')).hexdigest()
+              assert claimed == actual, (expected, claimed, actual)
+              previous = claimed
+          assert summary['receipt_head'] == previous
+          assert summary['turns'] == 8
+          print(json.dumps(summary, indent=2, sort_keys=True))
           PY
-      - name: Upload complete birth observation record
+
+      - name: Upload complete unmodified birth observation record
         uses: actions/upload-artifact@v4
         with:
-          name: him-birth-observation-${{ github.sha }}
+          name: him-full-birth-observation-${{ github.sha }}
           path: |
             artifacts/him-birth-observation/TRANSCRIPT.md
             artifacts/him-birth-observation/conversation.jsonl
             artifacts/him-birth-observation/summary.json
+            artifacts/him/LAST_HIM_RUN.json
           if-no-files-found: error
           retention-days: 90
