@@ -117,6 +117,7 @@ class AgentManager:
         for agent_id in selected:
             agent = self.agents[agent_id]
             t0 = time.perf_counter()
+            prompt = _agent_prompt(agent, objective, shared, self.capability_context)
             prompt = _agent_prompt(agent, objective, shared, self.capability_context, context_block)
             response = self.generator(
                 [{"role": "system", "content": prompt}, {"role": "user", "content": objective}],
@@ -148,6 +149,7 @@ class NovaRuntime:
             endpoint = ModelEndpoint("him-native-v0", "local://open-weights", "HIM-native-v0",
                                      native.num_parameters, "orchestrator", None)
         self.endpoint = endpoint or ModelEndpoint.from_env()
+        self.generator = generator or OpenAICompatibleGenerator(self.endpoint)
         base_generator = generator or (NativeOpenWeightGenerator(native_checkpoint) if native_checkpoint else OpenAICompatibleGenerator(self.endpoint))
         self.model_orchestrator = _build_model_orchestrator(self.endpoint, base_generator, native_checkpoint)
         self.generator = self.model_orchestrator
@@ -157,6 +159,7 @@ class NovaRuntime:
         self.sdk = sdk
         from .capabilities import NativeCapabilities
         self.capabilities = NativeCapabilities(sdk)
+        capability_context = json.dumps({"organs":sdk.manifest(),"native_capabilities":self.capabilities.manifest()},ensure_ascii=False)
         from .context_engine import ContextEngine
         injection_budget=max(512,min(300_000,int(os.getenv("AURO_CONTEXT_INJECTION_TOKENS","32000"))))
         self.context=ContextEngine(os.getenv("AURO_CONTEXT_DB","state/him-context.sqlite"),injection_budget)
@@ -178,6 +181,7 @@ class NovaRuntime:
         synthesis = self.generator(
             [
                 {"role": "system", "content": _synthesis_prompt(execute, self.sdk.action_contract())},
+                {"role": "user", "content": f"OBJECTIVE:\n{message}\n\nCOUNCIL:\n{council_json}"},
                 {"role": "user", "content": f"OBJECTIVE:\n{message}\n\nRETRIEVED CONTEXT:\n{context_pack.context}\n\nCOUNCIL:\n{council_json}"},
             ],
             {"temperature": 0.25, "max_tokens": 1400},
@@ -245,6 +249,7 @@ class NovaRuntime:
         return response
 
 
+def _agent_prompt(agent: AgentSpec, objective: str, shared: str, capability_context: str = "") -> str:
 def _agent_prompt(agent: AgentSpec, objective: str, shared: str, capability_context: str = "", context_block: str = "") -> str:
     return f"""You are NOVA internal agent {agent.id} ({agent.role}).
 {agent.instruction}

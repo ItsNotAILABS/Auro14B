@@ -1,6 +1,7 @@
 """Native capability substrate: skills and tool contracts without plugins."""
 from __future__ import annotations
 from dataclasses import asdict, dataclass
+import time
 import os, time
 from typing import Any, Callable
 
@@ -21,6 +22,8 @@ def _obj(properties,required=()):
 BUILTINS=(
  Capability("brain.state","Read live BRAIN AI cognitive state.","brain","tool",_obj({})),
  Capability("brain.operator_snapshot","Read BRAIN AI operator/ADRE snapshot.","brain","tool",_obj({"path":{"type":"string"}})),
+ Capability("memory.rank_text","Rank memories or documents with MatDaemon.","matdaemon","tool",_obj({"query":{"type":"string"},"candidates":{"type":"array","items":{"type":"string"}},"k":{"type":"integer"}},("query","candidates"))),
+ Capability("compute.matmul","Run bounded matrix multiplication with MatDaemon.","matdaemon","tool",_obj({"a":{"type":"array"},"b":{"type":"array"},"backend":{"type":"string"}},("a","b"))),
  Capability("brain.fused_snapshot","Read HIM's permanent 44-region fused brain state.","brain","tool",_obj({})),
  Capability("brain.cycle","Run one bounded cognitive cycle; execution remains separately authorized.","brain","tool",_obj({"observation":{"type":"string"},"importance":{"type":"number"},"execute_requested":{"type":"boolean"}},("observation",))),
  Capability("brain.migration_status","Check optional MESIE topology parity without requiring MESIE.","brain","tool",_obj({})),
@@ -37,6 +40,10 @@ BUILTINS=(
  Capability("skill.build","Internal governed build workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("specify acceptance tests","design smallest slice","create capsule","run tests","emit receipt")),
  Capability("skill.reason","Internal logic and decision workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("extract premises","test contradictions","quantify uncertainty","compare alternatives","answer")),
  Capability("skill.memory","Internal continuity workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("identify relevant state","rank memories","check recency and provenance","reinject bounded context")),
+)
+
+class NativeCapabilities:
+    def __init__(self,sdk,capabilities=BUILTINS): self.sdk=sdk; self._items={x.name:x for x in capabilities}
  Capability("wallet.balance","Read an Auro paper-credit balance.","parallax","tool",_obj({"account":{"type":"string"},"asset":{"type":"string"}},("account",))),
  Capability("wallet.fund_sandbox","Issue paper-only test credits with balanced postings.","parallax","tool",_obj({"account":{"type":"string"},"amount":{"type":"string"},"asset":{"type":"string"}},("account","amount")),True,True),
  Capability("wallet.transfer_paper","Transfer paper credits between internal accounts.","parallax","tool",_obj({"source":{"type":"string"},"destination":{"type":"string"},"amount":{"type":"string"},"asset":{"type":"string"},"memo":{"type":"string"}},("source","destination","amount")),True,True),
@@ -72,6 +79,14 @@ class NativeCapabilities:
     def call(self,name:str,arguments:dict[str,Any],approved=False):
         if name not in self._items: raise ValueError(f"Unknown capability: {name}")
         spec=self._items[name]; _validate(spec.input_schema,arguments)
+        if spec.approval_required and not approved: return {"ok":False,"denied":True,"reason":"explicit approval required","capability":name}
+        started=time.perf_counter(); output=self._dispatch(name,arguments)
+        return {"ok":True,"capability":name,"organ":spec.organ,"output":output,"latency_ms":round((time.perf_counter()-started)*1000,3)}
+    def _dispatch(self,name,a):
+        if name=="brain.state": return self.sdk.brain.state()
+        if name=="brain.operator_snapshot": return self.sdk.brain.query(a.get("path","/v1/brain/operator-snapshot"))
+        if name=="memory.rank_text": return self.sdk.matdaemon.rank_text(a["query"],a["candidates"],int(a.get("k",5)))
+        if name=="compute.matmul": return self.sdk.matdaemon.call("matdaemon_matmul",a)
         if spec.approval_required and not approved:
             result={"ok":False,"denied":True,"reason":"explicit approval required","capability":name}
             result["receipt"]=asdict(self.ledger.record("capability",name,False,result,{"denied":True})); return result
@@ -115,3 +130,4 @@ def _validate(schema,args):
     missing=set(schema.get("required",[]))-set(args)
     if extra: raise ValueError("unknown arguments: "+", ".join(sorted(extra)))
     if missing: raise ValueError("missing arguments: "+", ".join(sorted(missing)))
+
