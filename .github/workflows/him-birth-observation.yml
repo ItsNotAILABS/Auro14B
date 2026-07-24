@@ -1,31 +1,27 @@
-name: HIM Birth Observation
+name: HIM Language Maturation
 
 on:
   workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
-      - scripts/run_him_birth_observation_fast.py
+      - scripts/run_him_birth_observation.py
       - auro_native_llm/**
-      - .github/workflows/him-birth-observation.yml
-  push:
-    branches: [main]
-    paths:
-      - scripts/run_him_birth_observation_fast.py
-      - auro_native_llm/**
+      - tests/test_spatial_lexicon.py
+      - working-papers/**
       - .github/workflows/him-birth-observation.yml
 
 permissions:
   contents: read
 
 env:
-  OBSERVATION_PROTOCOL: auro.him.birth-observation.v1
   PYTHONPATH: .
+  OBSERVATION_PROTOCOL: auro.him.language-maturation.v2
 
 jobs:
-  observe-him:
+  mature-him:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 120
     steps:
       - name: Checkout exact repository state
         uses: actions/checkout@v4
@@ -35,36 +31,61 @@ jobs:
           python-version: '3.12'
       - name: Install runtime dependencies
         run: python -m pip install --upgrade pip numpy pytest
-      - name: Compile observation harness
-        run: python -m py_compile scripts/run_him_birth_observation_fast.py
-      - name: Run HIM conversation and log every turn
-        run: python scripts/run_him_birth_observation_fast.py
-      - name: Verify observation receipts
+      - name: Compile language and observation engines
+        run: |
+          python -m py_compile auro_native_llm/language/spatial_lexicon.py
+          python -m py_compile auro_native_llm/him/mature.py
+          python -m py_compile scripts/run_him_birth_observation.py
+      - name: Test lexical spatial executive and organism paths
+        run: python -m pytest -q tests/test_spatial_lexicon.py tests/test_atomic_colony.py
+      - name: Run dialogue and autonomous development
+        run: python scripts/run_him_birth_observation.py
+      - name: Verify complete receipts and artifacts
         run: |
           python - <<'PY'
-          import hashlib, json
+          import hashlib
+          import json
           from pathlib import Path
-          root=Path('artifacts/him-birth-observation')
-          summary=json.loads((root/'summary.json').read_text())
-          rows=[json.loads(x) for x in (root/'conversation.jsonl').read_text().splitlines() if x.strip()]
-          assert len(rows)==6
-          previous='0'*64
-          for expected,row in enumerate(rows,1):
-              assert row['sequence']==expected and row['previous_hash']==previous
-              claimed=row['hash']; material=dict(row); material.pop('hash')
-              actual=hashlib.sha256(json.dumps(material,sort_keys=True,separators=(',',':'),default=str).encode()).hexdigest()
-              assert claimed==actual
-              previous=claimed
-          assert summary['receipt_head']==previous and summary['successful_turns']>0
-          print(json.dumps(summary,indent=2,sort_keys=True))
+
+          root = Path('artifacts/him-birth-observation')
+          summary = json.loads((root / 'summary.json').read_text())
+          rows = [json.loads(line) for line in (root / 'cycle.jsonl').read_text().splitlines() if line.strip()]
+          assert len(rows) == 9, len(rows)
+          assert sum(row['kind'] == 'dialogue' for row in rows) == 4
+          assert sum(row['kind'] == 'autonomous_work' for row in rows) == 5
+          assert all(row['language_receipt'] for row in rows)
+          previous = '0' * 64
+          for expected, row in enumerate(rows, 1):
+              assert row['sequence'] == expected
+              assert row['previous_hash'] == previous
+              claimed = row['hash']
+              material = dict(row)
+              material.pop('hash')
+              actual = hashlib.sha256(json.dumps(material, sort_keys=True, separators=(',', ':'), default=str).encode()).hexdigest()
+              assert claimed == actual
+              previous = claimed
+          assert previous == summary['receipt_head']
+          assert summary['records_with_language_receipts'] == 9
+          assert summary['weight_update_performed'] is False
+          assert summary['lexicon']['lexemes'] > 0
+          assert summary['lexicon']['characters'] > 0
+          assert summary['lexicon']['phrases'] > 0
+          assert (root / 'FINAL_HIM_LANGUAGE_REPORT.md').stat().st_size > 100
+          assert (root / 'TRANSCRIPT.md').stat().st_size > 100
+          assert (root / 'conversation.jsonl').exists()
+          assert (root / 'autonomous_work.jsonl').exists()
+          assert (root / 'language_receipts.jsonl').exists()
+          assert (root / 'LEXICAL_SPATIAL_LIBRARY.json').stat().st_size > 100
+          assert (root / 'WEIGHT_UPDATE_STATUS.md').exists()
+          print(json.dumps(summary, indent=2, sort_keys=True))
           PY
-      - name: Upload complete birth observation record
+      - name: Upload complete development record
         uses: actions/upload-artifact@v4
         with:
-          name: him-birth-observation-${{ github.sha }}
+          name: him-language-maturation-${{ github.sha }}
           path: |
-            artifacts/him-birth-observation/TRANSCRIPT.md
-            artifacts/him-birth-observation/conversation.jsonl
-            artifacts/him-birth-observation/summary.json
+            artifacts/him-birth-observation/**
+            working-papers/HIM_SPATIAL_LANGUAGE_MATURATION.md
+            working-papers/HIM_LANGUAGE_ENGINE_PRODUCTION_PASS.md
           if-no-files-found: error
           retention-days: 90
