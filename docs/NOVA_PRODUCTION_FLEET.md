@@ -63,3 +63,11 @@ Set `AURO_EXECUTION_TOKEN` before starting the server. Requests using `execute: 
 ## Continuous receipt chain
 
 Set `AURO_RECEIPT_LEDGER=./state/auro-receipts.jsonl` to persist a SHA-256-linked ledger. Every capability result and final model response records its sequence, payload hash, previous receipt hash, and receipt hash. `GET /v1/receipts` returns the recent chain and `GET /v1/receipts/verify` replays chain integrity. A tampered persisted ledger fails closed during startup.
+
+## PARALLAX wallet, vault, and native Office
+
+Auro includes a paper-only internal wallet aligned to PARALLAX's alpha boundary. `wallet.fund_sandbox` and `wallet.transfer_paper` use exact decimal amounts, balanced postings, transaction hashes, overdraft prevention, explicit approval, and `live_custody: false`. Set `AURO_WALLET_LEDGER` for durable transaction history.
+
+`office.create_bundle` produces real Markdown, CSV, DOCX, XLSX, PDF, and SHA-256 manifest files in one approved call. The DOCX and XLSX outputs are valid Open Packaging Convention ZIP containers; the PDF is a valid single-page PDF. When `vault: true`, generated files enter the content-addressed integrity vault under `AURO_VAULT_ROOT`.
+
+The current vault provides local integrity, restricted file permissions, content addressing, and verification. It explicitly reports `encrypted: false` and `secret_custody: false`; private keys and live financial credentials do not belong there until a separately audited encryption/HSM adapter exists.

@@ -1,0 +1,57 @@
+name: Browser Brain Archive
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - auro_native_llm/browser_brain/**
+      - auro_native_llm/serve/local.py
+      - scripts/browser_brain_archive.py
+      - tests/test_browser_brain_archive.py
+      - docs/BROWSER_BRAIN_ARCHIVE.md
+      - .github/workflows/browser-brain-archive.yml
+
+permissions:
+  contents: read
+
+jobs:
+  archive-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused runtime
+        run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile Browser Brain surfaces
+        run: |
+          python -m py_compile auro_native_llm/browser_brain/conversation_archive.py
+          python -m py_compile auro_native_llm/browser_brain/service.py
+          python -m py_compile auro_native_llm/serve/local.py
+          python -m py_compile scripts/browser_brain_archive.py
+      - name: Run focused tests
+        run: python -m pytest -q tests/test_browser_brain_archive.py
+      - name: Build archive index
+        run: python scripts/browser_brain_archive.py build --output artifacts/browser-brain/conversation-index.json
+      - name: Verify sealed index
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('artifacts/browser-brain/conversation-index.json')
+          payload = json.loads(path.read_text())
+          assert payload['schema'] == 'auro.browser-brain.conversation-archive.v1'
+          assert len(payload['index_sha256']) == 64
+          assert payload['known_historical_runs']['pr_57']
+          assert payload['known_historical_runs']['pr_58']
+          print(json.dumps({'conversation_count': payload['conversation_count'], 'index_sha256': payload['index_sha256']}, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: browser-brain-archive-${{ github.sha }}
+          path: artifacts/browser-brain/conversation-index.json
+          if-no-files-found: error
+          retention-days: 90

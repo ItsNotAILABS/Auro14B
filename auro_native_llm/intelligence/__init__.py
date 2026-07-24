@@ -8,6 +8,11 @@ from auro_native_llm.intelligence.promotion import (
     ReadinessReport,
     run_readiness,
 )
+from auro_native_llm.intelligence.long_harness import (
+    run_long_harnesses,
+    long_coding_tasks,
+    long_reasoning_cases,
+)
 
 __all__ = [
     "CodingOrchestrator",
@@ -15,6 +20,9 @@ __all__ = [
     "PromotionTier",
     "ReadinessReport",
     "ReasoningOrchestrator",
+    "long_coding_tasks",
+    "long_reasoning_cases",
     "run_coding_harness",
+    "run_long_harnesses",
     "run_readiness",
 ]

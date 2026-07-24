@@ -1,0 +1,43 @@
+{
+  "schema": "auro.office.bundle.v1",
+  "title": "Auro Native Office Proof",
+  "files": [
+    {
+      "path": "evidence/auro-native-office-demo/Auro-Native-Office-Proof.md",
+      "name": "Auro-Native-Office-Proof.md",
+      "size": 184,
+      "sha256": "c7e257fbcc0c1055e9a0aec252ef96a329c4a02501086a1f2439a74fb5e7914c"
+    },
+    {
+      "path": "evidence/auro-native-office-demo/Auro-Native-Office-Proof.csv",
+      "name": "Auro-Native-Office-Proof.csv",
+      "size": 66,
+      "sha256": "ea59604171a414b1017637066e7e5fc317dee7cde3415b47f139e1a3314dfe25"
+    },
+    {
+      "path": "evidence/auro-native-office-demo/Auro-Native-Office-Proof.docx",
+      "name": "Auro-Native-Office-Proof.docx",
+      "size": 960,
+      "sha256": "f0fe937b358344095f2e976726a50470f0d5b5f40c8051db37e6ac313c2e832a"
+    },
+    {
+      "path": "evidence/auro-native-office-demo/Auro-Native-Office-Proof.xlsx",
+      "name": "Auro-Native-Office-Proof.xlsx",
+      "size": 1513,
+      "sha256": "c3e71118fb210847114b3450769bb53b06862f1a7367b03b2d09efc6e8e56155"
+    },
+    {
+      "path": "evidence/auro-native-office-demo/Auro-Native-Office-Proof.pdf",
+      "name": "Auro-Native-Office-Proof.pdf",
+      "size": 812,
+      "sha256": "7ca4d9274e684d16df91bcfa4dbec5f90dd4095195939ef5953434c7a367806e"
+    }
+  ],
+  "formats": [
+    "md",
+    "csv",
+    "docx",
+    "xlsx",
+    "pdf"
+  ]
+}

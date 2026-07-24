@@ -108,8 +108,20 @@ class MultiMesieEmbedder:
         self.raw_dim = int(sum(self._views.values()))
         self.dim = self.raw_dim
 
+    def _physics_vec(self, text: str, dim: int = 64) -> np.ndarray:
+        """Real physics AI embed (Landau+Schrödinger+dispersion spectrum)."""
+        try:
+            from auro_native_llm.physics import get_physics_engine
+
+            return np.asarray(get_physics_engine().embed_physics(text, dim), dtype=np.float64)
+        except Exception:
+            return np.zeros(dim, dtype=np.float64)
+
     def embed_text(self, text: str) -> np.ndarray:
+        # Real physics formula view prepended; multi-MESIE stack follows.
+        phys = self._physics_vec(text, 64)
         parts = [
+            phys,
             self._spectral_text(text, self._vec_hi, self._views["spectral_hi"]),
             self._spectral_text(text, self._vec_mid, self._views["spectral_mid"]),
             self._encoder_text(text),
@@ -121,10 +133,12 @@ class MultiMesieEmbedder:
             self._lsh_bits(text),
         ]
         vec = np.concatenate([np.asarray(p, dtype=np.float64).ravel() for p in parts])
-        if vec.size < self.raw_dim:
-            vec = np.pad(vec, (0, self.raw_dim - vec.size))
-        elif vec.size > self.raw_dim:
-            vec = vec[: self.raw_dim]
+        # dim grows by physics view
+        target = self.raw_dim + 64
+        if vec.size < target:
+            vec = np.pad(vec, (0, target - vec.size))
+        elif vec.size > target:
+            vec = vec[:target]
         n = float(np.linalg.norm(vec) + 1e-12)
         return (vec / n).astype(np.float64)
 

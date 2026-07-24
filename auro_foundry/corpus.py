@@ -222,6 +222,9 @@ class CorpusBuilder:
         for path in root.rglob("*"):
             if not path.is_file():
                 continue
+            resolved = path.resolve()
+            if resolved.is_relative_to(self.output_dir) or resolved.is_relative_to(self.cache_dir):
+                continue
             if path.name in EXCLUDED_NAMES or path.suffix.lower() not in SUPPORTED_EXTENSIONS:
                 continue
             if any(part in EXCLUDED_PARTS for part in path.parts):
