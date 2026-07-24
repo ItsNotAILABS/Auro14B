@@ -40,6 +40,11 @@ BUILTINS=(
  Capability("skill.build","Internal governed build workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("specify acceptance tests","design smallest slice","create capsule","run tests","emit receipt")),
  Capability("skill.reason","Internal logic and decision workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("extract premises","test contradictions","quantify uncertainty","compare alternatives","answer")),
  Capability("skill.memory","Internal continuity workflow.","nova","skill",_obj({"objective":{"type":"string"}}),playbook=("identify relevant state","rank memories","check recency and provenance","reinject bounded context")),
+ Capability("wallet.balance","Read an Auro paper-credit balance.","parallax","tool",_obj({"account":{"type":"string"},"asset":{"type":"string"}},("account",))),
+ Capability("wallet.fund_sandbox","Issue paper-only test credits with balanced postings.","parallax","tool",_obj({"account":{"type":"string"},"amount":{"type":"string"},"asset":{"type":"string"}},("account","amount")),True,True),
+ Capability("wallet.transfer_paper","Transfer paper credits between internal accounts.","parallax","tool",_obj({"source":{"type":"string"},"destination":{"type":"string"},"amount":{"type":"string"},"asset":{"type":"string"},"memo":{"type":"string"}},("source","destination","amount")),True,True),
+ Capability("wallet.verify_ledger","Verify all double-entry postings and transaction hashes.","parallax","tool",_obj({})),
+ Capability("office.create_bundle","Create MD, CSV, DOCX, XLSX, PDF, and hash manifest deliverables.","office","tool",_obj({"out_dir":{"type":"string"},"title":{"type":"string"},"sections":{"type":"array"},"table":{"type":"array"},"vault":{"type":"boolean"}},("out_dir","title","sections")),True,True),
 )
 
 class NativeCapabilities:
@@ -57,7 +62,12 @@ class NativeCapabilities:
 class NativeCapabilities:
     def __init__(self,sdk,capabilities=BUILTINS,ledger=None):
         from .receipts import ReceiptLedger
+        from .wallet import PaperWallet
+        from .office import NativeOffice
+        from .vault import IntegrityVault
         self.sdk=sdk; self._items={x.name:x for x in capabilities}; self.ledger=ledger or ReceiptLedger()
+        self.wallet=PaperWallet(os.getenv("AURO_WALLET_LEDGER") or None); self.office=NativeOffice()
+        self.vault=IntegrityVault(os.getenv("AURO_VAULT_ROOT","./state/auro-vault"))
         from .wallet import PaperWallet
         from .office import NativeOffice
         from .vault import IntegrityVault

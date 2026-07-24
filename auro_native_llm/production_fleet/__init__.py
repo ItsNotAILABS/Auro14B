@@ -6,6 +6,9 @@ from .capabilities import NativeCapabilities
 
 __all__ = ["AgentManager", "ModelEndpoint", "NovaRuntime", "AuroOrganSDK", "SDKConfig", "NativeCapabilities"]
 from .receipts import ReceiptLedger
+from .wallet import PaperWallet
+from .office import NativeOffice
+from .vault import IntegrityVault
 
 __all__ = ["AgentManager", "ModelEndpoint", "NovaRuntime", "AuroOrganSDK", "SDKConfig", "NativeCapabilities", "ReceiptLedger"]
 from .wallet import PaperWallet
