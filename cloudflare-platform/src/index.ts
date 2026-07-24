@@ -2,9 +2,10 @@ import {DurableObject} from "cloudflare:workers";
 import {UI} from "./ui";
 import {capabilityRegistry} from "./capabilities";
 import {monadRead,prepareUnsignedTransaction} from "./monad";
+import {handlePublicApi} from "./public-api";
 import {isReadOnly,normalizeProposal,safeEqual,sha256,signGrant,type Proposal} from "./policy";
 
-type Env={AI:Ai;SESSIONS:DurableObjectNamespace<HIMSession>;CLOUDFLARE_API_TOKEN?:string;CLOUDFLARE_ACCOUNT_ID?:string;OPERATOR_TOKEN:string;EXECUTION_SECRET:string;WORKERS_AI_MODEL:string;EXECUTION_TTL_SECONDS:string;MONAD_RPC_URL:string;PYTHON_ENGINE?:Fetcher;JULIA_ENGINE?:Fetcher};
+type Env={AI:Ai;ASSETS:Fetcher;SESSIONS:DurableObjectNamespace<HIMSession>;CLOUDFLARE_API_TOKEN?:string;CLOUDFLARE_ACCOUNT_ID?:string;OPERATOR_TOKEN:string;EXECUTION_SECRET:string;WORKERS_AI_MODEL:string;EXECUTION_TTL_SECONDS:string;MONAD_RPC_URL:string;PYTHON_ENGINE?:Fetcher;JULIA_ENGINE?:Fetcher};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json","cache-control":"no-store","x-content-type-options":"nosniff"}});
 const session=(r:Request,e:Env)=>e.SESSIONS.get(e.SESSIONS.idFromName(r.headers.get("x-session-id")||"anonymous"));
 
@@ -25,15 +26,22 @@ async function plan(env:Env,message:string){
 }
 
 export default {async fetch(request:Request,env:Env):Promise<Response>{
- try{const url=new URL(request.url);if(request.method==="GET"&&url.pathname==="/")return new Response(UI,{headers:{"content-type":"text/html;charset=utf-8","content-security-policy":"default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'","referrer-policy":"no-referrer"}});
-  if(request.method==="GET"&&url.pathname==="/api/health")return json({ok:true,service:"him-cloudflare-platform",authorization:"read/write-separated"});
-  const bearer=request.headers.get("authorization")||"";if(!env.OPERATOR_TOKEN||!safeEqual(bearer,`Bearer ${env.OPERATOR_TOKEN}`))return json({error:"operator authentication required"},401);
+ try{
+  const url=new URL(request.url);
+  if(request.method==="GET"&&(url.pathname==="/operator"||url.pathname==="/operator/"))return new Response(UI,{headers:{"content-type":"text/html;charset=utf-8","content-security-policy":"default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'","referrer-policy":"no-referrer"}});
   const stub=session(request,env);
+  const publicResponse=await handlePublicApi(request,env,stub);
+  if(publicResponse)return publicResponse;
+  const bearer=request.headers.get("authorization")||"";
+  if(url.pathname.startsWith("/api/")&&!env.OPERATOR_TOKEN||url.pathname.startsWith("/api/")&&!safeEqual(bearer,`Bearer ${env.OPERATOR_TOKEN}`))return json({error:"operator authentication required"},401);
   if(request.method==="GET"&&url.pathname==="/api/capabilities")return json({schema:"thesis.polyglot.capabilities.v1",capabilities:capabilityRegistry(env),setup:{cloudflare:["session-token","managed-worker-secret"],monad:{chain_id:143,signing:"browser-wallet-only"}}});
   if(request.method==="POST"&&url.pathname==="/api/monad/read"){const body=await request.json();const result=await monadRead(env.MONAD_RPC_URL,body);const receipt=await stub.append("monad_read",{request:body,status:result.status});return json({...result,receipt},result.ok?200:502)}
   if(request.method==="POST"&&url.pathname==="/api/monad/prepare"){const transaction=prepareUnsignedTransaction((await request.json() as {transaction?:unknown}).transaction);const receipt=await stub.append("monad_unsigned_preparation",{chainId:143,to:transaction.to});return json({transaction,receipt})}
   if(request.method==="POST"&&url.pathname==="/api/chat"){const body=await request.json() as {message?:string};if(!body.message||body.message.length>12000)return json({error:"message must be 1..12000 characters"},400);const result=await plan(env,body.message);if(result.proposal)result.proposal=normalizeProposal(result.proposal);await stub.append("plan",{message:body.message,result});return json(result)}
   if(request.method==="POST"&&url.pathname==="/api/grant"){const p=normalizeProposal((await request.json() as {proposal:unknown}).proposal);if(isReadOnly(p))return json({error:"read operations do not need an execution grant"},400);const expires=Date.now()+Math.min(900,Number(env.EXECUTION_TTL_SECONDS)||300)*1000;const digest=await sha256(JSON.stringify(p));const payload=`${digest}.${expires}`;return json({grant:`${payload}.${await signGrant(env.EXECUTION_SECRET,payload)}`,expires})}
   if(request.method==="POST"&&url.pathname==="/api/execute"){const p=normalizeProposal((await request.json() as {proposal:unknown}).proposal);if(!isReadOnly(p)){const grant=request.headers.get("x-execution-grant")||"",parts=grant.split(".");if(parts.length!==3||Number(parts[1])<Date.now()||parts[0]!==await sha256(JSON.stringify(p))||!safeEqual(parts[2],await signGrant(env.EXECUTION_SECRET,`${parts[0]}.${parts[1]}`)))return json({error:"valid unexpired execution grant required"},403)}const result=await cloudflare(env,p,request.headers.get("x-cloudflare-token")||undefined);const receipt=await stub.append("cloudflare_api",{proposal:p,status:result.status,ok:result.ok});return json({...result,receipt},result.ok?200:502)}
-  if(request.method==="GET"&&url.pathname==="/api/receipts")return json(await stub.history());return json({error:"not found"},404)
- }catch(e){return json({error:e instanceof Error?e.message:"request failed"},400)}}};
+  if(request.method==="GET"&&url.pathname==="/api/receipts")return json(await stub.history());
+  if(request.method==="GET"||request.method==="HEAD")return env.ASSETS.fetch(request);
+  return json({error:"not found"},404);
+ }catch(e){return json({error:e instanceof Error?e.message:"request failed"},400)}
+}};
