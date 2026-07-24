@@ -288,4 +288,13 @@ def build_organs(
     except Exception:
         pass
 
+    # Multi-repo SDK injection (all Medina / ItsNotAILABS / FreddyCreates trees)
+    try:
+        from auro_native_llm.sdk_runtime.injector import inject_repo_sdks
+
+        # delayed: need language identity; call after organs attached via mind
+        organs._sdk_inject_pending = True  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
     return organs

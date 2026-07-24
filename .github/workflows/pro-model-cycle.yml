@@ -1,0 +1,103 @@
+name: AURO Pro Model Cycle
+
+on:
+  workflow_dispatch:
+    inputs:
+      checkpoint:
+        description: Exact checkpoint path to evaluate
+        required: false
+        default: checkpoints/auro_minds/Auro-2B_him_sft
+      run_training:
+        description: Run bounded SFT before evaluation
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: '17 7 * * 2,5'
+  pull_request:
+    branches: [main]
+    paths:
+      - auro_native_llm/evaluation/pro_harness.py
+      - auro_native_llm/training/pro_cycle.py
+      - scripts/run_pro_harness.py
+      - scripts/build_pro_training_cycle.py
+      - scripts/run_architecture_contract_benchmarks.py
+      - tests/test_pro_training_harness.py
+      - .github/workflows/pro-model-cycle.yml
+
+permissions:
+  contents: read
+
+jobs:
+  plan-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused dependencies
+        run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile production surfaces
+        run: |
+          python -m py_compile auro_native_llm/evaluation/pro_harness.py
+          python -m py_compile auro_native_llm/training/pro_cycle.py
+          python -m py_compile scripts/run_pro_harness.py
+          python -m py_compile scripts/build_pro_training_cycle.py
+          python -m py_compile scripts/run_architecture_contract_benchmarks.py
+      - name: Run focused harness tests
+        run: python -m pytest -q tests/test_pro_training_harness.py tests/test_family_moe_context_policy.py tests/test_auro4b_architecture.py tests/test_long_context_envelope.py
+      - name: Benchmark MoE and 294K architecture contracts
+        run: python scripts/run_architecture_contract_benchmarks.py
+      - name: Build provenance-bearing training cycle
+        run: python scripts/build_pro_training_cycle.py --bundle artifacts/pro-training-cycle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-pro-cycle-${{ github.sha }}
+          path: |
+            artifacts/pro-training-cycle
+            artifacts/architecture-contract-benchmark/report.json
+          if-no-files-found: error
+          retention-days: 90
+
+  bounded-train-and-evaluate:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_training
+    needs: plan-and-test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtime dependencies
+        run: python -m pip install --upgrade pip numpy
+      - name: Verify resume checkpoint exists
+        run: test -d "${{ inputs.checkpoint }}"
+      - name: Run bounded supervised fine-tune
+        run: |
+          python scripts/train_him_sft.py \
+            --resume "${{ inputs.checkpoint }}" \
+            --output checkpoints/candidates/Auro-2B-pro-${{ github.run_id }} \
+            --epochs 1 \
+            --steps-per-epoch 12 \
+            --seq-len 128 \
+            --lr 0.001
+      - name: Evaluate exact candidate checkpoint
+        run: |
+          python scripts/run_pro_harness.py \
+            --checkpoint checkpoints/candidates/Auro-2B-pro-${{ github.run_id }} \
+            --output artifacts/pro-evaluation/report.json
+      - name: Benchmark architecture contracts
+        run: python scripts/run_architecture_contract_benchmarks.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auro-pro-candidate-${{ github.run_id }}
+          path: |
+            checkpoints/candidates/Auro-2B-pro-${{ github.run_id }}
+            artifacts/pro-evaluation/report.json
+            artifacts/architecture-contract-benchmark/report.json
+          if-no-files-found: warn
+          retention-days: 30

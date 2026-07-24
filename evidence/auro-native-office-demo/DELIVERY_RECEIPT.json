@@ -1,0 +1,22 @@
+{
+  "schema": "auro.native_delivery_receipt.v1",
+  "status": "passed",
+  "wallet": {
+    "mode": "paper",
+    "live_custody": false,
+    "transactions": 2,
+    "auro_balance": "225.00000000",
+    "mathesis_balance": "25.00000000",
+    "double_entry_valid": true,
+    "ledger_sha256": "de4b8951e3263ba93af1f9146de00f7c8400966b93cdff8c788e920fce4a52ab"
+  },
+  "deliverables": {
+    "formats": ["md", "csv", "docx", "xlsx", "pdf"],
+    "docx_opened": true,
+    "xlsx_opened": true,
+    "pdf_signature_valid": true,
+    "artifact_hashes_valid": true,
+    "manifest_sha256": "e86e39caa179ccbb400e1bfe5f27c7d0aeb65632e4510c5995cf7a01ad636819"
+  },
+  "tests_passed": 18
+}

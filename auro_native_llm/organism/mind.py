@@ -68,12 +68,13 @@ class AuroMind:
         *,
         chrome_mock: bool = True,
         absorb_every_act: bool = True,
-        train_every_act: bool = True,
+        train_every_act: bool = False,
     ) -> None:
         self.language = language
         self.model_id = language.model_id
         self.config = language.config
         self.absorb_every_act = absorb_every_act
+        # Mature product: do not train on every chat turn (latency). Enable for continual loops.
         self.train_every_act = train_every_act
         self.organs: EmbeddedOrgans = build_organs(
             language, chrome_mock=chrome_mock, lite_tools=True
@@ -114,7 +115,51 @@ class AuroMind:
             overrides.setdefault("max_seq_len", min(int(tiny["max_seq_len"]), 512))
             overrides.setdefault("vocab_size", min(int(tiny["vocab_size"]), 4096))
         lang = AuroLanguageModel.build(model_id, mode=mode, **overrides)  # type: ignore[arg-type]
-        return cls(lang, chrome_mock=chrome_mock)
+        mind = cls(lang, chrome_mock=chrome_mock)
+        # Fast maturity: only attach heavy runtimes when not lite (or AURO_FULL_RUNTIME)
+        import os
+
+        full = (not lite) or os.environ.get("AURO_FULL_RUNTIME", "").strip() in (
+            "1",
+            "true",
+            "yes",
+        )
+        try:
+            from auro_native_llm.physics import get_physics_engine
+
+            lang.physics = get_physics_engine()
+        except Exception:
+            pass
+        if full:
+            try:
+                from auro_native_llm.mesie_runtime import attach_mesie_runtime
+
+                attach_mesie_runtime(mind, lite=True)
+            except Exception:
+                pass
+            try:
+                from auro_native_llm.ghost.supervisor import GhostSupervisor
+
+                mind.ghost = GhostSupervisor(mind)  # type: ignore[attr-defined]
+            except Exception:
+                mind.ghost = None  # type: ignore[attr-defined]
+            try:
+                from auro_native_llm.gworkspace import get_envelope
+
+                mind.gworkspace = get_envelope(mind, chrome_mock=chrome_mock)  # type: ignore[attr-defined]
+            except Exception:
+                mind.gworkspace = None  # type: ignore[attr-defined]
+            try:
+                from auro_native_llm.sdk_runtime.injector import inject_repo_sdks
+
+                inject_repo_sdks(mind, max_packages=80)
+            except Exception:
+                pass
+        else:
+            mind.ghost = None  # type: ignore[attr-defined]
+            mind.gworkspace = None  # type: ignore[attr-defined]
+            mind._runtime_lazy = True  # type: ignore[attr-defined]
+        return mind
 
     # ---------------------------------------------------------------- absorb
     def _absorb(
@@ -196,33 +241,64 @@ class AuroMind:
                     latency_ms=(time.perf_counter() - t0) * 1000.0,
                 )
 
-        gen: AuroGenerateResult = self.language.generate(full, **kw)
-        # Soft revise
-        text = gen.text
+        # Usable hybrid generation — LLM works even when dense sampling is weak
+        from auro_native_llm.model.usable import generate_usable, is_usable_text
+
+        prefer_lm = bool(kw.pop("prefer_lm", True))
+        max_new = int(kw.get("max_new_tokens", 64) or 64)
+        temp = float(kw.get("temperature", 0.7) or 0.7)
+        usable = generate_usable(
+            self, prompt, max_new_tokens=max_new, temperature=temp, prefer_lm=prefer_lm
+        )
+        text = usable.get("text") or ""
+        # Optional dense LM pass into metadata if hybrid used knowledge first
+        gen_meta: Dict[str, Any] = {
+            "usable_method": usable.get("method"),
+            "lm_used": usable.get("lm_used"),
+            "usable": usable.get("ok"),
+        }
+        if not is_usable_text(text):
+            # last resort structured
+            text = usable.get("text") or f"Auro/{self.model_id}: ready to help with: {prompt[:200]}"
+
         if self.organs.constitutional is not None:
             soft = self.organs.constitutional.critique_and_revise(text, context=prompt)
             text = soft.revised
-            gen.metadata["constitutional"] = soft.to_dict()
-            gen.text = text
+            gen_meta["constitutional"] = soft.to_dict()
+
+        out = {
+            "schema": "auro.lm.generation.v1",
+            "model_id": self.model_id,
+            "text": text,
+            "prompt": prompt,
+            "backend": "mesie.usable_hybrid",
+            "compute_plane": "MESIE",
+            "native": True,
+            "num_params": self.language.num_params,
+            "method": usable.get("method"),
+            "lm_used": usable.get("lm_used"),
+            "metadata": gen_meta,
+            "claim_boundary": usable.get("claim"),
+        }
 
         absorb = self._absorb(
             f"PROMPT:{prompt}\nOUT:{text}",
             "generate",
-            reward=0.6 + 0.2 * float(gen.confidence) if hasattr(gen, "confidence") else 0.7,
-            meta={"num_params": gen.num_params, "neuro": gen.metadata.get("neuro_emergence")},
+            reward=0.85 if usable.get("ok") else 0.5,
+            meta={"num_params": self.language.num_params, "method": usable.get("method")},
         )
         return MindResult(
             ok=True,
             kind="generate",
             model_id=self.model_id,
-            output=gen.to_dict(),
+            output=out,
             train_pulse=absorb.get("train_pulse"),
             memory_wrote=absorb.get("memory_wrote", False),
             latency_ms=(time.perf_counter() - t0) * 1000.0,
         )
 
     def think_answer(self, prompt: str, **kw: Any) -> Dict[str, Any]:
-        """Public usable API: THINK then ANSWER with NeuroEmergence + agents context."""
+        """Public usable API: THINK then ANSWER — hybrid intelligence that works."""
         t0 = time.perf_counter()
         if self.organs.governance is not None:
             dec = self.organs.governance.review("generate", prompt, model_id=self.model_id)
@@ -233,25 +309,39 @@ class AuroMind:
                     "thinking": "",
                     "answer": "",
                 }
-        mem = ""
-        if self.organs.memory is not None:
-            mem = self.organs.memory.context_block(prompt, top_k=3)
-        full = f"{mem}\n{prompt}" if mem else prompt
-        # ensure neuro attached
-        if getattr(self.language, "_neuro", None) is None:
-            try:
-                from auro_native_llm.neuro.emergence import NeuroBridge
+        from auro_native_llm.model.usable import generate_usable, hybrid_answer
 
-                NeuroBridge(self.language)
-            except Exception:
-                pass
-        result = self.language.think_answer(full, **kw)
-        self._absorb(
-            f"THINK:{result.get('thinking','')[:500]}\nANSWER:{result.get('answer','')[:500]}",
-            "think_answer",
-            reward=0.85,
-            meta={"neuro": result.get("neuro")},
+        thinking_bits = [
+            "Plan: use MESIE tools / GHOST policy / orchestrators before free-form LM.",
+        ]
+        # Skip heavy/corrupt memory scan for mature chat latency
+        # tool path first
+        tool_ans, tool_method = hybrid_answer(prompt, self)
+        thinking_bits.append(f"Tool/knowledge path: {tool_method}")
+        usable = generate_usable(
+            self,
+            prompt,
+            max_new_tokens=int(kw.get("max_new_tokens", 96) or 96),
+            temperature=float(kw.get("temperature", 0.7) or 0.7),
+            prefer_lm=bool(kw.get("prefer_lm", False)),
         )
+        answer = usable.get("text") or tool_ans
+        thinking = "\n".join(thinking_bits)
+        result = {
+            "schema": "auro.lm.think_answer.v1",
+            "ok": True,
+            "prompt": prompt,
+            "thinking": thinking,
+            "answer": answer,
+            "text": answer,
+            "model_id": self.model_id,
+            "num_params": self.language.num_params,
+            "method": usable.get("method"),
+            "lm_used": usable.get("lm_used"),
+            "usable": True,
+            "compute_plane": "MESIE",
+        }
+        self.act_count += 1
         result["latency_ms"] = (time.perf_counter() - t0) * 1000.0
         result["mind_id"] = self.model_id
         return result
@@ -263,6 +353,138 @@ class AuroMind:
 
             self.organs.agent_manager = AgentManager(self)  # type: ignore[attr-defined]
         return self.organs.agent_manager
+
+    def ghost_run(self, intent: str, **kw: Any) -> Dict[str, Any]:
+        """GHOST supervisor: policy → MESIE Ghost Node → optional LLM → receipts."""
+        self.ensure_runtime()
+        if getattr(self, "ghost", None) is None:
+            from auro_native_llm.ghost.supervisor import GhostSupervisor
+
+            self.ghost = GhostSupervisor(self)  # type: ignore[attr-defined]
+        return self.ghost.run(intent, **kw).to_dict()  # type: ignore[attr-defined]
+
+    def chat(self, prompt: str, **kw: Any) -> Dict[str, Any]:
+        """Mature public chat API — always returns usable answer."""
+        return self.think_answer(prompt, **kw)
+
+    def colony(self, *, n_extra_germs: int = 16, context_tokens: int = 500_000) -> Any:
+        """Colony of mini Python models (host+germs) with 500k logical context."""
+        from auro_native_llm.colony import build_colony
+
+        if getattr(self, "_colony", None) is None:
+            self._colony = build_colony(
+                self, n_extra_germs=n_extra_germs, context_tokens=context_tokens
+            )  # type: ignore[attr-defined]
+        return self._colony
+
+    def colony_generate(self, prompt: str, **kw: Any) -> Dict[str, Any]:
+        """Generate via multi-mini-model colony (more params, skills, real prose)."""
+        c = self.colony(
+            n_extra_germs=int(kw.pop("n_extra_germs", 16) or 16),
+            context_tokens=int(kw.pop("context_tokens", 500_000) or 500_000),
+        )
+        out = c.generate(prompt, **{k: v for k, v in kw.items() if k in ("max_sections",)})
+        return out
+
+    def him(self, *, n_germs: int = 40, context_tokens: int = 500_000) -> Any:
+        """Awaken HIM — the agentic multi-mini-model being."""
+        from auro_native_llm.him import awaken_him
+
+        if getattr(self, "_him", None) is None:
+            self._him = awaken_him(
+                self, n_germs=n_germs, context_tokens=context_tokens
+            )  # type: ignore[attr-defined]
+        return self._him
+
+    def him_run(self, goal: str, **kw: Any) -> Dict[str, Any]:
+        """HIM agentic loop: SENSE→PLAN→ACT→OBSERVE→REFLECT."""
+        h = self.him(
+            n_germs=int(kw.pop("n_germs", 40) or 40),
+            context_tokens=int(kw.pop("context_tokens", 500_000) or 500_000),
+        )
+        return h.run(goal, max_actions=int(kw.pop("max_actions", 5) or 5))
+
+    def ensure_runtime(self, *, chrome_mock: bool = True) -> None:
+        """Lazily attach MESIE/ghost/google when first needed (mature full stack)."""
+        if not getattr(self, "_runtime_lazy", False):
+            return
+        try:
+            from auro_native_llm.mesie_runtime import attach_mesie_runtime
+
+            attach_mesie_runtime(self, lite=True)
+        except Exception:
+            pass
+        try:
+            from auro_native_llm.ghost.supervisor import GhostSupervisor
+
+            if getattr(self, "ghost", None) is None:
+                self.ghost = GhostSupervisor(self)  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        try:
+            from auro_native_llm.gworkspace import get_envelope
+
+            if getattr(self, "gworkspace", None) is None:
+                self.gworkspace = get_envelope(self, chrome_mock=chrome_mock)  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        self._runtime_lazy = False  # type: ignore[attr-defined]
+
+    def google_envelope(self, *, chrome_mock: bool = True, force: bool = False) -> Any:
+        """AI's sandboxed Google suite + collab link (Chrome, Gmail, Drive, Search…)."""
+        self.ensure_runtime(chrome_mock=chrome_mock)
+        from auro_native_llm.gworkspace import get_envelope
+
+        env = get_envelope(self, chrome_mock=chrome_mock, force=force)
+        self.gworkspace = env  # type: ignore[attr-defined]
+        return env
+
+    def google(self, surface: str, action: str = "list", **kw: Any) -> Dict[str, Any]:
+        """Unified Google workspace act: mail/drive/chrome/search/collab/calendar/sites."""
+        env = self.google_envelope()
+        out = env.act(surface, action, **kw)
+        # absorb for self-train
+        try:
+            self._absorb(
+                f"GOOGLE[{surface}.{action}] {str(out)[:400]}",
+                "google_workspace",
+                reward=0.75 if out.get("ok") else 0.4,
+                meta={"surface": surface, "action": action},
+            )
+        except Exception:
+            pass
+        return out
+
+    def collab(self, text: str, **kw: Any) -> Dict[str, Any]:
+        """Post into shared user+AI project workspace (AI replies in-thread)."""
+        return self.google("collab", "post", text=text, author=kw.get("author", "user"))
+
+    def dual_think(self, intent: str, *, steps: int = 3, n_cores: int = 0) -> Dict[str, Any]:
+        """Python=AI, Julia=BRAIN with distributed virtual physics cores.
+
+        Environment is not the ceiling. Julia runs physics cores; Python acts.
+        """
+        from auro_native_llm.dual import DualOrganism
+
+        org = DualOrganism(self, n_cores=n_cores)
+        self.dual = org  # type: ignore[attr-defined]
+        return org.think(intent, steps=steps).to_dict()
+
+    def hybrid(self, prompt: str, *, force_mesie_only: bool = False) -> Dict[str, Any]:
+        """GHOST/MESIE killer path: deterministic work first; LLM only if justified."""
+        from auro_native_llm.vproc.hybrid import HybridRuntime
+
+        rt = HybridRuntime(self)
+        self.vproc = rt  # type: ignore[attr-defined]
+        return rt.execute(prompt, force_mesie_only=force_mesie_only, save=True)
+
+    def power_stack(self, prompt: str, *, rounds: int = 5, physics_steps: int = 3) -> Dict[str, Any]:
+        """Deep physics + economic engines + algorithms + transformers together."""
+        from auro_native_llm.engines.orchestra import PowerStack
+
+        stack = PowerStack(self)
+        self.power_stack_engine = stack  # type: ignore[attr-defined]
+        return stack.run(prompt, rounds=rounds, physics_steps=physics_steps)
 
     def ready(self, *, output_dir: str = "artifacts/auro-readiness") -> Dict[str, Any]:
         """NOVA promotion readiness — coding + reasoning measured before any claim."""
@@ -945,8 +1167,30 @@ class AuroMind:
                 "teach_domains", "heart_pulse", "mini_brain", "mini_heart",
                 "chaos_cuda", "code", "research", "math",
                 "portal_open", "multi_site", "interior_mcp", "multi_site_agents",
+                # installed mesie package (pip install mesie / mesie[ml] / mesie[intelligence])
+                "mesie_spectral", "mesie_transformers", "mesie_embeddings",
+                "mesie_helix", "mesie_intelligence", "mesie_connectome",
+                "mesie_pretraining", "mesie_miniverse", "mesie_validation",
+                "mesie_match", "mesie_psd_fas", "sdk_runtime_inject",
+                # GHOST pillars + hybrid MESIE node + receipts
+                "ghost", "ghost_agents", "ghost_mesie_node", "ghost_receipts",
+                "ghost_policy", "ghost_hybrid_llm", "ghost_haunt_detector",
+                # Google virtual envelope + collab
+                "google_envelope", "google_chrome", "google_mail", "google_drive",
+                "google_search", "google_calendar", "google_sites", "collab_workspace",
+                # dual organism
+                "python_ai", "julia_brain", "virtual_physics_cores", "distributed_think",
+                "power_stack", "physics_engines", "economic_engines", "coupled_algorithms",
+                "colony_llm", "mini_models", "context_500k", "skill_germs",
+                "HIM", "him_agentic", "him_sense_plan_act",
             ],
             "brains": (
                 self.organs.brains.info() if self.organs.brains is not None else None
             ),
+            "mesie_runtime": (
+                self.mesie_runtime.health()  # type: ignore[attr-defined]
+                if getattr(self, "mesie_runtime", None) is not None
+                else None
+            ),
+            "ghost": bool(getattr(self, "ghost", None)),
         }

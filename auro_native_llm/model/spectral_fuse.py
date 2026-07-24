@@ -67,12 +67,20 @@ class MesieSpectralFuser:
             return self._project(spec)
 
     def embed_text_as_spectrum(self, text: str) -> np.ndarray:
-        """Treat text bytes as a synthetic spectrum (always-on MESIE path)."""
-        raw = np.frombuffer(text.encode("utf-8", errors="ignore"), dtype=np.uint8).astype(np.float64)
-        if raw.size < 8:
-            raw = np.pad(raw, (0, 8 - raw.size))
-        freq = np.linspace(1.0, 100.0, raw.size)
-        return self.embed_signal(freq, raw)
+        """Physics spectrum embed: dispersion lattice + Wiener energy + Landau fixed point."""
+        try:
+            from auro_native_llm.physics import get_physics_engine
+
+            eng = get_physics_engine()
+            vec = eng.embed_physics(text, self.hidden_dim)
+            # residual through learned proj when vectorizer path unavailable
+            return vec.astype(np.float64)
+        except Exception:
+            raw = np.frombuffer(text.encode("utf-8", errors="ignore"), dtype=np.uint8).astype(np.float64)
+            if raw.size < 8:
+                raw = np.pad(raw, (0, 8 - raw.size))
+            freq = np.linspace(1.0, 100.0, raw.size)
+            return self.embed_signal(freq, raw)
 
     def _project(self, vec: np.ndarray) -> np.ndarray:
         v = np.asarray(vec, dtype=np.float64).ravel()
@@ -95,7 +103,7 @@ class MesieSpectralFuser:
         spectral_vec: np.ndarray,
         blend: float = 0.1,
     ) -> np.ndarray:
-        """Residual-fuse spectral vector into [batch, seq, hidden]."""
+        """Physics residual fuse: Landau force + spectral proj (not flat add)."""
         h = np.asarray(hidden, dtype=np.float64)
         s = np.asarray(spectral_vec, dtype=np.float64).ravel()
         if s.size != h.shape[-1]:
@@ -105,8 +113,28 @@ class MesieSpectralFuser:
                 s = pad
             else:
                 s = s[: h.shape[-1]]
-        # broadcast over sequence: add most at last token (generation head)
-        add = np.zeros_like(h)
-        add[..., -1, :] = s * blend
-        add[..., :, :] += (s * (blend * 0.25))
-        return h + add
+        try:
+            from auro_native_llm.physics.formulas import landau_field_force, phi_schrodinger_step
+
+            out = h.copy()
+            # last-token order parameter pulled toward spectral external field
+            tail = out[..., -1, :]
+            # batch loop
+            if tail.ndim == 1:
+                force = landau_field_force(tail / (np.linalg.norm(tail) + 1e-12), s)
+                out[..., -1, :] = tail + blend * force * (np.linalg.norm(tail) + 1e-12)
+                out[..., -1, :] = phi_schrodinger_step(out[..., -1, :], dt=0.03)
+            else:
+                for b in range(tail.shape[0]):
+                    tb = tail[b]
+                    n = float(np.linalg.norm(tb)) or 1.0
+                    force = landau_field_force(tb / n, s)
+                    out[b, -1, :] = tb + blend * force * n
+                    out[b, -1, :] = phi_schrodinger_step(out[b, -1, :], dt=0.03)
+            out += s * (blend * 0.15)
+            return out
+        except Exception:
+            add = np.zeros_like(h)
+            add[..., -1, :] = s * blend
+            add[..., :, :] += s * (blend * 0.25)
+            return h + add
