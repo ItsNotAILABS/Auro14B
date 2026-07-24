@@ -50,6 +50,7 @@ BUILTINS=(
 class NativeCapabilities:
     def __init__(self,sdk,capabilities=BUILTINS,ledger=None):
         from .receipts import ReceiptLedger
+        self.sdk=sdk; self._items={x.name:x for x in capabilities}; self.ledger=ledger or ReceiptLedger()
         from .wallet import PaperWallet
         from .office import NativeOffice
         from .vault import IntegrityVault
