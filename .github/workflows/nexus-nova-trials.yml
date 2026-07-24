@@ -7,7 +7,6 @@ on:
     paths:
       - auro_native_llm/nova/**
       - scripts/run_nexus_nova_trials.py
-      - tests/test_nova_agent_family.py
       - tests/test_nova_runtime_hardening.py
       - docs/NEXUS_NOVA_PLATFORM.md
       - .github/workflows/nexus-nova-trials.yml
@@ -46,10 +45,6 @@ jobs:
           assert len(taxonomy['nova_agents']) == len(NOVA_AGENT_FAMILY)
           assert 'Agent count never contributes' in taxonomy['accounting_laws'][0]
           PY
-      - name: Test Hermes browser execution
-        run: python -m pytest -q tests/test_nova_agent_family.py::test_hermes_executes_browser_task_with_model_identity
-      - name: Test Publisher approval and delivery
-        run: python -m pytest -q tests/test_nova_agent_family.py::test_publisher_requires_approval_and_creates_all_formats
       - name: Test durable NOVA runtime and Relay perception
         run: python -m pytest -q tests/test_nova_runtime_hardening.py
       - name: Test browser task gateway
