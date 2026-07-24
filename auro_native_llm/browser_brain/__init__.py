@@ -6,8 +6,10 @@ from .conversation_archive import (
     read_conversation,
     sha256_file,
 )
+from .service import BrowserBrainService
 
 __all__ = [
+    "BrowserBrainService",
     "ConversationRecord",
     "build_archive_index",
     "discover_conversations",
