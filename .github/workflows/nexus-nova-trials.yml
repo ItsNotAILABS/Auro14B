@@ -56,9 +56,10 @@ jobs:
           from pathlib import Path
           root=Path('artifacts/nexus-nova-trials')
           data=json.loads((root/'trial-results.json').read_text())
-          assert data['schema']=='nexus.nova.capability-trials.v1'
+          assert data['schema']=='nexus.nova.capability-trials.v2'
           assert len(data['receipt_hash'])==64
           assert data['taxonomy']['definitions']['model']
+          assert all(item['status'] in {'quarantined','not-present'} for item in data['unavailable_lanes'])
           control=next(x for x in data['trials'] if x['lane']['id']=='contract-control')
           assert control['model_alone']['ok']
           assert all(x['ok'] for x in control['nova_agents'])
@@ -68,7 +69,7 @@ jobs:
           files=publisher['executions'][0]['output']['files']
           assert {Path(x['path']).suffix for x in files}=={'.md','.csv','.docx','.xlsx','.pdf'}
           assert all(len(x['sha256'])==64 for x in files)
-          print(json.dumps({'receipt':data['receipt_hash'],'hermes':hermes['executions'][0],'files':files},indent=2))
+          print(json.dumps({'receipt':data['receipt_hash'],'unavailable_lanes':data['unavailable_lanes'],'hermes':hermes['executions'][0],'files':files},indent=2))
           PY
       - name: Upload NEXUS NOVA proof package
         uses: actions/upload-artifact@v4
