@@ -1,5 +1,5 @@
 import json
-from pathlib import Path
+import time
 
 import pytest
 
@@ -10,14 +10,15 @@ def test_queue_persists_leases_and_recovers_expired_work(tmp_path):
     path = tmp_path / "jobs.sqlite3"
     queue = DurableJobQueue(path)
     queued = queue.enqueue("training", {"entrypoint": "scripts/train_him_sft.py", "resume_checkpoint": "missing"})
-    leased = queue.lease("worker-a", lease_seconds=30, now=100)
+    base = int(queued["available_at"])
+    leased = queue.lease("worker-a", lease_seconds=30, now=base)
     assert leased["job_id"] == queued["job_id"]
     queue.close()
 
     reopened = DurableJobQueue(path)
-    assert reopened.lease("worker-b", lease_seconds=30, now=110) is None
-    assert reopened.recover_expired(now=131) == 1
-    recovered = reopened.lease("worker-b", lease_seconds=30, now=131)
+    assert reopened.lease("worker-b", lease_seconds=30, now=base + 10) is None
+    assert reopened.recover_expired(now=base + 31) == 1
+    recovered = reopened.lease("worker-b", lease_seconds=30, now=base + 31)
     assert recovered["job_id"] == queued["job_id"]
     assert recovered["attempts"] == 2
     reopened.close()
@@ -27,7 +28,7 @@ def test_completion_requires_lease_owner_and_is_durable(tmp_path):
     path = tmp_path / "jobs.sqlite3"
     queue = DurableJobQueue(path)
     queued = queue.enqueue("training", {"entrypoint": "scripts/train_him_sft.py"})
-    queue.lease("worker-a", now=100)
+    queue.lease("worker-a", now=int(queued["available_at"]))
     with pytest.raises(PermissionError):
         queue.complete(queued["job_id"], "worker-b", {"ok": True})
     queue.complete(queued["job_id"], "worker-a", {"ok": True})
