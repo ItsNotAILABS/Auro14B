@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data", action="append", default=["data/him_sft.jsonl"])
+    parser.add_argument("--data", action="append", default=None)
     parser.add_argument("--model-id", default="Auro-2B")
     parser.add_argument("--resume", default="checkpoints/auro_minds/Auro-2B_him_sft")
     parser.add_argument("--output-checkpoint", default="checkpoints/candidates/Auro-2B-pro")
@@ -28,7 +31,8 @@ def main() -> int:
         write_cycle_bundle,
     )
 
-    paths = [ROOT / path for path in args.data]
+    data_args = args.data or ["data/him_sft.jsonl"]
+    paths = [ROOT / path for path in data_args]
     records = load_jsonl_records(paths)
     required = ("general",)
     curriculum = build_curriculum_manifest(records, required)
