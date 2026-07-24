@@ -19,7 +19,7 @@ OUT = ROOT / "artifacts" / "nexus-nova-trials"
 
 
 class TrialCapabilities:
-    """Exercise real repository subsystems with temporary state and no unsafe shell lane."""
+    """Exercise repository subsystems with temporary state and no unsafe shell lane."""
 
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -73,27 +73,43 @@ def deterministic_generator(messages: list[dict[str, str]], options: dict[str, A
     return {"text": json.dumps({"answer": f"Completed bounded analysis for: {objective}", "actions": actions})}
 
 
-def load_generators() -> list[tuple[str, Any, dict[str, Any]]]:
+def load_generators() -> tuple[list[tuple[str, Any, dict[str, Any]]], list[dict[str, Any]]]:
     lanes: list[tuple[str, Any, dict[str, Any]]] = []
+    unavailable: list[dict[str, Any]] = []
     checkpoint = os.getenv("AURO_NATIVE_CHECKPOINT", str(ROOT / "checkpoints" / "open" / "HIM-native-v0"))
     if Path(checkpoint).exists():
-        generator = NativeOpenWeightGenerator(checkpoint)
-        lanes.append(("auro-native", generator, {"id": "auro-native", "model": "HIM-native-v0", "provider": "repository-native-open-weights", "checkpoint": checkpoint}))
+        try:
+            generator = NativeOpenWeightGenerator(checkpoint)
+            lanes.append(("auro-native", generator, {"id": "auro-native", "model": "HIM-native-v0", "provider": "repository-native-open-weights", "checkpoint": checkpoint}))
+        except Exception as exc:
+            unavailable.append({
+                "id": "auro-native",
+                "checkpoint": checkpoint,
+                "status": "quarantined",
+                "error": f"{type(exc).__name__}: {exc}",
+                "claim_boundary": "checkpoint construction failure cannot fall back silently or abort contract-control trials",
+            })
+    else:
+        unavailable.append({"id": "auro-native", "checkpoint": checkpoint, "status": "not-present"})
     external_url = os.getenv("NOVA_COMPARE_BASE_URL", "").strip()
     external_model = os.getenv("NOVA_COMPARE_MODEL", "").strip()
     if external_url and external_model:
-        endpoint = ModelEndpoint("comparison-local", external_url, external_model, None, "comparison", os.getenv("NOVA_COMPARE_API_KEY_ENV") or None)
-        lanes.append(("comparison-local", OpenAICompatibleGenerator(endpoint), {"id": endpoint.id, "model": endpoint.model, "provider": "external-local-endpoint", "base_url": endpoint.base_url}))
+        try:
+            endpoint = ModelEndpoint("comparison-local", external_url, external_model, None, "comparison", os.getenv("NOVA_COMPARE_API_KEY_ENV") or None)
+            lanes.append(("comparison-local", OpenAICompatibleGenerator(endpoint), {"id": endpoint.id, "model": endpoint.model, "provider": "external-local-endpoint", "base_url": endpoint.base_url}))
+        except Exception as exc:
+            unavailable.append({"id": "comparison-local", "status": "quarantined", "error": f"{type(exc).__name__}: {exc}"})
     lanes.append(("contract-control", deterministic_generator, {"id": "contract-control", "model": "deterministic-contract-control", "provider": "test-control"}))
-    return lanes
+    return lanes, unavailable
 
 
 def run() -> dict[str, Any]:
     OUT.mkdir(parents=True, exist_ok=True)
+    lanes, unavailable = load_generators()
     trials = []
     with tempfile.TemporaryDirectory(prefix="nexus-nova-") as tmp:
         capabilities = TrialCapabilities(Path(tmp))
-        for lane_id, generator, model_lane in load_generators():
+        for lane_id, generator, model_lane in lanes:
             model_prompt = "Produce a concise operational plan for a browser research task, an engine inspection, and a publication deliverable."
             started = time.perf_counter()
             try:
@@ -114,9 +130,10 @@ def run() -> dict[str, Any]:
                     agent_runs.append({"agent_id": agent_id, "ok": False, "error": f"{type(exc).__name__}: {exc}"})
             trials.append({"lane": model_lane, "model_alone": model_alone, "nova_agents": agent_runs, "family": family.manifest()})
     report = {
-        "schema": "nexus.nova.capability-trials.v1",
+        "schema": "nexus.nova.capability-trials.v2",
         "generated_at": time.time(),
-        "taxonomy": model_agent_taxonomy([x[2] for x in load_generators()]),
+        "taxonomy": model_agent_taxonomy([x[2] for x in lanes]),
+        "unavailable_lanes": unavailable,
         "trials": trials,
         "comparison_contract": {
             "lanes": ["model-alone", "NOVA-over-AURO", "NOVA-over-external-local-model"],
