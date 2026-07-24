@@ -166,6 +166,8 @@ class NovaRuntime:
 
     def respond(self, message: str, *, execute: bool = False) -> dict[str, Any]:
         started = time.time()
+        brain_cycle = self.capabilities.brain.cycle(message, importance=.7 if execute else .5, execute_requested=execute)
+        council = self.agents.run(message)
         self.model_orchestrator.drain_traces()
         context_pack = self.context.retrieve(message)
         agent_context_budget=max(256,min(context_pack.token_budget,int(os.getenv("AURO_AGENT_CONTEXT_TOKENS","6000"))))

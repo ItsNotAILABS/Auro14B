@@ -1,1 +1,16 @@
-{"name":"him-cloudflare-platform","private":true,"version":"0.1.0","type":"module","scripts":{"dev":"wrangler dev","deploy":"wrangler deploy","typecheck":"tsc --noEmit","test":"node --test test/*.test.mjs","check":"npm run typecheck && npm test"},"dependencies":{"@cloudflare/workers-types":"latest"},"devDependencies":{"typescript":"latest","wrangler":"latest"}}
+{
+  "name":"him-cloudflare-platform",
+  "private":true,
+  "version":"0.2.0",
+  "type":"module",
+  "scripts":{
+    "build:apps":"sh ../scripts/build_dual_app.sh",
+    "dev":"npm run build:apps && wrangler dev",
+    "deploy":"npm run build:apps && wrangler deploy",
+    "typecheck":"tsc --noEmit",
+    "test":"node --test test/*.test.mjs",
+    "check":"npm run build:apps && npm run typecheck && npm test && wrangler deploy --dry-run --outdir dist/worker"
+  },
+  "dependencies":{"@cloudflare/workers-types":"latest"},
+  "devDependencies":{"typescript":"latest","wrangler":"latest"}
+}

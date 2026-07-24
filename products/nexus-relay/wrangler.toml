@@ -7,11 +7,22 @@ workers_dev = true
 NEXUS_RELAY_NAME = "NEXUS Relay"
 MAX_RESPONSE_BYTES = "1500000"
 DEFAULT_CACHE_TTL = "900"
+MAX_REDIRECTS = "5"
+STRIPE_WEBHOOK_TOLERANCE = "300"
+# Comma-separated browser origins, for example:
+# ALLOWED_ORIGINS = "https://relay.example.com,https://app.example.com"
+# Public Stripe price IDs mapped to Relay entitlements. Replace before deploy.
+RELAY_PRICE_CATALOG = "{}"
+# BILLING_SUCCESS_URL = "https://relay.example.com/billing/success"
+# BILLING_CANCEL_URL = "https://relay.example.com/pricing"
+# BILLING_PORTAL_RETURN_URL = "https://relay.example.com/account"
+# RELAY_EGRESS_URL = "https://egress.internal.example/fetch"
 
-# Required hosted-service binding. Create with:
-# wrangler d1 create nexus-relay
-# Then replace database_id below and run:
-# wrangler d1 execute nexus-relay --remote --file=schema.sql
+# Set secrets through Wrangler, never in this file:
+# wrangler secret put STRIPE_SECRET_KEY
+# wrangler secret put STRIPE_WEBHOOK_SECRET
+# wrangler secret put RELAY_EGRESS_SECRET
+
 [[d1_databases]]
 binding = "DB"
 database_name = "nexus-relay"

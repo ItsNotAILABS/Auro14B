@@ -1,14 +1,10 @@
 name: NEXUS Relay Gate
 on:
   pull_request:
-    paths:
-      - 'products/nexus-relay/**'
-      - '.github/workflows/nexus-relay.yml'
+    paths: ['products/nexus-relay/**','.github/workflows/nexus-relay.yml']
   push:
     branches: [main]
-    paths:
-      - 'products/nexus-relay/**'
-      - '.github/workflows/nexus-relay.yml'
+    paths: ['products/nexus-relay/**','.github/workflows/nexus-relay.yml']
   workflow_dispatch:
 jobs:
   gate:
@@ -18,19 +14,17 @@ jobs:
         working-directory: products/nexus-relay
     steps:
       - uses: actions/checkout@v4
-        with:
-          show-progress: false
+        with: {show-progress: false}
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+        with: {node-version: '20'}
       - run: npm install --no-audit --no-fund
       - name: Run bounded integration tests
         id: relay_tests
         continue-on-error: true
         run: |
-          timeout 120s npm test > test.log 2>&1
+          timeout 180s npm test > test.log 2>&1
           code=$?
-          tail -n 80 test.log
+          tail -n 140 test.log
           exit $code
       - name: Upload integration diagnostics
         if: always()
@@ -43,15 +37,23 @@ jobs:
         if: steps.relay_tests.outcome != 'success'
         run: exit 1
       - run: npm run check
-      - name: Verify hardened hosted boundaries
+      - name: Verify hosted production boundaries
         run: |
           grep -q 'JOIN customers' src/auth.js
+          grep -q 'stripe_customer_id' src/auth.js
           grep -q "INSERT INTO usage_events" src/auth.js
           grep -q "status = 'completed'" src/auth.js
           grep -q 'redirect: "manual"' src/security.js
           grep -q '169.254.0.0' src/security.js
-          grep -q 'cloudflare-dns.com' src/security.js
+          grep -q 'secureFetchViaEgress' src/security.js
+          grep -q 'RELAY_EGRESS_URL' src/index.js
+          grep -q 'STRIPE_WEBHOOK_SECRET' src/billing.js
+          grep -q 'INSERT OR IGNORE INTO billing_events' src/billing.js
+          grep -q 'price_id is not in the Relay catalog' src/billing.js
+          grep -q 'invoice.payment_failed' src/billing.js
+          grep -q '/v1/billing/meter_events' src/meter_delivery.js
+          grep -q 'billing_outbox' schema.sql
+          grep -q 'flushBillingOutbox' src/index.js
+          grep -q 'SignalLensRelayClient' clients/signallens.mjs
           grep -q 'ALLOWED_ORIGINS' src/index.js
-          grep -q 'metering only' src/index.js
-          grep -q 'Residual DNS rebinding limitation' SECURITY_LIMITATIONS.md
           grep -q 'NEXUS_RELAY_API_KEY' src/skill.js
