@@ -2,11 +2,16 @@ import http from "node:http";
 import https from "node:https";
 import dns from "node:dns/promises";
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const PORT = Number(process.env.PORT || 8788);
 const SECRET = process.env.RELAY_EGRESS_SECRET || "";
 const MAX_BYTES = Math.min(Number(process.env.MAX_RESPONSE_BYTES || 5_000_000), 10_000_000);
 const MAX_REDIRECTS = Math.min(Number(process.env.MAX_REDIRECTS || 5), 10);
+const NONCE_TTL_MS = Math.min(Math.max(Number(process.env.RELAY_EGRESS_NONCE_TTL_MS || 60_000), 10_000), 300_000);
+const NONCE_STORE_PATH = process.env.RELAY_EGRESS_NONCE_STORE || "/tmp/nexus-relay-egress/nonces.jsonl";
 
 function blocked(ip) {
   if (!ip) return true;
@@ -32,13 +37,67 @@ function safeEqual(a, b) {
   return x.length === y.length && crypto.timingSafeEqual(x, y);
 }
 
-function authenticate(req, target) {
-  if (!SECRET) throw new Error("egress secret not configured");
-  const timestamp = req.headers["x-relay-timestamp"] || "";
-  const signature = req.headers["x-relay-signature"] || "";
-  if (Math.abs(Date.now() - Number(timestamp)) > 60_000) throw new Error("stale egress request");
-  const expected = crypto.createHmac("sha256", SECRET).update(`${timestamp}.${target}`).digest("hex");
+export class PersistentNonceStore {
+  constructor(filePath = NONCE_STORE_PATH, ttlMs = NONCE_TTL_MS) {
+    this.filePath = filePath;
+    this.ttlMs = ttlMs;
+    this.active = new Map();
+    this._load();
+  }
+
+  _load(now = Date.now()) {
+    this.active.clear();
+    if (!fs.existsSync(this.filePath)) return;
+    for (const line of fs.readFileSync(this.filePath, "utf8").split(/\r?\n/)) {
+      if (!line.trim()) continue;
+      try {
+        const row = JSON.parse(line);
+        const timestamp = Number(row.timestamp);
+        if (row.nonce && now - timestamp <= this.ttlMs) this.active.set(String(row.nonce), timestamp);
+      } catch {}
+    }
+    this._compact(now);
+  }
+
+  _compact(now = Date.now()) {
+    for (const [nonce, timestamp] of this.active.entries()) {
+      if (now - timestamp > this.ttlMs) this.active.delete(nonce);
+    }
+    fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
+    const body = [...this.active.entries()]
+      .sort((a, b) => a[1] - b[1])
+      .map(([nonce, timestamp]) => JSON.stringify({ nonce, timestamp }))
+      .join("\n");
+    const temporary = `${this.filePath}.${process.pid}.tmp`;
+    fs.writeFileSync(temporary, body ? `${body}\n` : "", { mode: 0o600 });
+    fs.renameSync(temporary, this.filePath);
+  }
+
+  claim(nonce, timestamp, now = Date.now()) {
+    if (!/^[A-Za-z0-9_-]{24,128}$/.test(String(nonce || ""))) throw new Error("invalid egress nonce");
+    this._compact(now);
+    if (this.active.has(nonce)) throw new Error("replayed egress request");
+    this.active.set(nonce, Number(timestamp));
+    fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
+    fs.appendFileSync(this.filePath, `${JSON.stringify({ nonce, timestamp: Number(timestamp) })}\n`, { mode: 0o600 });
+    return true;
+  }
+}
+
+export function authenticateRequest(headers, target, options = {}) {
+  const secret = options.secret ?? SECRET;
+  const now = Number(options.now ?? Date.now());
+  const nonceStore = options.nonceStore;
+  if (!secret) throw new Error("egress secret not configured");
+  const timestamp = String(headers["x-relay-timestamp"] || "");
+  const nonce = String(headers["x-relay-nonce"] || "");
+  const signature = String(headers["x-relay-signature"] || "");
+  if (!/^\d{13}$/.test(timestamp) || Math.abs(now - Number(timestamp)) > NONCE_TTL_MS) throw new Error("stale egress request");
+  const expected = crypto.createHmac("sha256", secret).update(`${timestamp}.${nonce}.${target}`).digest("hex");
   if (!safeEqual(signature, expected)) throw new Error("invalid egress signature");
+  if (!nonceStore) throw new Error("egress nonce store not configured");
+  nonceStore.claim(nonce, Number(timestamp), now);
+  return { timestamp: Number(timestamp), nonce };
 }
 
 async function pinnedRequest(url) {
@@ -54,7 +113,7 @@ async function pinnedRequest(url) {
       path: `${url.pathname}${url.search}`,
       method: "GET",
       servername: url.hostname,
-      headers: { host: url.host, accept: "*/*", "user-agent": "NEXUS-Relay-Egress/1.0" },
+      headers: { host: url.host, accept: "*/*", "user-agent": "NEXUS-Relay-Egress/1.1" },
       lookup: (_hostname, _options, callback) => callback(null, selected.address, selected.family),
       timeout: 20_000,
       rejectUnauthorized: true,
@@ -90,22 +149,28 @@ async function retrieve(raw) {
   throw new Error("redirect limit exceeded");
 }
 
-http.createServer(async (req, res) => {
-  try {
-    if (req.method !== "POST" || req.url !== "/fetch") { res.writeHead(404).end(); return; }
-    const buffers = []; for await (const chunk of req) buffers.push(chunk);
-    const body = JSON.parse(Buffer.concat(buffers).toString("utf8"));
-    authenticate(req, body.url);
-    const result = await retrieve(body.url);
-    const headers = {
-      "content-type": result.headers["content-type"] || "application/octet-stream",
-      "x-relay-final-url": result.finalUrl,
-      "x-relay-redirect-chain": Buffer.from(JSON.stringify(result.chain)).toString("base64url"),
-      "x-relay-upstream-status": String(result.status),
-    };
-    res.writeHead(result.status, headers); res.end(result.body);
-  } catch (error) {
-    res.writeHead(400, { "content-type": "application/json" });
-    res.end(JSON.stringify({ ok: false, error: String(error?.message || error) }));
-  }
-}).listen(PORT, "0.0.0.0", () => console.log(`relay egress listening on ${PORT}`));
+export function createEgressServer(options = {}) {
+  const nonceStore = options.nonceStore || new PersistentNonceStore(options.nonceStorePath || NONCE_STORE_PATH, options.nonceTtlMs || NONCE_TTL_MS);
+  return http.createServer(async (req, res) => {
+    try {
+      if (req.method !== "POST" || req.url !== "/fetch") { res.writeHead(404).end(); return; }
+      const buffers = []; for await (const chunk of req) buffers.push(chunk);
+      const body = JSON.parse(Buffer.concat(buffers).toString("utf8"));
+      authenticateRequest(req.headers, body.url, { nonceStore, secret: options.secret ?? SECRET });
+      const result = await retrieve(body.url);
+      const headers = {
+        "content-type": result.headers["content-type"] || "application/octet-stream",
+        "x-relay-final-url": result.finalUrl,
+        "x-relay-redirect-chain": Buffer.from(JSON.stringify(result.chain)).toString("base64url"),
+        "x-relay-upstream-status": String(result.status),
+      };
+      res.writeHead(result.status, headers); res.end(result.body);
+    } catch (error) {
+      res.writeHead(400, { "content-type": "application/json" });
+      res.end(JSON.stringify({ ok: false, error: String(error?.message || error) }));
+    }
+  });
+}
+
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) createEgressServer().listen(PORT, "0.0.0.0", () => console.log(`relay egress listening on ${PORT}`));
