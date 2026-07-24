@@ -4,6 +4,7 @@ Dependency-free by design. The service exposes a native receipt-rich contract
 and an OpenAI-compatible chat subset while keeping execution separately gated.
 """
 from __future__ import annotations
+import argparse, hmac, json, os
 
 import argparse
 import hmac
@@ -18,6 +19,9 @@ from urllib.parse import urlsplit
 from .console import ASSETS
 from .runtime import NovaRuntime
 
+def token_authorized(header: str, expected: str) -> bool:
+    if not expected or not header.startswith("Bearer "): return False
+    return hmac.compare_digest(header[7:],expected)
 API_VERSION = "2026-07-18"
 MAX_REQUEST_BYTES = 1_048_576
 MAX_MESSAGE_CHARS = 12_000
@@ -70,6 +74,15 @@ class Handler(BaseHTTPRequestHandler):
     server_version = "AuroHIM/1.0"
 
     def do_GET(self):
+        if self.path == "/health":
+            self._json(200,{"ok":True,"service":"nova-production-fleet"})
+        elif self.path == "/v1/capabilities":
+            self._json(200,self.runtime.capabilities.manifest())
+        elif self.path == "/v1/receipts/verify":
+            self._json(200,self.runtime.capabilities.ledger.verify())
+        elif self.path.startswith("/v1/receipts"):
+            self._json(200,{"receipts":self.runtime.capabilities.ledger.tail(20)})
+        else: self._json(404,{"error":"not_found"})
         self.request_id = self._request_id()
         path = self._path()
         if path in ASSETS:
@@ -129,6 +142,35 @@ class Handler(BaseHTTPRequestHandler):
             raise ApiError(404, "not_found", "The requested route does not exist.")
 
     def do_POST(self):
+        if self.path == "/v1/capabilities/call":
+            try:
+                length=int(self.headers.get("content-length","0")); body=json.loads(self.rfile.read(length) or b"{}")
+                approved=bool(body.get("approved",False))
+                if approved and not self._authorized(): self._json(403,{"error":"operator_token_required"}); return
+                self._json(200,self.runtime.capabilities.call(str(body.get("name","")),dict(body.get("arguments") or {}),approved=approved))
+            except Exception as exc: self._json(400,{"error":"capability_call_failed","detail":str(exc)[:500]})
+            return
+        if self.path != "/v1/respond":
+            self._json(404,{"error":"not_found"}); return
+        try:
+            length=int(self.headers.get("content-length","0"))
+            body=json.loads(self.rfile.read(length) or b"{}")
+            message=str(body.get("message","")).strip()
+            if not message:
+                self._json(400,{"error":"message_required"}); return
+            execute=bool(body.get("execute",False))
+            if execute and not self._authorized(): self._json(403,{"error":"operator_token_required"}); return
+            self._json(200,self.runtime.respond(message,execute=execute))
+        except Exception as exc:
+            self._json(502,{"error":"inference_failed","detail":str(exc)[:500]})
+
+    def log_message(self,format,*args): return
+    def _authorized(self):
+        return token_authorized(self.headers.get("authorization",""),os.getenv("AURO_EXECUTION_TOKEN",""))
+    def _json(self,status,payload):
+        data=json.dumps(payload,ensure_ascii=False).encode()
+        self.send_response(status); self.send_header("content-type","application/json")
+        self.send_header("content-length",str(len(data))); self.end_headers(); self.wfile.write(data)
         self.request_id = self._request_id()
         path = self._path()
         self._require_api_auth()
