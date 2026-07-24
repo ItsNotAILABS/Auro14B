@@ -1,0 +1,30 @@
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+
+ARG RUNNER_VERSION=2.321.0
+ARG TARGETARCH=amd64
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+       ca-certificates curl git jq python3 python3-pip tini libicu70 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --uid 1001 runner \
+    && mkdir -p /actions-runner /workspace /opt/mesie/receipts \
+    && curl -fsSL "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" \
+       | tar -xz -C /actions-runner \
+    && /actions-runner/bin/installdependencies.sh \
+    && chown -R runner:runner /actions-runner /workspace /opt/mesie
+
+COPY . /opt/mesie/Auro14B
+RUN python3 -m pip install --no-cache-dir -e '/opt/mesie/Auro14B[ml]'
+COPY runner/entrypoint.sh /usr/local/bin/mesie-runner
+COPY runner/healthcheck.py /usr/local/bin/mesie-runner-health
+RUN chmod +x /usr/local/bin/mesie-runner /usr/local/bin/mesie-runner-health
+
+USER runner
+WORKDIR /actions-runner
+ENV MESIE_WORKSPACE=/workspace
+ENV MESIE_RECEIPTS=/opt/mesie/receipts
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD ["python3", "/usr/local/bin/mesie-runner-health"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/mesie-runner"]

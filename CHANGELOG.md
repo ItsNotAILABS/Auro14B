@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased] — Auro model family spine
+
+### Added
+- **Scriptural Systems Architecture** — full libraries in `auro_native_llm/scripture/` (canon, gates, governance, executor, memory, substrate, train hooks)
+- **Executable canon** — `native_llm/scripture/AURO_CANON.v1.json` (fail-closed doctrine for generate/train/dispatch/claim)
+- **Scriptural memory** — doctrine-tagged embeddings injected into LM context; persisted under `deliverables/auro_scripture/`
+- **Inner AI governance** — refuses denied intents / false weight claims / cloud primary before LM runs
+- **Docs** — `docs/SCRIPTURAL_SYSTEMS_ARCHITECTURE.md`
+- **CLI** — `auro-scripture` / `python -m auro_native_llm.scripture.cli`
+- **Auro native LLM family** — 2B / 4B / 8B / 14B / 100B lanes (`native_llm/configs/auro_family.json` + `family/*.json`)
+- **MESIE compute plane** — all native inference via `auro_native_llm/mesie_compute.py` (torch spectral → foundation → NeuroCore → FFT)
+- **AuroLanguageModel** — first-class text LM on MESIE SpectralGPT + MoE + meaning + spectral fusion
+- **AuroNativeModel / AuroNativeRuntime** — executable native lanes + multi-embedded dispatch that *runs* on MESIE
+- **Live serve** — `python -m auro_native_llm.serve.local --live` (stdlib HTTP, no cloud LLM)
+- **Multi-embedded sub-agents** — larger lanes host smaller lanes by role (`auro_native_llm/subagents.py`)
+- **Polyglot family types** — Python `auro_native_llm/types.py`, Julia `bindings/julia/AuroFamily/`, Haskell `bindings/haskell/AuroFamily.hs`
+- **CLI** — `auro-family`, `auro-lm`, `auro-scripture`
+- **Tests** — `tests/test_auro_model_family.py`, `tests/test_auro_native_mesie.py`, `tests/test_auro_language_model.py`, `tests/test_auro_scripture.py`
+
 ## [0.4.0] - 2026-06-07
 
 ### Added

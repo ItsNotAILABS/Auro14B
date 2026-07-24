@@ -1,0 +1,27 @@
+{
+  "schema": "auro.native_llm.model_config.v1",
+  "model_id": "Auro-4B",
+  "family_id": "Auro",
+  "status": "development-target-not-trained-checkpoint",
+  "parameter_target": 4000000000,
+  "tier": "specialist",
+  "architecture": {
+    "family": "decoder-only-transformer",
+    "objective": "causal-language-modeling",
+    "hidden_size": 3072,
+    "layers": 28,
+    "attention_heads": 24,
+    "kv_heads": 4,
+    "intermediate_size": 8192,
+    "activation": "silu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 16384,
+    "vocab_size_target": 128000
+  },
+  "subagent_roles": ["code_edit", "spectral_match", "json_struct", "tool_plan"],
+  "can_embed_subagents": true,
+  "embeddable_tiers": ["edge"],
+  "purpose": "specialist sub-agent lane — code edits, spectral match, structured JSON",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving"]
+}

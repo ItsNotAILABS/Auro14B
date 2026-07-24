@@ -1,0 +1,38 @@
+name: Auro Foundry E2E
+
+on:
+  pull_request:
+    paths:
+      - "auro_foundry/**"
+      - "tests/test_auro_foundry_e2e.py"
+      - "pyproject.toml"
+      - ".github/workflows/auro-foundry-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "auro_foundry/**"
+      - "tests/test_auro_foundry_e2e.py"
+      - "pyproject.toml"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install Auro Foundry
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[foundry,dev]"
+      - name: Compile production modules
+        run: python -m compileall -q auro_foundry mesie
+      - name: Run end-to-end lifecycle
+        run: pytest -q tests/test_auro_foundry_e2e.py
+      - name: Verify CLI
+        run: |
+          auro-foundry --help
+          auro-foundry-serve --help

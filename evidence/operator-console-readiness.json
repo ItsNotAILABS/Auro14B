@@ -1,0 +1,24 @@
+{
+  "schema": "auro.operator_console.readiness.v1",
+  "date": "2026-07-18",
+  "status": "production-api-surface",
+  "scope": "operator console, governed HTTP API, and client SDK; not model intelligence",
+  "gates": {
+    "product_charter": "implemented",
+    "portable_design_system": "implemented",
+    "live_runtime_api": "implemented",
+    "approval_gated_mutation": "implemented",
+    "receipt_verification": "implemented",
+    "responsive_accessible_ui": "implemented",
+    "defensive_browser_headers": "implemented",
+    "parameter_claim_boundary": "implemented",
+    "live_custody": "out_of_scope",
+    "trained_14b_checkpoint": "not_claimed",
+    "native_him_api": "implemented",
+    "openai_compatible_chat_subset": "implemented_non_streaming",
+    "python_client_sdk": "implemented",
+    "api_and_execution_auth_separation": "implemented",
+    "request_tracing_and_structured_errors": "implemented",
+    "openapi_discovery": "implemented"
+  }
+}

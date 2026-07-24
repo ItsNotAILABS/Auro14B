@@ -1,0 +1,3307 @@
+{
+  "schema": "auro.use_cases.v1",
+  "domain": "mcp",
+  "count": 100,
+  "cases": [
+    {
+      "id": "MCP-001",
+      "domain": "mcp",
+      "name": "mcp_case_1",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(1)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 1",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-002",
+      "domain": "mcp",
+      "name": "mcp_case_2",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(2)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 2",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-003",
+      "domain": "mcp",
+      "name": "mcp_case_3",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(3)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 3",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-004",
+      "domain": "mcp",
+      "name": "mcp_case_4",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(4)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 4",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-005",
+      "domain": "mcp",
+      "name": "mcp_case_5",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(5)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 5",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-006",
+      "domain": "mcp",
+      "name": "mcp_case_6",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(6)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 6",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-007",
+      "domain": "mcp",
+      "name": "mcp_case_7",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(7)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 7",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-008",
+      "domain": "mcp",
+      "name": "mcp_case_8",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(8)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 8",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-009",
+      "domain": "mcp",
+      "name": "mcp_case_9",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(9)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 9",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-010",
+      "domain": "mcp",
+      "name": "mcp_case_10",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(10)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 10",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-011",
+      "domain": "mcp",
+      "name": "mcp_case_11",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(11)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 11",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-012",
+      "domain": "mcp",
+      "name": "mcp_case_12",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(12)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 12",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-013",
+      "domain": "mcp",
+      "name": "mcp_case_13",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(13)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 13",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-014",
+      "domain": "mcp",
+      "name": "mcp_case_14",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(14)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 14",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-015",
+      "domain": "mcp",
+      "name": "mcp_case_15",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(15)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 15",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-016",
+      "domain": "mcp",
+      "name": "mcp_case_16",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(16)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 16",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-017",
+      "domain": "mcp",
+      "name": "mcp_case_17",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(17)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 17",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-018",
+      "domain": "mcp",
+      "name": "mcp_case_18",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(18)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 18",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-019",
+      "domain": "mcp",
+      "name": "mcp_case_19",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(19)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 19",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-020",
+      "domain": "mcp",
+      "name": "mcp_case_20",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(20)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 20",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-021",
+      "domain": "mcp",
+      "name": "mcp_case_21",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(21)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 21",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-022",
+      "domain": "mcp",
+      "name": "mcp_case_22",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(22)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 22",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-023",
+      "domain": "mcp",
+      "name": "mcp_case_23",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(23)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 23",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-024",
+      "domain": "mcp",
+      "name": "mcp_case_24",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(24)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 24",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-025",
+      "domain": "mcp",
+      "name": "mcp_case_25",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(25)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 25",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-026",
+      "domain": "mcp",
+      "name": "mcp_case_26",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(26)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 26",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-027",
+      "domain": "mcp",
+      "name": "mcp_case_27",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(27)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 27",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-028",
+      "domain": "mcp",
+      "name": "mcp_case_28",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(28)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 28",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-029",
+      "domain": "mcp",
+      "name": "mcp_case_29",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(29)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 29",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-030",
+      "domain": "mcp",
+      "name": "mcp_case_30",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(30)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 30",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-031",
+      "domain": "mcp",
+      "name": "mcp_case_31",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(31)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 31",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-032",
+      "domain": "mcp",
+      "name": "mcp_case_32",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(32)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 32",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-033",
+      "domain": "mcp",
+      "name": "mcp_case_33",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(33)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 33",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-034",
+      "domain": "mcp",
+      "name": "mcp_case_34",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(34)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 34",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-035",
+      "domain": "mcp",
+      "name": "mcp_case_35",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(35)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 35",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-036",
+      "domain": "mcp",
+      "name": "mcp_case_36",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(36)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 36",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-037",
+      "domain": "mcp",
+      "name": "mcp_case_37",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(37)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 37",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-038",
+      "domain": "mcp",
+      "name": "mcp_case_38",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(38)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 38",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-039",
+      "domain": "mcp",
+      "name": "mcp_case_39",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(39)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 39",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-040",
+      "domain": "mcp",
+      "name": "mcp_case_40",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(40)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 40",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-041",
+      "domain": "mcp",
+      "name": "mcp_case_41",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(41)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 41",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-042",
+      "domain": "mcp",
+      "name": "mcp_case_42",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(42)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 42",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-043",
+      "domain": "mcp",
+      "name": "mcp_case_43",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(43)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 43",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-044",
+      "domain": "mcp",
+      "name": "mcp_case_44",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(44)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 44",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-045",
+      "domain": "mcp",
+      "name": "mcp_case_45",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(45)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 45",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-046",
+      "domain": "mcp",
+      "name": "mcp_case_46",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(46)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 46",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-047",
+      "domain": "mcp",
+      "name": "mcp_case_47",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(47)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 47",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-048",
+      "domain": "mcp",
+      "name": "mcp_case_48",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(48)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 48",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-049",
+      "domain": "mcp",
+      "name": "mcp_case_49",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(49)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 49",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-050",
+      "domain": "mcp",
+      "name": "mcp_case_50",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(50)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 50",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-051",
+      "domain": "mcp",
+      "name": "mcp_case_51",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(51)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 51",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-052",
+      "domain": "mcp",
+      "name": "mcp_case_52",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(52)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 52",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-053",
+      "domain": "mcp",
+      "name": "mcp_case_53",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(53)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 53",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-054",
+      "domain": "mcp",
+      "name": "mcp_case_54",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(54)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 54",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-055",
+      "domain": "mcp",
+      "name": "mcp_case_55",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(55)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 55",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-056",
+      "domain": "mcp",
+      "name": "mcp_case_56",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(56)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 56",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-057",
+      "domain": "mcp",
+      "name": "mcp_case_57",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(57)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 57",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-058",
+      "domain": "mcp",
+      "name": "mcp_case_58",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(58)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 58",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-059",
+      "domain": "mcp",
+      "name": "mcp_case_59",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(59)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 59",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-060",
+      "domain": "mcp",
+      "name": "mcp_case_60",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(60)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 60",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-061",
+      "domain": "mcp",
+      "name": "mcp_case_61",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(61)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 61",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-062",
+      "domain": "mcp",
+      "name": "mcp_case_62",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(62)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 62",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-063",
+      "domain": "mcp",
+      "name": "mcp_case_63",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(63)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 63",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-064",
+      "domain": "mcp",
+      "name": "mcp_case_64",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(64)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 64",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-065",
+      "domain": "mcp",
+      "name": "mcp_case_65",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(65)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 65",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-066",
+      "domain": "mcp",
+      "name": "mcp_case_66",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(66)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 66",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-067",
+      "domain": "mcp",
+      "name": "mcp_case_67",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(67)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 67",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-068",
+      "domain": "mcp",
+      "name": "mcp_case_68",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(68)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 68",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-069",
+      "domain": "mcp",
+      "name": "mcp_case_69",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(69)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 69",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-070",
+      "domain": "mcp",
+      "name": "mcp_case_70",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(70)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 70",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-071",
+      "domain": "mcp",
+      "name": "mcp_case_71",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(71)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 71",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-072",
+      "domain": "mcp",
+      "name": "mcp_case_72",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(72)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 72",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-073",
+      "domain": "mcp",
+      "name": "mcp_case_73",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(73)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 73",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-074",
+      "domain": "mcp",
+      "name": "mcp_case_74",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(74)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 74",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-075",
+      "domain": "mcp",
+      "name": "mcp_case_75",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(75)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 75",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-076",
+      "domain": "mcp",
+      "name": "mcp_case_76",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(76)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 76",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-077",
+      "domain": "mcp",
+      "name": "mcp_case_77",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(77)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 77",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-078",
+      "domain": "mcp",
+      "name": "mcp_case_78",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(78)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 78",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-079",
+      "domain": "mcp",
+      "name": "mcp_case_79",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(79)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 79",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-080",
+      "domain": "mcp",
+      "name": "mcp_case_80",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(80)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 80",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-081",
+      "domain": "mcp",
+      "name": "mcp_case_81",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(81)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 81",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-082",
+      "domain": "mcp",
+      "name": "mcp_case_82",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(82)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 82",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-083",
+      "domain": "mcp",
+      "name": "mcp_case_83",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(83)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 83",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-084",
+      "domain": "mcp",
+      "name": "mcp_case_84",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(84)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 84",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-085",
+      "domain": "mcp",
+      "name": "mcp_case_85",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(85)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 85",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-086",
+      "domain": "mcp",
+      "name": "mcp_case_86",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(86)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 86",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-087",
+      "domain": "mcp",
+      "name": "mcp_case_87",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(87)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 87",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-088",
+      "domain": "mcp",
+      "name": "mcp_case_88",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(88)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 88",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-089",
+      "domain": "mcp",
+      "name": "mcp_case_89",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(89)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 89",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-090",
+      "domain": "mcp",
+      "name": "mcp_case_90",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(90)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 90",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-091",
+      "domain": "mcp",
+      "name": "mcp_case_91",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(91)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 91",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-092",
+      "domain": "mcp",
+      "name": "mcp_case_92",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(92)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 92",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-093",
+      "domain": "mcp",
+      "name": "mcp_case_93",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(93)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 93",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-094",
+      "domain": "mcp",
+      "name": "mcp_case_94",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(94)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 94",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-095",
+      "domain": "mcp",
+      "name": "mcp_case_95",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(95)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 95",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-096",
+      "domain": "mcp",
+      "name": "mcp_case_96",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(96)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 96",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-097",
+      "domain": "mcp",
+      "name": "mcp_case_97",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(97)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 97",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-098",
+      "domain": "mcp",
+      "name": "mcp_case_98",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(98)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 98",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-099",
+      "domain": "mcp",
+      "name": "mcp_case_99",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(99)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 99",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    },
+    {
+      "id": "MCP-100",
+      "domain": "mcp",
+      "name": "mcp_case_100",
+      "steps": [
+        {
+          "op": "spin_up"
+        },
+        {
+          "op": "list_tools"
+        },
+        {
+          "op": "call",
+          "tool": "monaco.create",
+          "arguments": {
+            "content": "print(100)",
+            "language": "python"
+          }
+        },
+        {
+          "op": "call",
+          "tool": "search",
+          "arguments": {
+            "query": "Auro 100",
+            "online": false
+          }
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_tools": 1
+      }
+    }
+  ]
+}

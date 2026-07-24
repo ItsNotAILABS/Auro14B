@@ -1,0 +1,26 @@
+{
+  "schema": "auro.native_llm.model_config.v1",
+  "model_id": "Auro-2B",
+  "family_id": "Auro",
+  "status": "development-target-not-trained-checkpoint",
+  "parameter_target": 2000000000,
+  "tier": "edge",
+  "architecture": {
+    "family": "decoder-only-transformer",
+    "objective": "causal-language-modeling",
+    "hidden_size": 2048,
+    "layers": 24,
+    "attention_heads": 16,
+    "kv_heads": 4,
+    "intermediate_size": 5632,
+    "activation": "silu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 8192,
+    "vocab_size_target": 128000
+  },
+  "subagent_roles": ["router", "tool_call", "embed_fast", "spectral_triage"],
+  "can_embed_subagents": false,
+  "purpose": "edge and on-device sub-agent lane — fast routing, tool calls, spectral triage",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving"]
+}

@@ -33,6 +33,13 @@ mesie-desktop/out/
 library/*.json
 !library/.gitkeep
 
+# Local model checkpoints / weights (multi-GB; not for git)
+checkpoints/
+*.npz
+*.pt
+*.bin
+auro_native_llm/**/__pycache__/
+
 # IDE / OS
 .idea/
 .vscode/

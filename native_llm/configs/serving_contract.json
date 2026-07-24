@@ -2,15 +2,21 @@
   "schema": "auro.native_llm.serving_contract.v1",
   "server": {
     "name": "auro-native-llm-server",
-    "status": "serving-contract-no-checkpoint-loaded",
+    "status": "mesie-native-runtime-available",
     "default_host": "127.0.0.1",
     "default_port": 8090
   },
+  "compute_plane": "MESIE",
+  "native": true,
+  "cloud_llm": false,
+  "model_family": ["Auro-2B", "Auro-4B", "Auro-8B", "Auro-14B", "Auro-100B"],
   "routes": {
     "health": "GET /health",
     "models": "GET /v1/models",
     "completion": "POST /v1/completions",
     "chat": "POST /v1/chat/completions",
+    "generate": "POST /v1/generate",
+    "dispatch": "POST /v1/dispatch",
     "receipt": "GET /v1/receipts/latest"
   },
   "required_receipts": [
@@ -20,5 +26,5 @@
     "safety_receipt",
     "serving_smoke_test_receipt"
   ],
-  "claim_boundary": "server route contracts are defined; real generation requires a mounted checkpoint and tokenizer"
+  "claim_boundary": "MESIE-native runtime serves structured generation without external LLMs; multi-billion trained checkpoints still require receipts before public weight claims"
 }

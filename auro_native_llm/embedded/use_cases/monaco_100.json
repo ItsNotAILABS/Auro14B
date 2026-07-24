@@ -1,0 +1,2907 @@
+{
+  "schema": "auro.use_cases.v1",
+  "domain": "monaco",
+  "count": 100,
+  "cases": [
+    {
+      "id": "MONACO-001",
+      "domain": "monaco",
+      "name": "monaco_case_1",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f1(x):\n    return x + 1\n",
+          "language": "python",
+          "filename": "f1.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 1\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 1",
+          "new": "return x + 1 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-002",
+      "domain": "monaco",
+      "name": "monaco_case_2",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f2(x):\n    return x + 2\n",
+          "language": "python",
+          "filename": "f2.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 2\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 2",
+          "new": "return x + 2 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-003",
+      "domain": "monaco",
+      "name": "monaco_case_3",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f3(x):\n    return x + 3\n",
+          "language": "python",
+          "filename": "f3.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 3\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 3",
+          "new": "return x + 3 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-004",
+      "domain": "monaco",
+      "name": "monaco_case_4",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f4(x):\n    return x + 4\n",
+          "language": "python",
+          "filename": "f4.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 4\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 4",
+          "new": "return x + 4 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-005",
+      "domain": "monaco",
+      "name": "monaco_case_5",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f5(x):\n    return x + 5\n",
+          "language": "python",
+          "filename": "f5.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 5\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 5",
+          "new": "return x + 5 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-006",
+      "domain": "monaco",
+      "name": "monaco_case_6",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f6(x):\n    return x + 6\n",
+          "language": "python",
+          "filename": "f6.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 6\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 6",
+          "new": "return x + 6 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-007",
+      "domain": "monaco",
+      "name": "monaco_case_7",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f7(x):\n    return x + 7\n",
+          "language": "python",
+          "filename": "f7.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 7\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 7",
+          "new": "return x + 7 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-008",
+      "domain": "monaco",
+      "name": "monaco_case_8",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f8(x):\n    return x + 8\n",
+          "language": "python",
+          "filename": "f8.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 8\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 8",
+          "new": "return x + 8 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-009",
+      "domain": "monaco",
+      "name": "monaco_case_9",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f9(x):\n    return x + 9\n",
+          "language": "python",
+          "filename": "f9.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 9\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 9",
+          "new": "return x + 9 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-010",
+      "domain": "monaco",
+      "name": "monaco_case_10",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f10(x):\n    return x + 10\n",
+          "language": "python",
+          "filename": "f10.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 10\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 10",
+          "new": "return x + 10 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-011",
+      "domain": "monaco",
+      "name": "monaco_case_11",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f11(x):\n    return x + 11\n",
+          "language": "python",
+          "filename": "f11.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 11\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 11",
+          "new": "return x + 11 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-012",
+      "domain": "monaco",
+      "name": "monaco_case_12",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f12(x):\n    return x + 12\n",
+          "language": "python",
+          "filename": "f12.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 12\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 12",
+          "new": "return x + 12 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-013",
+      "domain": "monaco",
+      "name": "monaco_case_13",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f13(x):\n    return x + 13\n",
+          "language": "python",
+          "filename": "f13.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 13\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 13",
+          "new": "return x + 13 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-014",
+      "domain": "monaco",
+      "name": "monaco_case_14",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f14(x):\n    return x + 14\n",
+          "language": "python",
+          "filename": "f14.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 14\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 14",
+          "new": "return x + 14 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-015",
+      "domain": "monaco",
+      "name": "monaco_case_15",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f15(x):\n    return x + 15\n",
+          "language": "python",
+          "filename": "f15.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 15\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 15",
+          "new": "return x + 15 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-016",
+      "domain": "monaco",
+      "name": "monaco_case_16",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f16(x):\n    return x + 16\n",
+          "language": "python",
+          "filename": "f16.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 16\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 16",
+          "new": "return x + 16 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-017",
+      "domain": "monaco",
+      "name": "monaco_case_17",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f17(x):\n    return x + 17\n",
+          "language": "python",
+          "filename": "f17.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 17\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 17",
+          "new": "return x + 17 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-018",
+      "domain": "monaco",
+      "name": "monaco_case_18",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f18(x):\n    return x + 18\n",
+          "language": "python",
+          "filename": "f18.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 18\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 18",
+          "new": "return x + 18 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-019",
+      "domain": "monaco",
+      "name": "monaco_case_19",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f19(x):\n    return x + 19\n",
+          "language": "python",
+          "filename": "f19.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 19\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 19",
+          "new": "return x + 19 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-020",
+      "domain": "monaco",
+      "name": "monaco_case_20",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f20(x):\n    return x + 20\n",
+          "language": "python",
+          "filename": "f20.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 20\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 20",
+          "new": "return x + 20 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-021",
+      "domain": "monaco",
+      "name": "monaco_case_21",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f21(x):\n    return x + 21\n",
+          "language": "python",
+          "filename": "f21.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 21\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 21",
+          "new": "return x + 21 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-022",
+      "domain": "monaco",
+      "name": "monaco_case_22",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f22(x):\n    return x + 22\n",
+          "language": "python",
+          "filename": "f22.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 22\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 22",
+          "new": "return x + 22 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-023",
+      "domain": "monaco",
+      "name": "monaco_case_23",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f23(x):\n    return x + 23\n",
+          "language": "python",
+          "filename": "f23.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 23\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 23",
+          "new": "return x + 23 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-024",
+      "domain": "monaco",
+      "name": "monaco_case_24",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f24(x):\n    return x + 24\n",
+          "language": "python",
+          "filename": "f24.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 24\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 24",
+          "new": "return x + 24 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-025",
+      "domain": "monaco",
+      "name": "monaco_case_25",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f25(x):\n    return x + 25\n",
+          "language": "python",
+          "filename": "f25.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 25\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 25",
+          "new": "return x + 25 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-026",
+      "domain": "monaco",
+      "name": "monaco_case_26",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f26(x):\n    return x + 26\n",
+          "language": "python",
+          "filename": "f26.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 26\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 26",
+          "new": "return x + 26 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-027",
+      "domain": "monaco",
+      "name": "monaco_case_27",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f27(x):\n    return x + 27\n",
+          "language": "python",
+          "filename": "f27.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 27\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 27",
+          "new": "return x + 27 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-028",
+      "domain": "monaco",
+      "name": "monaco_case_28",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f28(x):\n    return x + 28\n",
+          "language": "python",
+          "filename": "f28.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 28\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 28",
+          "new": "return x + 28 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-029",
+      "domain": "monaco",
+      "name": "monaco_case_29",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f29(x):\n    return x + 29\n",
+          "language": "python",
+          "filename": "f29.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 29\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 29",
+          "new": "return x + 29 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-030",
+      "domain": "monaco",
+      "name": "monaco_case_30",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f30(x):\n    return x + 30\n",
+          "language": "python",
+          "filename": "f30.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 30\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 30",
+          "new": "return x + 30 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-031",
+      "domain": "monaco",
+      "name": "monaco_case_31",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f31(x):\n    return x + 31\n",
+          "language": "python",
+          "filename": "f31.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 31\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 31",
+          "new": "return x + 31 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-032",
+      "domain": "monaco",
+      "name": "monaco_case_32",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f32(x):\n    return x + 32\n",
+          "language": "python",
+          "filename": "f32.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 32\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 32",
+          "new": "return x + 32 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-033",
+      "domain": "monaco",
+      "name": "monaco_case_33",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f33(x):\n    return x + 33\n",
+          "language": "python",
+          "filename": "f33.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 33\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 33",
+          "new": "return x + 33 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-034",
+      "domain": "monaco",
+      "name": "monaco_case_34",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f34(x):\n    return x + 34\n",
+          "language": "python",
+          "filename": "f34.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 34\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 34",
+          "new": "return x + 34 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-035",
+      "domain": "monaco",
+      "name": "monaco_case_35",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f35(x):\n    return x + 35\n",
+          "language": "python",
+          "filename": "f35.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 35\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 35",
+          "new": "return x + 35 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-036",
+      "domain": "monaco",
+      "name": "monaco_case_36",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f36(x):\n    return x + 36\n",
+          "language": "python",
+          "filename": "f36.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 36\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 36",
+          "new": "return x + 36 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-037",
+      "domain": "monaco",
+      "name": "monaco_case_37",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f37(x):\n    return x + 37\n",
+          "language": "python",
+          "filename": "f37.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 37\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 37",
+          "new": "return x + 37 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-038",
+      "domain": "monaco",
+      "name": "monaco_case_38",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f38(x):\n    return x + 38\n",
+          "language": "python",
+          "filename": "f38.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 38\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 38",
+          "new": "return x + 38 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-039",
+      "domain": "monaco",
+      "name": "monaco_case_39",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f39(x):\n    return x + 39\n",
+          "language": "python",
+          "filename": "f39.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 39\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 39",
+          "new": "return x + 39 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-040",
+      "domain": "monaco",
+      "name": "monaco_case_40",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f40(x):\n    return x + 40\n",
+          "language": "python",
+          "filename": "f40.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 40\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 40",
+          "new": "return x + 40 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-041",
+      "domain": "monaco",
+      "name": "monaco_case_41",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f41(x):\n    return x + 41\n",
+          "language": "python",
+          "filename": "f41.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 41\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 41",
+          "new": "return x + 41 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-042",
+      "domain": "monaco",
+      "name": "monaco_case_42",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f42(x):\n    return x + 42\n",
+          "language": "python",
+          "filename": "f42.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 42\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 42",
+          "new": "return x + 42 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-043",
+      "domain": "monaco",
+      "name": "monaco_case_43",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f43(x):\n    return x + 43\n",
+          "language": "python",
+          "filename": "f43.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 43\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 43",
+          "new": "return x + 43 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-044",
+      "domain": "monaco",
+      "name": "monaco_case_44",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f44(x):\n    return x + 44\n",
+          "language": "python",
+          "filename": "f44.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 44\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 44",
+          "new": "return x + 44 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-045",
+      "domain": "monaco",
+      "name": "monaco_case_45",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f45(x):\n    return x + 45\n",
+          "language": "python",
+          "filename": "f45.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 45\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 45",
+          "new": "return x + 45 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-046",
+      "domain": "monaco",
+      "name": "monaco_case_46",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f46(x):\n    return x + 46\n",
+          "language": "python",
+          "filename": "f46.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 46\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 46",
+          "new": "return x + 46 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-047",
+      "domain": "monaco",
+      "name": "monaco_case_47",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f47(x):\n    return x + 47\n",
+          "language": "python",
+          "filename": "f47.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 47\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 47",
+          "new": "return x + 47 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-048",
+      "domain": "monaco",
+      "name": "monaco_case_48",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f48(x):\n    return x + 48\n",
+          "language": "python",
+          "filename": "f48.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 48\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 48",
+          "new": "return x + 48 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-049",
+      "domain": "monaco",
+      "name": "monaco_case_49",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f49(x):\n    return x + 49\n",
+          "language": "python",
+          "filename": "f49.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 49\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 49",
+          "new": "return x + 49 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-050",
+      "domain": "monaco",
+      "name": "monaco_case_50",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f50(x):\n    return x + 50\n",
+          "language": "python",
+          "filename": "f50.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 50\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 50",
+          "new": "return x + 50 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-051",
+      "domain": "monaco",
+      "name": "monaco_case_51",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f51(x):\n    return x + 51\n",
+          "language": "python",
+          "filename": "f51.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 51\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 51",
+          "new": "return x + 51 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-052",
+      "domain": "monaco",
+      "name": "monaco_case_52",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f52(x):\n    return x + 52\n",
+          "language": "python",
+          "filename": "f52.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 52\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 52",
+          "new": "return x + 52 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-053",
+      "domain": "monaco",
+      "name": "monaco_case_53",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f53(x):\n    return x + 53\n",
+          "language": "python",
+          "filename": "f53.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 53\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 53",
+          "new": "return x + 53 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-054",
+      "domain": "monaco",
+      "name": "monaco_case_54",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f54(x):\n    return x + 54\n",
+          "language": "python",
+          "filename": "f54.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 54\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 54",
+          "new": "return x + 54 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-055",
+      "domain": "monaco",
+      "name": "monaco_case_55",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f55(x):\n    return x + 55\n",
+          "language": "python",
+          "filename": "f55.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 55\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 55",
+          "new": "return x + 55 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-056",
+      "domain": "monaco",
+      "name": "monaco_case_56",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f56(x):\n    return x + 56\n",
+          "language": "python",
+          "filename": "f56.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 56\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 56",
+          "new": "return x + 56 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-057",
+      "domain": "monaco",
+      "name": "monaco_case_57",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f57(x):\n    return x + 57\n",
+          "language": "python",
+          "filename": "f57.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 57\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 57",
+          "new": "return x + 57 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-058",
+      "domain": "monaco",
+      "name": "monaco_case_58",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f58(x):\n    return x + 58\n",
+          "language": "python",
+          "filename": "f58.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 58\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 58",
+          "new": "return x + 58 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-059",
+      "domain": "monaco",
+      "name": "monaco_case_59",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f59(x):\n    return x + 59\n",
+          "language": "python",
+          "filename": "f59.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 59\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 59",
+          "new": "return x + 59 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-060",
+      "domain": "monaco",
+      "name": "monaco_case_60",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f60(x):\n    return x + 60\n",
+          "language": "python",
+          "filename": "f60.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 60\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 60",
+          "new": "return x + 60 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-061",
+      "domain": "monaco",
+      "name": "monaco_case_61",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f61(x):\n    return x + 61\n",
+          "language": "python",
+          "filename": "f61.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 61\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 61",
+          "new": "return x + 61 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-062",
+      "domain": "monaco",
+      "name": "monaco_case_62",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f62(x):\n    return x + 62\n",
+          "language": "python",
+          "filename": "f62.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 62\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 62",
+          "new": "return x + 62 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-063",
+      "domain": "monaco",
+      "name": "monaco_case_63",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f63(x):\n    return x + 63\n",
+          "language": "python",
+          "filename": "f63.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 63\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 63",
+          "new": "return x + 63 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-064",
+      "domain": "monaco",
+      "name": "monaco_case_64",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f64(x):\n    return x + 64\n",
+          "language": "python",
+          "filename": "f64.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 64\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 64",
+          "new": "return x + 64 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-065",
+      "domain": "monaco",
+      "name": "monaco_case_65",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f65(x):\n    return x + 65\n",
+          "language": "python",
+          "filename": "f65.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 65\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 65",
+          "new": "return x + 65 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-066",
+      "domain": "monaco",
+      "name": "monaco_case_66",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f66(x):\n    return x + 66\n",
+          "language": "python",
+          "filename": "f66.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 66\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 66",
+          "new": "return x + 66 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-067",
+      "domain": "monaco",
+      "name": "monaco_case_67",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f67(x):\n    return x + 67\n",
+          "language": "python",
+          "filename": "f67.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 67\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 67",
+          "new": "return x + 67 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-068",
+      "domain": "monaco",
+      "name": "monaco_case_68",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f68(x):\n    return x + 68\n",
+          "language": "python",
+          "filename": "f68.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 68\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 68",
+          "new": "return x + 68 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-069",
+      "domain": "monaco",
+      "name": "monaco_case_69",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f69(x):\n    return x + 69\n",
+          "language": "python",
+          "filename": "f69.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 69\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 69",
+          "new": "return x + 69 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-070",
+      "domain": "monaco",
+      "name": "monaco_case_70",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f70(x):\n    return x + 70\n",
+          "language": "python",
+          "filename": "f70.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 70\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 70",
+          "new": "return x + 70 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-071",
+      "domain": "monaco",
+      "name": "monaco_case_71",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f71(x):\n    return x + 71\n",
+          "language": "python",
+          "filename": "f71.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 71\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 71",
+          "new": "return x + 71 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-072",
+      "domain": "monaco",
+      "name": "monaco_case_72",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f72(x):\n    return x + 72\n",
+          "language": "python",
+          "filename": "f72.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 72\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 72",
+          "new": "return x + 72 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-073",
+      "domain": "monaco",
+      "name": "monaco_case_73",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f73(x):\n    return x + 73\n",
+          "language": "python",
+          "filename": "f73.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 73\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 73",
+          "new": "return x + 73 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-074",
+      "domain": "monaco",
+      "name": "monaco_case_74",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f74(x):\n    return x + 74\n",
+          "language": "python",
+          "filename": "f74.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 74\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 74",
+          "new": "return x + 74 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-075",
+      "domain": "monaco",
+      "name": "monaco_case_75",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f75(x):\n    return x + 75\n",
+          "language": "python",
+          "filename": "f75.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 75\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 75",
+          "new": "return x + 75 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-076",
+      "domain": "monaco",
+      "name": "monaco_case_76",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f76(x):\n    return x + 76\n",
+          "language": "python",
+          "filename": "f76.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 76\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 76",
+          "new": "return x + 76 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-077",
+      "domain": "monaco",
+      "name": "monaco_case_77",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f77(x):\n    return x + 77\n",
+          "language": "python",
+          "filename": "f77.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 77\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 77",
+          "new": "return x + 77 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-078",
+      "domain": "monaco",
+      "name": "monaco_case_78",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f78(x):\n    return x + 78\n",
+          "language": "python",
+          "filename": "f78.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 78\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 78",
+          "new": "return x + 78 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-079",
+      "domain": "monaco",
+      "name": "monaco_case_79",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f79(x):\n    return x + 79\n",
+          "language": "python",
+          "filename": "f79.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 79\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 79",
+          "new": "return x + 79 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-080",
+      "domain": "monaco",
+      "name": "monaco_case_80",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f80(x):\n    return x + 80\n",
+          "language": "python",
+          "filename": "f80.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 80\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 80",
+          "new": "return x + 80 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-081",
+      "domain": "monaco",
+      "name": "monaco_case_81",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f81(x):\n    return x + 81\n",
+          "language": "python",
+          "filename": "f81.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 81\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 81",
+          "new": "return x + 81 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-082",
+      "domain": "monaco",
+      "name": "monaco_case_82",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f82(x):\n    return x + 82\n",
+          "language": "python",
+          "filename": "f82.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 82\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 82",
+          "new": "return x + 82 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-083",
+      "domain": "monaco",
+      "name": "monaco_case_83",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f83(x):\n    return x + 83\n",
+          "language": "python",
+          "filename": "f83.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 83\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 83",
+          "new": "return x + 83 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-084",
+      "domain": "monaco",
+      "name": "monaco_case_84",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f84(x):\n    return x + 84\n",
+          "language": "python",
+          "filename": "f84.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 84\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 84",
+          "new": "return x + 84 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-085",
+      "domain": "monaco",
+      "name": "monaco_case_85",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f85(x):\n    return x + 85\n",
+          "language": "python",
+          "filename": "f85.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 85\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 85",
+          "new": "return x + 85 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-086",
+      "domain": "monaco",
+      "name": "monaco_case_86",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f86(x):\n    return x + 86\n",
+          "language": "python",
+          "filename": "f86.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 86\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 86",
+          "new": "return x + 86 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-087",
+      "domain": "monaco",
+      "name": "monaco_case_87",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f87(x):\n    return x + 87\n",
+          "language": "python",
+          "filename": "f87.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 87\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 87",
+          "new": "return x + 87 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-088",
+      "domain": "monaco",
+      "name": "monaco_case_88",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f88(x):\n    return x + 88\n",
+          "language": "python",
+          "filename": "f88.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 88\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 88",
+          "new": "return x + 88 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-089",
+      "domain": "monaco",
+      "name": "monaco_case_89",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f89(x):\n    return x + 89\n",
+          "language": "python",
+          "filename": "f89.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 89\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 89",
+          "new": "return x + 89 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-090",
+      "domain": "monaco",
+      "name": "monaco_case_90",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f90(x):\n    return x + 90\n",
+          "language": "python",
+          "filename": "f90.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 90\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 90",
+          "new": "return x + 90 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-091",
+      "domain": "monaco",
+      "name": "monaco_case_91",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f91(x):\n    return x + 91\n",
+          "language": "python",
+          "filename": "f91.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 91\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 91",
+          "new": "return x + 91 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-092",
+      "domain": "monaco",
+      "name": "monaco_case_92",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f92(x):\n    return x + 92\n",
+          "language": "python",
+          "filename": "f92.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 92\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 92",
+          "new": "return x + 92 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-093",
+      "domain": "monaco",
+      "name": "monaco_case_93",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f93(x):\n    return x + 93\n",
+          "language": "python",
+          "filename": "f93.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 93\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 93",
+          "new": "return x + 93 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-094",
+      "domain": "monaco",
+      "name": "monaco_case_94",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f94(x):\n    return x + 94\n",
+          "language": "python",
+          "filename": "f94.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 94\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 94",
+          "new": "return x + 94 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-095",
+      "domain": "monaco",
+      "name": "monaco_case_95",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f95(x):\n    return x + 95\n",
+          "language": "python",
+          "filename": "f95.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 95\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 95",
+          "new": "return x + 95 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-096",
+      "domain": "monaco",
+      "name": "monaco_case_96",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f96(x):\n    return x + 96\n",
+          "language": "python",
+          "filename": "f96.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 96\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 96",
+          "new": "return x + 96 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-097",
+      "domain": "monaco",
+      "name": "monaco_case_97",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f97(x):\n    return x + 97\n",
+          "language": "python",
+          "filename": "f97.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 97\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 97",
+          "new": "return x + 97 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-098",
+      "domain": "monaco",
+      "name": "monaco_case_98",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f98(x):\n    return x + 98\n",
+          "language": "python",
+          "filename": "f98.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 98\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 98",
+          "new": "return x + 98 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-099",
+      "domain": "monaco",
+      "name": "monaco_case_99",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f99(x):\n    return x + 99\n",
+          "language": "python",
+          "filename": "f99.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 99\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 99",
+          "new": "return x + 99 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    },
+    {
+      "id": "MONACO-100",
+      "domain": "monaco",
+      "name": "monaco_case_100",
+      "steps": [
+        {
+          "op": "create",
+          "content": "def f100(x):\n    return x + 100\n",
+          "language": "python",
+          "filename": "f100.py"
+        },
+        {
+          "op": "append",
+          "text": "\n# case 100\n"
+        },
+        {
+          "op": "replace",
+          "old": "return x + 100",
+          "new": "return x + 100 + 0"
+        },
+        {
+          "op": "get"
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "min_version": 2
+      }
+    }
+  ]
+}

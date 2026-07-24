@@ -1,0 +1,6 @@
+{
+  "config.json": "31366d8502ba29cdc535fda845d6ec2b75dd1a2756aa403789b2d2aa5655c6e7",
+  "tokenizer.json": "3d9fda3fb1acd40bf750e47d8502c6d54a8ae936a575eb2ef249ffbbfb31ff72",
+  "weights.npz.b64": "5b701dde391ac13312165b81ea608804f2d413be85a84de50716c4d80403bd1d",
+  "training_report.json": "c98beee586a0cd3d89fffe288801f2f799e51f9c34306703ee1d219057bb9826"
+}

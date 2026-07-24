@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Auro Foundry</title>
+  <style>
+    :root{color-scheme:dark;background:#090d14;color:#eef4ff;font-family:Inter,system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#17233b,#090d14 55%)}main{max-width:980px;margin:auto;padding:32px 18px}.head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:20px}.brand{font-size:28px;font-weight:800}.sub{color:#96a5be}.status{padding:8px 12px;border:1px solid #2c405f;border-radius:999px}.panel{background:#101827dd;border:1px solid #243450;border-radius:18px;box-shadow:0 20px 60px #0008;overflow:hidden}.messages{height:58vh;overflow:auto;padding:20px}.msg{margin:0 0 14px;padding:14px 16px;border-radius:14px;white-space:pre-wrap;line-height:1.5}.user{background:#1e3354;margin-left:12%}.assistant{background:#172131;margin-right:12%}.composer{display:grid;grid-template-columns:1fr auto;gap:10px;padding:16px;border-top:1px solid #243450}textarea{resize:vertical;min-height:74px;background:#0b111d;color:#eef4ff;border:1px solid #2c405f;border-radius:12px;padding:12px;font:inherit}button{background:#6ea8ff;color:#07101e;border:0;border-radius:12px;padding:0 22px;font-weight:800;cursor:pointer}button:disabled{opacity:.5}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0;color:#96a5be;font-size:13px}.controls input{width:90px;background:#0b111d;color:white;border:1px solid #2c405f;border-radius:8px;padding:7px}.footer{margin-top:14px;color:#71809a;font-size:12px}
+  </style>
+</head>
+<body><main>
+  <div class="head"><div><div class="brand">AURO FOUNDRY</div><div class="sub">Repository-native model training and inference</div></div><div id="status" class="status">checking...</div></div>
+  <div class="controls"><label>Max tokens <input id="maxTokens" type="number" value="128" min="1" max="2048"></label><label>Temperature <input id="temperature" type="number" value="0.8" min="0" max="2" step="0.1"></label><label>Top-p <input id="topP" type="number" value="0.95" min="0.05" max="1" step="0.05"></label></div>
+  <section class="panel"><div id="messages" class="messages"><div class="msg assistant">Auro is ready. Ask about the repos, systems, or training corpus used to build this checkpoint.</div></div><div class="composer"><textarea id="prompt" placeholder="Message Auro..."></textarea><button id="send">Generate</button></div></section>
+  <div class="footer">Local inference. Responses come from the mounted checkpoint.</div>
+</main><script>
+const messages=document.getElementById('messages'),prompt=document.getElementById('prompt'),send=document.getElementById('send'),status=document.getElementById('status');
+function add(text,role){const el=document.createElement('div');el.className='msg '+role;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;}
+async function health(){try{const r=await fetch('/health');const j=await r.json();status.textContent='online · '+(j.model?.model_id||'Auro');}catch{status.textContent='offline';}}
+async function run(){const text=prompt.value.trim();if(!text)return;add(text,'user');prompt.value='';send.disabled=true;add('Thinking...','assistant');const pending=messages.lastChild;try{const r=await fetch('/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:text}],max_tokens:Number(document.getElementById('maxTokens').value),temperature:Number(document.getElementById('temperature').value),top_p:Number(document.getElementById('topP').value)})});const j=await r.json();pending.textContent=j.choices?.[0]?.message?.content||j.error||'No response';}catch(e){pending.textContent='Error: '+e.message;}finally{send.disabled=false;}}
+send.onclick=run;prompt.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run();}});health();
+</script></body></html>
