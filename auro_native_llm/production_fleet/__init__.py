@@ -1,7 +1,7 @@
 """NOVA-governed production inference and internal-agent runtime.
 
-Exports are loaded lazily so an optional wallet, SDK, or document dependency
-cannot prevent unrelated browser, office, or model-runtime modules from loading.
+Exports are loaded lazily so optional organs cannot prevent unrelated runtime
+modules from importing.
 """
 from __future__ import annotations
 
@@ -21,13 +21,14 @@ _EXPORTS = {
     "IntegrityVault": (".vault", "IntegrityVault"),
 }
 
-__all__ = list(_EXPORTS)
+__all__ = sorted(_EXPORTS)
 
 
 def __getattr__(name: str) -> Any:
-    if name not in _EXPORTS:
-        raise AttributeError(name)
-    module_name, attribute = _EXPORTS[name]
+    try:
+        module_name, attribute = _EXPORTS[name]
+    except KeyError as exc:
+        raise AttributeError(name) from exc
     value = getattr(import_module(module_name, __name__), attribute)
     globals()[name] = value
     return value
@@ -35,19 +36,3 @@ def __getattr__(name: str) -> Any:
 
 def __dir__() -> list[str]:
     return sorted(set(globals()) | set(__all__))
-from .runtime import AgentManager, ModelEndpoint, NovaRuntime
-from .organ_sdk import AuroOrganSDK, SDKConfig
-from .capabilities import NativeCapabilities
-
-__all__ = ["AgentManager", "ModelEndpoint", "NovaRuntime", "AuroOrganSDK", "SDKConfig", "NativeCapabilities"]
-from .receipts import ReceiptLedger
-from .wallet import PaperWallet
-from .office import NativeOffice
-from .vault import IntegrityVault
-
-__all__ = ["AgentManager", "ModelEndpoint", "NovaRuntime", "AuroOrganSDK", "SDKConfig", "NativeCapabilities", "ReceiptLedger"]
-from .wallet import PaperWallet
-from .office import NativeOffice
-from .vault import IntegrityVault
-
-__all__ = ["AgentManager", "ModelEndpoint", "NovaRuntime", "AuroOrganSDK", "SDKConfig", "NativeCapabilities", "ReceiptLedger", "PaperWallet", "NativeOffice", "IntegrityVault"]
