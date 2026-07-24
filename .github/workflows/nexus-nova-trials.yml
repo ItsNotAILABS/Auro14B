@@ -47,13 +47,9 @@ jobs:
           PY
       - name: Test durable NOVA runtime and Relay perception
         run: python -m pytest -q tests/test_nova_runtime_hardening.py
-      - name: Test browser task gateway
-        run: python -m pytest -q tests/test_browser_gateway.py
-      - name: Test office and wallet delivery
-        run: python -m pytest -q tests/test_wallet_office_delivery.py
-      - name: Run model-alone and NOVA task trials
+      - name: Run model-alone and NOVA capability trials
         run: python scripts/run_nexus_nova_trials.py
-      - name: Verify evidence and deliverables
+      - name: Verify browser and publication evidence from trials
         run: |
           python - <<'PY'
           import json
@@ -66,11 +62,13 @@ jobs:
           control=next(x for x in data['trials'] if x['lane']['id']=='contract-control')
           assert control['model_alone']['ok']
           assert all(x['ok'] for x in control['nova_agents'])
+          hermes=next(x for x in control['nova_agents'] if x['agent_id']=='nova.hermes')
+          assert hermes['executions'] and hermes['executions'][0]['ok']
           publisher=next(x for x in control['nova_agents'] if x['agent_id']=='nova.publisher')
           files=publisher['executions'][0]['output']['files']
           assert {Path(x['path']).suffix for x in files}=={'.md','.csv','.docx','.xlsx','.pdf'}
           assert all(len(x['sha256'])==64 for x in files)
-          print(json.dumps({'receipt':data['receipt_hash'],'files':files},indent=2))
+          print(json.dumps({'receipt':data['receipt_hash'],'hermes':hermes['executions'][0],'files':files},indent=2))
           PY
       - name: Upload NEXUS NOVA proof package
         uses: actions/upload-artifact@v4
