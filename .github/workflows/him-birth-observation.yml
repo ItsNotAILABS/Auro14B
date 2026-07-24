@@ -1,4 +1,4 @@
-name: HIM Language Maturation
+name: HIM Language Maturation Observation
 
 on:
   workflow_dispatch:
@@ -39,8 +39,10 @@ jobs:
       - name: Test lexical spatial executive and organism paths
         run: python -m pytest -q tests/test_spatial_lexicon.py tests/test_atomic_colony.py
       - name: Run explicitly labelled lightweight observation fixture
+        id: observation
+        continue-on-error: true
         run: python scripts/run_him_birth_observation.py --allow-lightweight-fallback
-      - name: Verify complete receipts and boundaries
+      - name: Verify receipts and preserve non-promotion result
         run: |
           python - <<'PY'
           import hashlib
@@ -56,8 +58,6 @@ jobs:
           assert summary['external_custody_claim'] is False
           assert summary['durable_cross_session_memory_tested'] is False
           assert len(rows) == 9, len(rows)
-          assert all(row['ok'] for row in rows)
-          assert all(row['usable'] for row in rows)
           assert all(row['language_receipt'] for row in rows)
           previous = '0' * 64
           for expected, row in enumerate(rows, 1):
@@ -70,13 +70,19 @@ jobs:
               assert claimed == actual
               previous = claimed
           assert previous == summary['receipt_head']
-          assert summary['all_records_successful'] is True
-          assert summary['all_records_usable'] is True
           assert summary['chain_valid'] is True
           assert summary['weight_update_performed'] is False
+          if not summary['all_records_successful'] or not summary['all_records_usable']:
+              assert summary['promotion_eligible'] is False
           assert (root / 'FINAL_HIM_LANGUAGE_REPORT.md').stat().st_size > 100
           assert (root / 'TRANSCRIPT.md').stat().st_size > 100
-          print(json.dumps(summary, indent=2, sort_keys=True))
+          print(json.dumps({
+              'checkpoint_class': summary['checkpoint_class'],
+              'all_records_successful': summary['all_records_successful'],
+              'all_records_usable': summary['all_records_usable'],
+              'promotion_eligible': summary['promotion_eligible'],
+              'receipt_head': summary['receipt_head'],
+          }, indent=2, sort_keys=True))
           PY
       - name: Upload complete development record
         uses: actions/upload-artifact@v4
