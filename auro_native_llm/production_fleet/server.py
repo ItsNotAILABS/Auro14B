@@ -1,10 +1,5 @@
-"""Production HTTP API and operator console for Auro14B · HIM.
-
-Dependency-free by design. The service exposes a native receipt-rich contract
-and an OpenAI-compatible chat subset while keeping execution separately gated.
-"""
+"""Single-pass production HTTP API for Auro14B/HIM."""
 from __future__ import annotations
-import argparse, hmac, json, os
 
 import argparse
 import hmac
@@ -17,44 +12,33 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from .console import ASSETS
-from .runtime import NovaRuntime
 
-def token_authorized(header: str, expected: str) -> bool:
-    if not expected or not header.startswith("Bearer "): return False
-    return hmac.compare_digest(header[7:],expected)
-API_VERSION = "2026-07-18"
+API_VERSION = "2026-07-24"
 MAX_REQUEST_BYTES = 1_048_576
 MAX_MESSAGE_CHARS = 12_000
 
 
 def token_authorized(header: str, expected: str) -> bool:
-    if not expected or not header.startswith("Bearer "):
-        return False
-    return hmac.compare_digest(header[7:], expected)
+    return bool(expected and header.startswith("Bearer ") and hmac.compare_digest(header[7:], expected))
 
 
 def extract_user_message(messages: Any) -> str:
-    """Return the final user message from an OpenAI-style message array."""
     if not isinstance(messages, list):
-        raise ValueError("messages_must_be_an_array")
+        raise ApiError(400, "messages_must_be_an_array", "messages must be an array")
     for item in reversed(messages):
-        if isinstance(item, dict) and item.get("role") == "user":
-            content = item.get("content")
-            if isinstance(content, str) and content.strip():
-                return content.strip()
-    raise ValueError("user_message_required")
+        if isinstance(item, dict) and item.get("role") == "user" and isinstance(item.get("content"), str) and item["content"].strip():
+            return item["content"].strip()
+    raise ApiError(400, "user_message_required", "A non-empty user message is required.")
 
 
 def openai_completion(response: dict[str, Any], request_id: str) -> dict[str, Any]:
-    """Adapt the native response without hiding its evidence extensions."""
-    text = str(response.get("answer", ""))
-    model = str((response.get("model") or {}).get("model", "auro-him"))
+    model = response.get("model") or {}
     return {
         "id": request_id,
         "object": "chat.completion",
         "created": int(time.time()),
-        "model": model,
-        "choices": [{"index": 0, "message": {"role": "assistant", "content": text}, "finish_reason": "stop"}],
+        "model": str(model.get("model", "auro-him")),
+        "choices": [{"index": 0, "message": {"role": "assistant", "content": str(response.get("answer", ""))}, "finish_reason": "stop"}],
         "usage": {"prompt_tokens": None, "completion_tokens": None, "total_tokens": None, "estimated": False},
         "auro": {
             "schema": response.get("schema"),
@@ -64,179 +48,21 @@ def openai_completion(response: dict[str, Any], request_id: str) -> dict[str, An
             "proposed_actions": response.get("proposed_actions", []),
             "executions": response.get("executions", []),
             "receipt": response.get("receipt"),
-            "parameter_count_verified": (response.get("model") or {}).get("parameter_count_verified", False),
+            "parameter_count_verified": model.get("parameter_count_verified", False),
         },
     }
 
 
 class Handler(BaseHTTPRequestHandler):
-    runtime = NovaRuntime()
-    server_version = "AuroHIM/1.0"
+    runtime: Any = None
+    server_version = "AuroHIM/2.0"
 
-    def do_GET(self):
-        if self.path == "/health":
-            self._json(200,{"ok":True,"service":"nova-production-fleet"})
-        elif self.path == "/v1/capabilities":
-            self._json(200,self.runtime.capabilities.manifest())
-        elif self.path == "/v1/receipts/verify":
-            self._json(200,self.runtime.capabilities.ledger.verify())
-        elif self.path.startswith("/v1/receipts"):
-            self._json(200,{"receipts":self.runtime.capabilities.ledger.tail(20)})
-        else: self._json(404,{"error":"not_found"})
-        self.request_id = self._request_id()
-        path = self._path()
-        if path in ASSETS:
-            content_type, data = ASSETS[path]
-            self._bytes(200, content_type, data)
-        elif path in {"/health", "/v1/health/live"}:
-            self._json(200, {"ok": True, "status": "live", "service": "auro-him-api", "api_version": API_VERSION})
-        elif path == "/v1/health/ready":
-            self._require_api_auth()
-            endpoint = self.runtime.endpoint
-            self._json(200, {
-                "ok": True,
-                "status": "ready",
-                "service": "auro-him-api",
-                "model_endpoint": {"id": endpoint.id, "model": endpoint.model, "base_url_configured": bool(endpoint.base_url)},
-                "receipt_chain": self.runtime.capabilities.ledger.verify(),
-                "model_fleet": self.runtime.model_orchestrator.manifest(),
-            })
-        elif path == "/v1":
-            self._require_api_auth()
-            self._json(200, self._discovery())
-        elif path == "/v1/models":
-            self._require_api_auth()
-            self._json(200, {"object": "list", "data": self._models()})
-        elif path.startswith("/v1/models/"):
-            self._require_api_auth()
-            requested = path.removeprefix("/v1/models/")
-            model = next((x for x in self._models() if requested in {x["id"],x.get("auro_endpoint_id")}), None)
-            if model is None:
-                raise ApiError(404, "model_not_found", "The requested model is not configured.")
-            self._json(200, model)
-        elif path == "/v1/capabilities":
-            self._require_api_auth()
-            self._json(200, self.runtime.capabilities.manifest())
-        elif path == "/v1/context":
-            self._require_api_auth()
-            self._json(200, self.runtime.context.stats())
-        elif path == "/v1/receipts/verify":
-            self._require_api_auth()
-            self._json(200, self.runtime.capabilities.ledger.verify())
-        elif path == "/v1/receipts":
-            self._require_api_auth()
-            self._json(200, {"receipts": self.runtime.capabilities.ledger.tail(20)})
-        elif path.startswith("/v1/downloads/") and path.endswith(".zip"):
-            self._require_api_auth()
-            artifact = self.runtime.capabilities.resolve_download(
-                path.removeprefix("/v1/downloads/").removesuffix(".zip")
-            )
-            if artifact is None:
-                raise ApiError(404, "artifact_not_found", "The requested artifact is not registered.")
-            self._bytes(200, "application/zip", artifact.read_bytes())
-        elif path == "/v1/browser/tasks":
-            self._require_api_auth(); self._json(200,{"tasks":self.runtime.capabilities.browser.list(50)})
-        elif path == "/openapi.json":
-            self._json(200, self._openapi())
-        else:
-            raise ApiError(404, "not_found", "The requested route does not exist.")
-
-    def do_POST(self):
-        if self.path == "/v1/capabilities/call":
-            try:
-                length=int(self.headers.get("content-length","0")); body=json.loads(self.rfile.read(length) or b"{}")
-                approved=bool(body.get("approved",False))
-                if approved and not self._authorized(): self._json(403,{"error":"operator_token_required"}); return
-                self._json(200,self.runtime.capabilities.call(str(body.get("name","")),dict(body.get("arguments") or {}),approved=approved))
-            except Exception as exc: self._json(400,{"error":"capability_call_failed","detail":str(exc)[:500]})
-            return
-        if self.path != "/v1/respond":
-            self._json(404,{"error":"not_found"}); return
-        try:
-            length=int(self.headers.get("content-length","0"))
-            body=json.loads(self.rfile.read(length) or b"{}")
-            message=str(body.get("message","")).strip()
-            if not message:
-                self._json(400,{"error":"message_required"}); return
-            execute=bool(body.get("execute",False))
-            if execute and not self._authorized(): self._json(403,{"error":"operator_token_required"}); return
-            self._json(200,self.runtime.respond(message,execute=execute))
-        except Exception as exc:
-            self._json(502,{"error":"inference_failed","detail":str(exc)[:500]})
-
-    def log_message(self,format,*args): return
-    def _authorized(self):
-        return token_authorized(self.headers.get("authorization",""),os.getenv("AURO_EXECUTION_TOKEN",""))
-    def _json(self,status,payload):
-        data=json.dumps(payload,ensure_ascii=False).encode()
-        self.send_response(status); self.send_header("content-type","application/json")
-        self.send_header("content-length",str(len(data))); self.end_headers(); self.wfile.write(data)
-        self.request_id = self._request_id()
-        path = self._path()
-        self._require_api_auth()
-        if path == "/v1/capabilities/call":
-            body = self._body()
-            approved = bool(body.get("approved", False))
-            if approved:
-                self._require_execution_auth()
-            result = self.runtime.capabilities.call(
-                str(body.get("name", "")), dict(body.get("arguments") or {}), approved=approved
-            )
-            self._json(200, result)
-            return
-        if path == "/v1/context/query":
-            body=self._body()
-            pack=self.runtime.context.retrieve(
-                self._message(body.get("query")),
-                token_budget=int(body.get("token_budget") or self.runtime.context.default_budget),
-                top_k=int(body.get("top_k") or 24),
-            )
-            self._json(200,pack.public());return
-        if path == "/v1/context/ingest":
-            self._require_execution_auth()
-            body=self._body()
-            text=body.get("text")
-            if not isinstance(text,str) or not text.strip():
-                raise ApiError(400,"context_text_required","A non-empty context text is required.")
-            result=self.runtime.context.ingest(
-                text,source=str(body.get("source") or "api"),kind=str(body.get("kind") or "document"),
-                importance=float(body.get("importance",.5)),metadata=dict(body.get("metadata") or {}),
-                chunk_tokens=int(body.get("chunk_tokens") or 900),
-                allow_sensitive=bool(body.get("allow_sensitive",False)),
-            )
-            self._json(200,result);return
-        if path == "/v1/browser/tasks/claim":
-            body=self._body();self._json(200,{"task":self.runtime.capabilities.browser.claim(str(body.get("worker_id") or "chrome"))});return
-        if path.startswith("/v1/browser/tasks/") and path.endswith("/complete"):
-            body=self._body();task_id=path.split("/")[4];self._json(200,self.runtime.capabilities.browser.complete(task_id,body.get("result"),body.get("error")));return
-        if path in {"/v1/respond", "/v1/him/respond"}:
-            body = self._body()
-            message = self._message(body.get("message"))
-            execute = bool(body.get("execute", False))
-            if execute:
-                self._require_execution_auth()
-            result = self.runtime.respond(message, execute=execute)
-            result["request_id"] = self.request_id
-            self._json(200, result)
-            return
-        if path == "/v1/chat/completions":
-            body = self._body()
-            if body.get("stream"):
-                raise ApiError(400, "streaming_not_supported", "Set stream=false; streaming is not implemented yet.")
-            requested_model = str(body.get("model") or self.runtime.endpoint.model)
-            if requested_model not in {x for model in self._models() for x in (model["id"],model.get("auro_endpoint_id"))} | {"auro-him"}:
-                raise ApiError(404, "model_not_found", "The requested model is not configured.")
-            execute = bool(body.get("auro_execute", False))
-            if execute:
-                self._require_execution_auth()
-            result = self.runtime.respond(self._message(extract_user_message(body.get("messages"))), execute=execute)
-            self._json(200, openai_completion(result, self.request_id))
-            return
-        raise ApiError(404, "not_found", "The requested route does not exist.")
-
-    def do_OPTIONS(self):
-        self.request_id = self._request_id()
-        self._bytes(204, "text/plain; charset=utf-8", b"")
+    @classmethod
+    def get_runtime(cls):
+        if cls.runtime is None:
+            from .runtime import NovaRuntime
+            cls.runtime = NovaRuntime()
+        return cls.runtime
 
     def handle_one_request(self):
         try:
@@ -245,142 +71,124 @@ class Handler(BaseHTTPRequestHandler):
             self._error(exc.status, exc.code, exc.message)
         except (ValueError, json.JSONDecodeError) as exc:
             self._error(400, "invalid_request", str(exc)[:300])
-        except Exception:
-            self._error(500, "internal_error", "The request could not be completed.")
+        except Exception as exc:
+            self._error(500, "internal_error", str(exc)[:300] if os.getenv("AURO_DEBUG") == "1" else "The request could not be completed.")
 
-    def log_message(self, format, *args):
-        return
+    def do_GET(self):
+        self.request_id = self._request_id()
+        path = self._path()
+        if path in ASSETS:
+            content_type, data = ASSETS[path]
+            return self._bytes(200, content_type, data)
+        if path in {"/health", "/v1/health/live"}:
+            return self._json(200, {"ok": True, "status": "live", "service": "auro-him-api", "api_version": API_VERSION})
+        if path == "/openapi.json":
+            return self._json(200, self._openapi())
+        self._require_api_auth()
+        runtime = self.get_runtime()
+        if path == "/v1/health/ready":
+            return self._json(200, {"ok": True, "status": "ready", "service": "auro-him-api", "receipt_chain": runtime.capabilities.ledger.verify(), "model_fleet": runtime.model_orchestrator.manifest()})
+        if path == "/v1": return self._json(200, self._discovery())
+        if path == "/v1/models": return self._json(200, {"object": "list", "data": self._models()})
+        if path.startswith("/v1/models/"):
+            requested = path.removeprefix("/v1/models/")
+            model = next((x for x in self._models() if requested in {x["id"], x.get("auro_endpoint_id")}), None)
+            if model is None: raise ApiError(404, "model_not_found", "The requested model is not configured.")
+            return self._json(200, model)
+        if path == "/v1/capabilities": return self._json(200, runtime.capabilities.manifest())
+        if path == "/v1/context": return self._json(200, runtime.context.stats())
+        if path == "/v1/receipts/verify": return self._json(200, runtime.capabilities.ledger.verify())
+        if path == "/v1/receipts": return self._json(200, {"receipts": runtime.capabilities.ledger.tail(20)})
+        if path == "/v1/browser/tasks": return self._json(200, {"tasks": runtime.capabilities.browser.list(50)})
+        if path.startswith("/v1/downloads/") and path.endswith(".zip"):
+            artifact = runtime.capabilities.resolve_download(path.removeprefix("/v1/downloads/").removesuffix(".zip"))
+            if artifact is None: raise ApiError(404, "artifact_not_found", "The requested artifact is not registered.")
+            return self._bytes(200, "application/zip", artifact.read_bytes())
+        raise ApiError(404, "not_found", "The requested route does not exist.")
 
-    def _path(self) -> str:
-        return urlsplit(self.path).path
+    def do_POST(self):
+        self.request_id = self._request_id()
+        path = self._path()
+        self._require_api_auth()
+        runtime = self.get_runtime()
+        body = self._body()
+        if path == "/v1/capabilities/call":
+            approved = bool(body.get("approved", False))
+            if approved: self._require_execution_auth()
+            return self._json(200, runtime.capabilities.call(str(body.get("name", "")), dict(body.get("arguments") or {}), approved=approved))
+        if path == "/v1/context/query":
+            pack = runtime.context.retrieve(self._message(body.get("query")), token_budget=int(body.get("token_budget") or runtime.context.default_budget), top_k=int(body.get("top_k") or 24))
+            return self._json(200, pack.public())
+        if path == "/v1/context/ingest":
+            self._require_execution_auth()
+            text = self._message(body.get("text"))
+            return self._json(200, runtime.context.ingest(text, source=str(body.get("source") or "api"), kind=str(body.get("kind") or "document"), importance=float(body.get("importance", .5)), metadata=dict(body.get("metadata") or {}), chunk_tokens=int(body.get("chunk_tokens") or 900), allow_sensitive=bool(body.get("allow_sensitive", False))))
+        if path == "/v1/browser/tasks/claim":
+            return self._json(200, {"task": runtime.capabilities.browser.claim(str(body.get("worker_id") or "chrome"))})
+        if path.startswith("/v1/browser/tasks/") and path.endswith("/complete"):
+            task_id = path.split("/")[4]
+            return self._json(200, runtime.capabilities.browser.complete(task_id, body.get("result"), body.get("error")))
+        if path in {"/v1/respond", "/v1/him/respond"}:
+            execute = bool(body.get("execute", False))
+            if execute: self._require_execution_auth()
+            result = runtime.respond(self._message(body.get("message")), execute=execute)
+            result["request_id"] = self.request_id
+            return self._json(200, result)
+        if path == "/v1/chat/completions":
+            if body.get("stream"): raise ApiError(400, "streaming_not_supported", "Set stream=false.")
+            execute = bool(body.get("auro_execute", False))
+            if execute: self._require_execution_auth()
+            requested = str(body.get("model") or runtime.endpoint.model)
+            allowed = {value for model in self._models() for value in (model["id"], model.get("auro_endpoint_id")) if value} | {"auro-him"}
+            if requested not in allowed: raise ApiError(404, "model_not_found", "The requested model is not configured.")
+            result = runtime.respond(self._message(extract_user_message(body.get("messages"))), execute=execute)
+            return self._json(200, openai_completion(result, self.request_id))
+        raise ApiError(404, "not_found", "The requested route does not exist.")
 
+    def do_OPTIONS(self):
+        self.request_id = self._request_id()
+        return self._bytes(204, "text/plain; charset=utf-8", b"")
+
+    def _path(self) -> str: return urlsplit(self.path).path
     def _request_id(self) -> str:
         supplied = self.headers.get("x-request-id", "").strip()
-        if supplied and len(supplied) <= 128 and supplied.replace("-", "").replace("_", "").isalnum():
-            return supplied
-        return "req_" + uuid.uuid4().hex
-
+        return supplied if supplied and len(supplied) <= 128 and supplied.replace("-", "").replace("_", "").isalnum() else "req_" + uuid.uuid4().hex
     def _require_api_auth(self):
         expected = os.getenv("AURO_API_TOKEN", "")
-        if expected and not token_authorized(self.headers.get("authorization", ""), expected):
-            raise ApiError(401, "api_token_required", "A valid API bearer token is required.")
-
+        if expected and not token_authorized(self.headers.get("authorization", ""), expected): raise ApiError(401, "api_token_required", "A valid API bearer token is required.")
     def _require_execution_auth(self):
         expected = os.getenv("AURO_EXECUTION_TOKEN", "")
         header = self.headers.get("x-auro-execution-token", "")
         bearer = self.headers.get("authorization", "")
-        if not expected or not (hmac.compare_digest(header, expected) or token_authorized(bearer, expected)):
-            raise ApiError(403, "operator_token_required", "A valid execution token is required.")
-
+        if not expected or not (hmac.compare_digest(header, expected) or token_authorized(bearer, expected)): raise ApiError(403, "operator_token_required", "A valid execution token is required.")
     def _body(self) -> dict[str, Any]:
-        content_type = self.headers.get("content-type", "").split(";", 1)[0].strip().lower()
-        if content_type != "application/json":
-            raise ApiError(415, "json_required", "Content-Type must be application/json.")
-        try:
-            length = int(self.headers.get("content-length", "0"))
-        except ValueError as exc:
-            raise ApiError(400, "invalid_content_length", "Content-Length must be an integer.") from exc
-        if length <= 0:
-            raise ApiError(400, "body_required", "A JSON request body is required.")
-        if length > MAX_REQUEST_BYTES:
-            raise ApiError(413, "request_body_too_large", "Request body exceeds 1 MiB.")
+        if self.headers.get("content-type", "").split(";", 1)[0].strip().lower() != "application/json": raise ApiError(415, "json_required", "Content-Type must be application/json.")
+        try: length = int(self.headers.get("content-length", "0"))
+        except ValueError as exc: raise ApiError(400, "invalid_content_length", "Content-Length must be an integer.") from exc
+        if length <= 0: raise ApiError(400, "body_required", "A JSON request body is required.")
+        if length > MAX_REQUEST_BYTES: raise ApiError(413, "body_too_large", "Request body is too large.")
         value = json.loads(self.rfile.read(length))
-        if not isinstance(value, dict):
-            raise ApiError(400, "object_required", "The JSON body must be an object.")
+        if not isinstance(value, dict): raise ApiError(400, "object_required", "The JSON body must be an object.")
         return value
-
     def _message(self, value: Any) -> str:
-        if not isinstance(value, str) or not value.strip():
-            raise ApiError(400, "message_required", "A non-empty user message is required.")
+        if not isinstance(value, str) or not value.strip(): raise ApiError(400, "message_required", "A non-empty message is required.")
         message = value.strip()
-        if len(message) > MAX_MESSAGE_CHARS:
-            raise ApiError(413, "message_too_large", f"Message exceeds {MAX_MESSAGE_CHARS} characters.")
+        if len(message) > MAX_MESSAGE_CHARS: raise ApiError(413, "message_too_large", f"Message exceeds {MAX_MESSAGE_CHARS} characters.")
         return message
-
     def _models(self) -> list[dict[str, Any]]:
-        if not hasattr(self.runtime, "model_orchestrator"):
-            endpoint=self.runtime.endpoint
-            return [{"id":endpoint.model,"object":"model","owned_by":"ItsNotAILABS",
-                     "auro_endpoint_id":endpoint.id,"role":endpoint.role,"provider":"runtime-explicit",
-                     "capabilities":["general"],"local":False,"parameter_count":endpoint.parameter_count,
-                     "parameter_count_verified":endpoint.parameter_count is not None,
-                     "identity_verified":True,"agent_count_is_not_parameter_count":True}]
-        return [{
-            "id": model["model"],
-            "object": "model",
-            "owned_by": "ItsNotAILABS" if model["provider"] == "repository-native-open-weights" else model["provider"],
-            "auro_endpoint_id": model["id"],
-            "role": model["role"],
-            "provider": model["provider"],
-            "capabilities": model["capabilities"],
-            "local": model["local"],
-            "parameter_count": model["parameter_count"],
-            "parameter_count_verified": model["parameter_count_verified"],
-            "identity_verified": model["identity_verified"],
-            "agent_count_is_not_parameter_count": True,
-        } for model in self.runtime.model_orchestrator.manifest()["models"]]
-
-    def _model(self) -> dict[str, Any]:
-        return self._models()[0]
-
-    def _discovery(self) -> dict[str, Any]:
-        return {
-            "service": "Auro14B · HIM",
-            "api_version": API_VERSION,
-            "native_response": "/v1/him/respond",
-            "openai_compatible": "/v1/chat/completions",
-            "models": "/v1/models",
-            "context": {"stats":"/v1/context","query":"/v1/context/query","ingest":"/v1/context/ingest"},
-            "capabilities": "/v1/capabilities",
-            "receipts": "/v1/receipts",
-            "downloads": "/v1/downloads/{sha256}.zip",
-            "openapi": "/openapi.json",
-            "execution_header": "X-Auro-Execution-Token",
-        }
-
-    def _openapi(self) -> dict[str, Any]:
-        return {
-            "openapi": "3.1.0",
-            "info": {"title": "Auro14B · HIM API", "version": API_VERSION},
-            "servers": [{"url": "http://127.0.0.1:8090"}],
-            "paths": {
-                "/v1/health/live": {"get": {"summary": "Liveness"}},
-                "/v1/health/ready": {"get": {"summary": "Runtime readiness"}},
-                "/v1/models": {"get": {"summary": "Configured models"}},
-                "/v1/him/respond": {"post": {"summary": "Native receipt-rich HIM response"}},
-                "/v1/chat/completions": {"post": {"summary": "OpenAI-compatible chat completion"}},
-                "/v1/capabilities": {"get": {"summary": "Native capability contracts"}},
-                "/v1/capabilities/call": {"post": {"summary": "Call a governed native capability"}},
-                "/v1/context": {"get": {"summary": "Virtual context statistics"}},
-                "/v1/context/query": {"post": {"summary": "Retrieve a bounded context working set"}},
-                "/v1/context/ingest": {"post": {"summary": "Persist governed context"}},
-                "/v1/receipts": {"get": {"summary": "Recent receipts"}},
-                "/v1/receipts/verify": {"get": {"summary": "Verify the receipt chain"}},
-            },
-        }
-
+        runtime = self.get_runtime()
+        return [{"id": m["model"], "object": "model", "owned_by": "ItsNotAILABS" if m["provider"] == "repository-native-open-weights" else m["provider"], "auro_endpoint_id": m["id"], "role": m["role"], "provider": m["provider"], "capabilities": m["capabilities"], "local": m["local"], "parameter_count": m["parameter_count"], "parameter_count_verified": m["parameter_count_verified"], "identity_verified": m["identity_verified"], "agent_count_is_not_parameter_count": True} for m in runtime.model_orchestrator.manifest()["models"]]
+    def _discovery(self) -> dict[str, Any]: return {"service": "Auro14B · HIM", "api_version": API_VERSION, "native_response": "/v1/him/respond", "openai_compatible": "/v1/chat/completions", "models": "/v1/models", "capabilities": "/v1/capabilities", "receipts": "/v1/receipts", "openapi": "/openapi.json"}
+    def _openapi(self) -> dict[str, Any]: return {"openapi": "3.1.0", "info": {"title": "Auro14B · HIM API", "version": API_VERSION}, "paths": {"/v1/health/live": {"get": {}}, "/v1/chat/completions": {"post": {}}, "/v1/capabilities/call": {"post": {}}}}
     def _error(self, status: int, code: str, message: str):
-        if getattr(self, "wfile", None) is None or self.wfile.closed:
-            return
-        self._json(status, {"error": {"code": code, "message": message, "request_id": getattr(self, "request_id", None)}})
-
-    def _json(self, status: int, payload: Any):
-        self._bytes(status, "application/json; charset=utf-8", json.dumps(payload, ensure_ascii=False).encode())
-
+        if getattr(self, "wfile", None) is not None and not self.wfile.closed: self._json(status, {"error": {"code": code, "message": message, "request_id": getattr(self, "request_id", None)}})
+    def _json(self, status: int, payload: Any): return self._bytes(status, "application/json; charset=utf-8", json.dumps(payload, ensure_ascii=False).encode())
     def _bytes(self, status: int, content_type: str, data: bytes):
         self.send_response(status)
-        self.send_header("content-type", content_type)
-        self.send_header("content-length", str(len(data)))
-        self.send_header("cache-control", "no-store")
-        self.send_header("x-request-id", getattr(self, "request_id", ""))
-        self.send_header("x-auro-api-version", API_VERSION)
-        self.send_header("x-content-type-options", "nosniff")
-        self.send_header("x-frame-options", "DENY")
-        self.send_header("referrer-policy", "no-referrer")
-        self.send_header("content-security-policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+        for key, value in {"content-type": content_type, "content-length": str(len(data)), "cache-control": "no-store", "x-request-id": getattr(self, "request_id", ""), "x-auro-api-version": API_VERSION, "x-content-type-options": "nosniff", "x-frame-options": "DENY", "referrer-policy": "no-referrer"}.items(): self.send_header(key, value)
         self.end_headers()
-        if data:
-            self.wfile.write(data)
+        if data: self.wfile.write(data)
+    def log_message(self, format, *args): return
 
 
 class ApiError(Exception):
@@ -390,7 +198,7 @@ class ApiError(Exception):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Serve Auro14B · HIM over HTTP")
+    parser = argparse.ArgumentParser(description="Serve Auro14B/HIM over HTTP")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8090)
     args = parser.parse_args()
