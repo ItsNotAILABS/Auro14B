@@ -1,8 +1,16 @@
-"""Four real dialogue turns, then autonomous development with complete receipts."""
+"""Run a fail-closed HIM dialogue and autonomous-development observation.
+
+This is an observation instrument, not proof of durable cross-session memory,
+checkpoint promotion, or external receipt custody unless promotion mode is used
+with a trusted signing key.
+"""
 from __future__ import annotations
 
+import argparse
 import hashlib
+import hmac
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -27,14 +35,34 @@ def digest(value: Any) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def load():
-    for path in (Path("checkpoints/auro_minds/Auro-2B_continual"), Path("checkpoints/auro_minds/Auro-2B_physics"), Path("checkpoints/open/HIM-native-v0")):
-        if path.exists():
-            try:
-                return load_mind(path, chrome_mock=True), str(path)
-            except Exception:
-                pass
-    return build_mind("Auro-2B", lite=True, chrome_mock=True), "built:Auro-2B-lite"
+def load(checkpoint: str | None, allow_lightweight_fallback: bool):
+    if checkpoint:
+        path = Path(checkpoint)
+        if not path.exists():
+            raise FileNotFoundError(f"requested checkpoint does not exist: {path}")
+        try:
+            return load_mind(path, chrome_mock=True), str(path), "checkpoint"
+        except Exception as exc:
+            raise RuntimeError(f"requested checkpoint failed to load: {path}: {type(exc).__name__}: {exc}") from exc
+
+    candidates = (
+        Path("checkpoints/auro_minds/Auro-2B_continual"),
+        Path("checkpoints/auro_minds/Auro-2B_physics"),
+        Path("checkpoints/open/HIM-native-v0"),
+    )
+    failures = []
+    for path in candidates:
+        if not path.exists():
+            continue
+        try:
+            return load_mind(path, chrome_mock=True), str(path), "checkpoint"
+        except Exception as exc:
+            failures.append(f"{path}: {type(exc).__name__}: {exc}")
+    if failures:
+        raise RuntimeError("checkpoint candidates existed but failed to load; fallback denied: " + " | ".join(failures))
+    if not allow_lightweight_fallback:
+        raise FileNotFoundError("no checkpoint was found and lightweight fallback was not authorized")
+    return build_mind("Auro-2B", lite=True, chrome_mock=True), "built:Auro-2B-lite", "lightweight_fixture"
 
 
 def record(him, kind: str, phase: str, instruction: str, sequence: int, previous_hash: str) -> dict[str, Any]:
@@ -70,10 +98,22 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     path.write_text("".join(json.dumps(row, sort_keys=True, default=str) + "\n" for row in rows), encoding="utf-8")
 
 
-def main() -> int:
-    root = Path("artifacts/him-birth-observation")
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--checkpoint")
+    parser.add_argument("--allow-lightweight-fallback", action="store_true")
+    parser.add_argument("--promotion-observation", action="store_true")
+    parser.add_argument("--output", default="artifacts/him-birth-observation")
+    args = parser.parse_args(argv)
+
+    signing_key = os.environ.get("HIM_OBSERVATION_SIGNING_KEY", "")
+    signer_id = os.environ.get("HIM_OBSERVATION_SIGNER_ID", "")
+    if args.promotion_observation and (not signing_key or not signer_id):
+        raise SystemExit("promotion observation requires HIM_OBSERVATION_SIGNING_KEY and HIM_OBSERVATION_SIGNER_ID")
+
+    root = Path(args.output)
     root.mkdir(parents=True, exist_ok=True)
-    mind, checkpoint_source = load()
+    mind, checkpoint_source, checkpoint_class = load(args.checkpoint, args.allow_lightweight_fallback)
     him = awaken_mature_him(mind, n_germs=20, context_tokens=500_000)
     him.colony.context.ingest(MISSION, kind="system", meta={"program": "NEXUS Relay / SignalLens"})
     him.colony.context.ingest(SNAPSHOT, kind="evidence", meta={"as_of": "2026-07-23"})
@@ -86,9 +126,9 @@ def main() -> int:
         row = record(him, "dialogue", phase, prompt, len(rows) + 1, previous_hash)
         previous_hash = row["hash"]
         rows.append(row)
-        print(json.dumps({"kind": "dialogue", "phase": phase, "ok": row["ok"]}), flush=True)
+        print(json.dumps({"kind": "dialogue", "phase": phase, "ok": row["ok"], "usable": row["usable"]}), flush=True)
 
-    task = f"{MISSION}\n\n{SNAPSHOT}\n\nProduce a giant evidence-aware research report, language-engine analysis, operational watch design, and falsifiable competitive evaluation contract."
+    task = f"{MISSION}\n\n{SNAPSHOT}\n\nProduce an evidence-aware research report, language-engine analysis, operational watch design, and falsifiable competitive evaluation contract."
     development = him.develop(task, cycles=4)
     for stage in development["stages"]:
         report = stage["report"]
@@ -135,6 +175,12 @@ def main() -> int:
     previous_hash = final_row["hash"]
     rows.append(final_row)
 
+    all_ok = bool(rows) and all(row["ok"] for row in rows)
+    all_usable = bool(rows) and all(row["usable"] for row in rows)
+    all_language_receipts = bool(rows) and all(bool(row["language_receipt"]) for row in rows)
+    chain_valid = all(row["previous_hash"] == ("0" * 64 if index == 0 else rows[index - 1]["hash"]) for index, row in enumerate(rows))
+    signature = hmac.new(signing_key.encode(), previous_hash.encode(), hashlib.sha256).hexdigest() if signing_key else ""
+
     (root / "FINAL_HIM_LANGUAGE_REPORT.md").write_text(final, encoding="utf-8")
     write_jsonl(root / "cycle.jsonl", rows)
     write_jsonl(root / "conversation.jsonl", [row for row in rows if row["kind"] == "dialogue"])
@@ -143,28 +189,40 @@ def main() -> int:
     lexical_receipt = him.language.save(root / "LEXICAL_SPATIAL_LIBRARY.json")
     (root / "WEIGHT_UPDATE_STATUS.md").write_text("# Weight Update Status\n\nNo optimizer step or checkpoint weight update occurred in this run. The trajectory is potential training data, not a trained checkpoint.\n", encoding="utf-8")
 
+    promotion_eligible = args.promotion_observation and checkpoint_class == "checkpoint" and all_ok and all_usable and all_language_receipts and chain_valid and bool(signature)
     summary = {
-        "schema": "auro.him.language-maturation.v2",
+        "schema": "auro.him.language-maturation.v3",
         "checkpoint_source": checkpoint_source,
+        "checkpoint_class": checkpoint_class,
         "identity": him.whoami(),
         "dialogue_turns": 4,
         "autonomous_work_records": len(rows) - 4,
         "successful_records": sum(row["ok"] for row in rows),
+        "usable_records": sum(row["usable"] for row in rows),
         "records_with_language_receipts": sum(bool(row["language_receipt"]) for row in rows),
         "total_records": len(rows),
+        "all_records_successful": all_ok,
+        "all_records_usable": all_usable,
+        "chain_valid": chain_valid,
         "receipt_head": previous_hash,
+        "receipt_signature_hmac_sha256": signature,
+        "signer_id": signer_id if signature else "",
+        "external_custody_claim": bool(signature),
         "lexicon": him.lexicon.manifest(),
         "lexical_snapshot": lexical_receipt,
         "weight_update_performed": False,
-        "claim_boundary": "Competitive superiority requires exact external side-by-side benchmarks; this run does not establish it.",
+        "durable_cross_session_memory_tested": False,
+        "promotion_observation": args.promotion_observation,
+        "promotion_eligible": promotion_eligible,
+        "claim_boundary": "This run measures one bounded trajectory. It does not prove durable cross-session memory, trained weight improvement, or checkpoint promotion.",
     }
     (root / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True, default=str), encoding="utf-8")
-    markdown = ["# HIM Language Maturation Transcript", "", f"Checkpoint: `{checkpoint_source}`", f"Session: `{summary['identity'].get('session_id')}`", ""]
+    markdown = ["# HIM Language Maturation Transcript", "", f"Checkpoint: `{checkpoint_source}`", f"Checkpoint class: `{checkpoint_class}`", f"Session: `{summary['identity'].get('session_id')}`", ""]
     for row in rows:
         markdown += [f"## {row['sequence']}. {row['kind']}: {row['phase']}", "", f"**Instruction:** {row['instruction']}", "", f"**HIM:** {row['output'] or '[no output]'}", "", f"**Method:** `{row['method']}`", f"**Receipt:** `{row['hash']}`", ""]
     (root / "TRANSCRIPT.md").write_text("\n".join(markdown), encoding="utf-8")
     print(json.dumps(summary, indent=2, sort_keys=True), flush=True)
-    return 0 if summary["successful_records"] and summary["records_with_language_receipts"] == summary["total_records"] else 2
+    return 0 if all_ok and all_usable and all_language_receipts and chain_valid else 2
 
 
 if __name__ == "__main__":

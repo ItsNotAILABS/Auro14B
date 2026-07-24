@@ -63,23 +63,37 @@ async function hmacHex(secret, value) {
   return [...new Uint8Array(signature)].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
+function requestNonce() {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+
 export async function secureFetchViaEgress(raw, options = {}) {
   const target = validateUrl(raw);
   const egressUrl = options.egressUrl;
   const secret = options.egressSecret;
   if (!egressUrl || !secret) throw Object.assign(new Error("pinned egress is not configured"), { status: 503 });
   const timestamp = String(Date.now());
-  const signature = await hmacHex(secret, `${timestamp}.${target.href}`);
+  const nonce = String(options.nonce || requestNonce());
+  if (nonce.length < 24) throw Object.assign(new Error("egress nonce must contain at least 24 characters"), { status: 500 });
+  const signature = await hmacHex(secret, `${timestamp}.${nonce}.${target.href}`);
   const response = await (options.fetchFn || fetch)(egressUrl, {
     method: "POST",
     redirect: "error",
-    headers: { "content-type": "application/json", "x-relay-timestamp": timestamp, "x-relay-signature": signature },
+    headers: {
+      "content-type": "application/json",
+      "x-relay-timestamp": timestamp,
+      "x-relay-nonce": nonce,
+      "x-relay-signature": signature
+    },
     body: JSON.stringify({ url: target.href })
   });
   const finalUrl = validateUrl(response.headers.get("x-relay-final-url") || target.href);
   let redirectChain = [target.href];
   try { redirectChain = JSON.parse(atob((response.headers.get("x-relay-redirect-chain") || "").replace(/-/g, "+").replace(/_/g, "/"))); } catch {}
-  return { response, finalUrl, redirectChain, egress: "pinned-dns" };
+  return { response, finalUrl, redirectChain, egress: "pinned-dns", requestNonce: nonce };
 }
 
 export async function secureFetch(raw, options = {}) {

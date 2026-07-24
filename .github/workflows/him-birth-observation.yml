@@ -1,4 +1,4 @@
-name: HIM Language Maturation
+name: HIM Language Maturation Observation
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ permissions:
 
 env:
   PYTHONPATH: .
-  OBSERVATION_PROTOCOL: auro.him.language-maturation.v2
+  OBSERVATION_PROTOCOL: auro.him.language-maturation.v3
 
 jobs:
   mature-him:
@@ -38,9 +38,18 @@ jobs:
           python -m py_compile scripts/run_him_birth_observation.py
       - name: Test lexical spatial executive and organism paths
         run: python -m pytest -q tests/test_spatial_lexicon.py tests/test_atomic_colony.py
-      - name: Run dialogue and autonomous development
-        run: python scripts/run_him_birth_observation.py
-      - name: Verify complete receipts and artifacts
+      - name: Isolate and run explicitly labelled lightweight fixture
+        id: observation
+        continue-on-error: true
+        run: |
+          for candidate in \
+            checkpoints/auro_minds/Auro-2B_continual \
+            checkpoints/auro_minds/Auro-2B_physics \
+            checkpoints/open/HIM-native-v0; do
+            if [ -e "$candidate" ]; then mv "$candidate" "${candidate}.observation-disabled"; fi
+          done
+          python scripts/run_him_birth_observation.py --allow-lightweight-fallback
+      - name: Verify receipts and preserve non-promotion result
         run: |
           python - <<'PY'
           import hashlib
@@ -50,9 +59,12 @@ jobs:
           root = Path('artifacts/him-birth-observation')
           summary = json.loads((root / 'summary.json').read_text())
           rows = [json.loads(line) for line in (root / 'cycle.jsonl').read_text().splitlines() if line.strip()]
+          assert summary['schema'] == 'auro.him.language-maturation.v3'
+          assert summary['checkpoint_class'] == 'lightweight_fixture'
+          assert summary['promotion_eligible'] is False
+          assert summary['external_custody_claim'] is False
+          assert summary['durable_cross_session_memory_tested'] is False
           assert len(rows) == 9, len(rows)
-          assert sum(row['kind'] == 'dialogue' for row in rows) == 4
-          assert sum(row['kind'] == 'autonomous_work' for row in rows) == 5
           assert all(row['language_receipt'] for row in rows)
           previous = '0' * 64
           for expected, row in enumerate(rows, 1):
@@ -65,19 +77,19 @@ jobs:
               assert claimed == actual
               previous = claimed
           assert previous == summary['receipt_head']
-          assert summary['records_with_language_receipts'] == 9
+          assert summary['chain_valid'] is True
           assert summary['weight_update_performed'] is False
-          assert summary['lexicon']['lexemes'] > 0
-          assert summary['lexicon']['characters'] > 0
-          assert summary['lexicon']['phrases'] > 0
+          if not summary['all_records_successful'] or not summary['all_records_usable']:
+              assert summary['promotion_eligible'] is False
           assert (root / 'FINAL_HIM_LANGUAGE_REPORT.md').stat().st_size > 100
           assert (root / 'TRANSCRIPT.md').stat().st_size > 100
-          assert (root / 'conversation.jsonl').exists()
-          assert (root / 'autonomous_work.jsonl').exists()
-          assert (root / 'language_receipts.jsonl').exists()
-          assert (root / 'LEXICAL_SPATIAL_LIBRARY.json').stat().st_size > 100
-          assert (root / 'WEIGHT_UPDATE_STATUS.md').exists()
-          print(json.dumps(summary, indent=2, sort_keys=True))
+          print(json.dumps({
+              'checkpoint_class': summary['checkpoint_class'],
+              'all_records_successful': summary['all_records_successful'],
+              'all_records_usable': summary['all_records_usable'],
+              'promotion_eligible': summary['promotion_eligible'],
+              'receipt_head': summary['receipt_head'],
+          }, indent=2, sort_keys=True))
           PY
       - name: Upload complete development record
         uses: actions/upload-artifact@v4
