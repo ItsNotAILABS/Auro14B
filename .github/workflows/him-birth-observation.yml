@@ -38,10 +38,17 @@ jobs:
           python -m py_compile scripts/run_him_birth_observation.py
       - name: Test lexical spatial executive and organism paths
         run: python -m pytest -q tests/test_spatial_lexicon.py tests/test_atomic_colony.py
-      - name: Run explicitly labelled lightweight observation fixture
+      - name: Isolate and run explicitly labelled lightweight fixture
         id: observation
         continue-on-error: true
-        run: python scripts/run_him_birth_observation.py --allow-lightweight-fallback
+        run: |
+          for candidate in \
+            checkpoints/auro_minds/Auro-2B_continual \
+            checkpoints/auro_minds/Auro-2B_physics \
+            checkpoints/open/HIM-native-v0; do
+            if [ -e "$candidate" ]; then mv "$candidate" "${candidate}.observation-disabled"; fi
+          done
+          python scripts/run_him_birth_observation.py --allow-lightweight-fallback
       - name: Verify receipts and preserve non-promotion result
         run: |
           python - <<'PY'
