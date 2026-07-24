@@ -1,0 +1,72 @@
+name: NEXUS NOVA Capability Trials
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - auro_native_llm/nova/**
+      - scripts/run_nexus_nova_trials.py
+      - tests/test_nova_agent_family.py
+      - docs/NEXUS_NOVA_PLATFORM.md
+      - .github/workflows/nexus-nova-trials.yml
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: .
+  AURO_NATIVE_CHECKPOINT: checkpoints/open/HIM-native-v0
+
+jobs:
+  capability-trials:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test runtime
+        run: python -m pip install --upgrade pip numpy pytest
+      - name: Compile NOVA platform
+        run: |
+          python -m py_compile auro_native_llm/nova/registry.py
+          python -m py_compile auro_native_llm/nova/family.py
+          python -m py_compile scripts/run_nexus_nova_trials.py
+      - name: Run focused model-agent and capability tests
+        run: |
+          python -m pytest -q \
+            tests/test_nova_agent_family.py \
+            tests/test_browser_gateway.py \
+            tests/test_wallet_office_delivery.py
+      - name: Run model-alone and NOVA task trials
+        run: python scripts/run_nexus_nova_trials.py
+      - name: Verify evidence and deliverables
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('artifacts/nexus-nova-trials')
+          data=json.loads((root/'trial-results.json').read_text())
+          assert data['schema']=='nexus.nova.capability-trials.v1'
+          assert len(data['receipt_hash'])==64
+          assert data['taxonomy']['definitions']['model']
+          control=next(x for x in data['trials'] if x['lane']['id']=='contract-control')
+          assert control['model_alone']['ok']
+          assert all(x['ok'] for x in control['nova_agents'])
+          publisher=next(x for x in control['nova_agents'] if x['agent_id']=='nova.publisher')
+          files=publisher['executions'][0]['output']['files']
+          assert {Path(x['path']).suffix for x in files}=={'.md','.csv','.docx','.xlsx','.pdf'}
+          assert all(len(x['sha256'])==64 for x in files)
+          print(json.dumps({'receipt':data['receipt_hash'],'files':files},indent=2))
+          PY
+      - name: Upload NEXUS NOVA proof package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-nova-trials-${{ github.sha }}
+          path: |
+            artifacts/nexus-nova-trials/**
+            docs/NEXUS_NOVA_PLATFORM.md
+          if-no-files-found: error
+          retention-days: 90

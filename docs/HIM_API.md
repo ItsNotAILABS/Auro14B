@@ -7,6 +7,11 @@ HIM now exposes two stable response contracts from the same governed runtime:
 
 ## Start
 
+The beginner launcher configures context, model selection, execution authorization,
+browser UI, and API in one command:
+
+    python scripts/launch_him.py
+
 ```bash
 export AURO_BASE_URL=http://127.0.0.1:8088/v1
 export AURO_MODEL=medina-native-8b
@@ -63,6 +68,9 @@ Approved execution additionally uses `X-Auro-Execution-Token`. The API token and
 | `GET /v1` | API discovery |
 | `GET /v1/models` | honest configured-model metadata |
 | `GET /v1/capabilities` | machine-readable internal capability contracts |
+| `GET /v1/context` | logical-context storage and injection accounting |
+| `POST /v1/context/query` | retrieve a bounded, source-tagged working set |
+| `POST /v1/context/ingest` | persist governed context (execution token required) |
 | `POST /v1/capabilities/call` | governed capability call |
 | `GET /v1/receipts` | recent evidence |
 | `GET /v1/receipts/verify` | hash-chain verification |
@@ -75,4 +83,4 @@ Every API response includes `X-Request-ID` and `X-Auro-API-Version`. Client-supp
 
 ## Compatibility boundary
 
-The chat endpoint implements non-streaming text chat, not the entire OpenAI API. Token usage remains `null` unless the underlying runtime reports exact tokenizer accounting. Evidence extensions remain available under `auro`; private chain-of-thought is never returned.
+The chat endpoint implements non-streaming text chat, not the entire OpenAI API. Token usage remains `null` unless the underlying runtime reports exact tokenizer accounting. Evidence extensions remain available under `auro`; private chain-of-thought is never returned. Native responses also expose `answer_origin`, `generation_quality`, `model_fleet`, `models_used`, `routing_traces`, and the retrieved context receipt.

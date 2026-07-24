@@ -26,6 +26,12 @@ class AuroClient:
     def capabilities(self) -> dict[str, Any]: return self._request("GET", "/v1/capabilities")
     def receipts(self) -> dict[str, Any]: return self._request("GET", "/v1/receipts")
     def verify_receipts(self) -> dict[str, Any]: return self._request("GET", "/v1/receipts/verify")
+    def context_stats(self) -> dict[str, Any]: return self._request("GET","/v1/context")
+    def query_context(self, query: str, *, token_budget: int = 32_000, top_k: int = 24) -> dict[str, Any]:
+        return self._request("POST","/v1/context/query",{"query":query,"token_budget":token_budget,"top_k":top_k})
+    def ingest_context(self,text:str,*,source:str="sdk",kind:str="document",importance:float=.5) -> dict[str, Any]:
+        return self._request("POST","/v1/context/ingest",
+            {"text":text,"source":source,"kind":kind,"importance":importance},execution=True)
 
     def respond(self, message: str, *, execute: bool = False) -> dict[str, Any]:
         return self._request("POST", "/v1/him/respond", {"message": message, "execute": execute}, execution=execute)
@@ -58,4 +64,3 @@ class AuroClient:
             except Exception: payload = {}
             error = payload.get("error") if isinstance(payload.get("error"), dict) else {}
             raise AuroAPIError(exc.code, error.get("code", "http_error"), error.get("message", str(exc)), error.get("request_id")) from exc
-

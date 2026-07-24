@@ -86,22 +86,27 @@ class Handler(BaseHTTPRequestHandler):
                 "service": "auro-him-api",
                 "model_endpoint": {"id": endpoint.id, "model": endpoint.model, "base_url_configured": bool(endpoint.base_url)},
                 "receipt_chain": self.runtime.capabilities.ledger.verify(),
+                "model_fleet": self.runtime.model_orchestrator.manifest(),
             })
         elif path == "/v1":
             self._require_api_auth()
             self._json(200, self._discovery())
         elif path == "/v1/models":
             self._require_api_auth()
-            self._json(200, {"object": "list", "data": [self._model()]})
+            self._json(200, {"object": "list", "data": self._models()})
         elif path.startswith("/v1/models/"):
             self._require_api_auth()
-            model = self._model()
-            if path.removeprefix("/v1/models/") != model["id"]:
+            requested = path.removeprefix("/v1/models/")
+            model = next((x for x in self._models() if requested in {x["id"],x.get("auro_endpoint_id")}), None)
+            if model is None:
                 raise ApiError(404, "model_not_found", "The requested model is not configured.")
             self._json(200, model)
         elif path == "/v1/capabilities":
             self._require_api_auth()
             self._json(200, self.runtime.capabilities.manifest())
+        elif path == "/v1/context":
+            self._require_api_auth()
+            self._json(200, self.runtime.context.stats())
         elif path == "/v1/receipts/verify":
             self._require_api_auth()
             self._json(200, self.runtime.capabilities.ledger.verify())
@@ -137,6 +142,27 @@ class Handler(BaseHTTPRequestHandler):
             )
             self._json(200, result)
             return
+        if path == "/v1/context/query":
+            body=self._body()
+            pack=self.runtime.context.retrieve(
+                self._message(body.get("query")),
+                token_budget=int(body.get("token_budget") or self.runtime.context.default_budget),
+                top_k=int(body.get("top_k") or 24),
+            )
+            self._json(200,pack.public());return
+        if path == "/v1/context/ingest":
+            self._require_execution_auth()
+            body=self._body()
+            text=body.get("text")
+            if not isinstance(text,str) or not text.strip():
+                raise ApiError(400,"context_text_required","A non-empty context text is required.")
+            result=self.runtime.context.ingest(
+                text,source=str(body.get("source") or "api"),kind=str(body.get("kind") or "document"),
+                importance=float(body.get("importance",.5)),metadata=dict(body.get("metadata") or {}),
+                chunk_tokens=int(body.get("chunk_tokens") or 900),
+                allow_sensitive=bool(body.get("allow_sensitive",False)),
+            )
+            self._json(200,result);return
         if path == "/v1/browser/tasks/claim":
             body=self._body();self._json(200,{"task":self.runtime.capabilities.browser.claim(str(body.get("worker_id") or "chrome"))});return
         if path.startswith("/v1/browser/tasks/") and path.endswith("/complete"):
@@ -156,7 +182,7 @@ class Handler(BaseHTTPRequestHandler):
             if body.get("stream"):
                 raise ApiError(400, "streaming_not_supported", "Set stream=false; streaming is not implemented yet.")
             requested_model = str(body.get("model") or self.runtime.endpoint.model)
-            if requested_model not in {self.runtime.endpoint.model, self.runtime.endpoint.id, "auro-him"}:
+            if requested_model not in {x for model in self._models() for x in (model["id"],model.get("auro_endpoint_id"))} | {"auro-him"}:
                 raise ApiError(404, "model_not_found", "The requested model is not configured.")
             execute = bool(body.get("auro_execute", False))
             if execute:
@@ -229,18 +255,31 @@ class Handler(BaseHTTPRequestHandler):
             raise ApiError(413, "message_too_large", f"Message exceeds {MAX_MESSAGE_CHARS} characters.")
         return message
 
-    def _model(self) -> dict[str, Any]:
-        endpoint = self.runtime.endpoint
-        return {
-            "id": endpoint.model,
+    def _models(self) -> list[dict[str, Any]]:
+        if not hasattr(self.runtime, "model_orchestrator"):
+            endpoint=self.runtime.endpoint
+            return [{"id":endpoint.model,"object":"model","owned_by":"ItsNotAILABS",
+                     "auro_endpoint_id":endpoint.id,"role":endpoint.role,"provider":"runtime-explicit",
+                     "capabilities":["general"],"local":False,"parameter_count":endpoint.parameter_count,
+                     "parameter_count_verified":endpoint.parameter_count is not None,
+                     "identity_verified":True,"agent_count_is_not_parameter_count":True}]
+        return [{
+            "id": model["model"],
             "object": "model",
-            "owned_by": "ItsNotAILABS",
-            "auro_endpoint_id": endpoint.id,
-            "role": endpoint.role,
-            "parameter_count": endpoint.parameter_count,
-            "parameter_count_verified": endpoint.parameter_count is not None,
+            "owned_by": "ItsNotAILABS" if model["provider"] == "repository-native-open-weights" else model["provider"],
+            "auro_endpoint_id": model["id"],
+            "role": model["role"],
+            "provider": model["provider"],
+            "capabilities": model["capabilities"],
+            "local": model["local"],
+            "parameter_count": model["parameter_count"],
+            "parameter_count_verified": model["parameter_count_verified"],
+            "identity_verified": model["identity_verified"],
             "agent_count_is_not_parameter_count": True,
-        }
+        } for model in self.runtime.model_orchestrator.manifest()["models"]]
+
+    def _model(self) -> dict[str, Any]:
+        return self._models()[0]
 
     def _discovery(self) -> dict[str, Any]:
         return {
@@ -249,6 +288,7 @@ class Handler(BaseHTTPRequestHandler):
             "native_response": "/v1/him/respond",
             "openai_compatible": "/v1/chat/completions",
             "models": "/v1/models",
+            "context": {"stats":"/v1/context","query":"/v1/context/query","ingest":"/v1/context/ingest"},
             "capabilities": "/v1/capabilities",
             "receipts": "/v1/receipts",
             "downloads": "/v1/downloads/{sha256}.zip",
@@ -269,6 +309,9 @@ class Handler(BaseHTTPRequestHandler):
                 "/v1/chat/completions": {"post": {"summary": "OpenAI-compatible chat completion"}},
                 "/v1/capabilities": {"get": {"summary": "Native capability contracts"}},
                 "/v1/capabilities/call": {"post": {"summary": "Call a governed native capability"}},
+                "/v1/context": {"get": {"summary": "Virtual context statistics"}},
+                "/v1/context/query": {"post": {"summary": "Retrieve a bounded context working set"}},
+                "/v1/context/ingest": {"post": {"summary": "Persist governed context"}},
                 "/v1/receipts": {"get": {"summary": "Recent receipts"}},
                 "/v1/receipts/verify": {"get": {"summary": "Verify the receipt chain"}},
             },
