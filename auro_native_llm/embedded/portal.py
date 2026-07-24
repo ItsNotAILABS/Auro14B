@@ -182,6 +182,69 @@ class InteriorPortal:
                     else {"ok": False},
                 )
             )
+            # Google virtual envelope + collab
+            hub.register(
+                MCPTool(
+                    "google.status",
+                    "AI Google sandbox envelope health (Chrome/Mail/Drive/Collab)",
+                    lambda a: mind.google("status") if hasattr(mind, "google") else {"ok": False},
+                )
+            )
+            hub.register(
+                MCPTool(
+                    "google.act",
+                    "Act on Google envelope surface: chrome|mail|drive|search|collab|calendar|sites",
+                    lambda a: mind.google(
+                        a.get("surface", "search"),
+                        a.get("action", "list"),
+                        **{k: v for k, v in a.items() if k not in ("surface", "action")},
+                    )
+                    if hasattr(mind, "google")
+                    else {"ok": False},
+                    {
+                        "type": "object",
+                        "properties": {
+                            "surface": {"type": "string"},
+                            "action": {"type": "string"},
+                            "query": {"type": "string"},
+                            "url": {"type": "string"},
+                            "name": {"type": "string"},
+                            "text": {"type": "string"},
+                            "to": {"type": "string"},
+                            "subject": {"type": "string"},
+                            "body": {"type": "string"},
+                            "content": {"type": "string"},
+                        },
+                        "required": ["surface"],
+                    },
+                )
+            )
+            hub.register(
+                MCPTool(
+                    "collab.post",
+                    "Shared user+AI project chat (AI replies in-thread)",
+                    lambda a: mind.collab(a.get("text", "")) if hasattr(mind, "collab") else {"ok": False},
+                    {
+                        "type": "object",
+                        "properties": {"text": {"type": "string"}},
+                        "required": ["text"],
+                    },
+                )
+            )
+            hub.register(
+                MCPTool(
+                    "collab.project",
+                    "Create a shared collab project",
+                    lambda a: mind.google(
+                        "collab",
+                        "project",
+                        name=a.get("name", "Project"),
+                        description=a.get("description", ""),
+                    )
+                    if hasattr(mind, "google")
+                    else {"ok": False},
+                )
+            )
 
         self.meta["wired_alpha"] = True
         self.meta["tools"] = len(hub.tools)

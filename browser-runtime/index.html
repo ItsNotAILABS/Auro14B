@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Auro Sovereign Browser Runtime</title>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">Sovereign browser runtime v1</p>
+      <h1>Auro local model workspace</h1>
+      <p>Local ONNX inference with remote model loading disabled. Governed server capabilities remain approval-gated.</p>
+      <form id="inference">
+        <label>Local model ID <input id="model" value="auro-14b-browser" /></label>
+        <label>Prompt <textarea id="prompt" required>Explain the MESIE and Sovereign relationship.</textarea></label>
+        <button>Run local inference</button>
+      </form>
+      <pre id="output">Worker not loaded.</pre>
+      <section>
+        <h2>Workspace capabilities</h2>
+        <ul>
+          <li>Local inference and internal agent API</li>
+          <li>Integrity storage and receipt verification</li>
+          <li>PDF, XLSX, DOCX, CSV, and Markdown generation</li>
+          <li>Bounded static security scans</li>
+          <li>Content-addressed browser-extension packages</li>
+        </ul>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

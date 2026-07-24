@@ -80,6 +80,10 @@ class AuroLMConfig:
     use_helix: bool = True
     use_token_governor: bool = True
     multi_task: bool = True
+    use_delta_attention: bool = True
+    delta_max_slots: int = 256
+    delta_novelty_threshold: float = 0.08
+    delta_blend: float = 0.05
 
     # ---- Math / init ----
     use_phi_init: bool = True
