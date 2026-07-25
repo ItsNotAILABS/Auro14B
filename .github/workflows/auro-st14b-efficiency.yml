@@ -1,0 +1,52 @@
+name: AURO ST-14B Efficiency
+
+on:
+  pull_request:
+    paths:
+      - 'auro_native_llm/model/st14b.py'
+      - 'scripts/benchmark_st14b_architecture.py'
+      - 'tests/test_st14b_efficiency.py'
+      - 'docs/architecture/AURO_ST14B_EFFICIENCY_PROFILE.md'
+      - '.github/workflows/auro-st14b-efficiency.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'auro_native_llm/model/st14b.py'
+      - 'scripts/benchmark_st14b_architecture.py'
+      - 'tests/test_st14b_efficiency.py'
+
+permissions:
+  contents: read
+
+jobs:
+  architecture-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile profile and benchmark harness
+        run: python -m py_compile auro_native_llm/model/st14b.py scripts/benchmark_st14b_architecture.py tests/test_st14b_efficiency.py
+      - name: Run ST-14B contract tests
+        run: python -m unittest -v tests.test_st14b_efficiency
+      - name: Emit architecture evidence
+        run: python scripts/benchmark_st14b_architecture.py --output artifacts/st14b/architecture-evidence.json
+      - name: Verify evidence truth boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('artifacts/st14b/architecture-evidence.json').read_text())
+          report = data['architecture_report']
+          assert report['status'] == 'PROTOTYPE'
+          assert report['derived']['theoretical_kv_cache_reduction'] == 0.875
+          assert report['claim_boundary']['trained_checkpoint'] is False
+          assert report['claim_boundary']['h100_fp8_benchmark'] is False
+          assert data['evidence_hash'].startswith('0x')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-st14b-architecture-evidence
+          path: artifacts/st14b/architecture-evidence.json
