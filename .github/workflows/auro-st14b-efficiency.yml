@@ -4,16 +4,20 @@ on:
   pull_request:
     paths:
       - 'auro_native_llm/model/st14b.py'
+      - 'auro_native_llm/model/st14b_runtime.py'
       - 'scripts/benchmark_st14b_architecture.py'
       - 'tests/test_st14b_efficiency.py'
+      - 'tests/test_st14b_runtime.py'
       - 'docs/architecture/AURO_ST14B_EFFICIENCY_PROFILE.md'
       - '.github/workflows/auro-st14b-efficiency.yml'
   push:
     branches: [main]
     paths:
       - 'auro_native_llm/model/st14b.py'
+      - 'auro_native_llm/model/st14b_runtime.py'
       - 'scripts/benchmark_st14b_architecture.py'
       - 'tests/test_st14b_efficiency.py'
+      - 'tests/test_st14b_runtime.py'
 
 permissions:
   contents: read
@@ -21,16 +25,26 @@ permissions:
 jobs:
   architecture-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Compile profile and benchmark harness
-        run: python -m py_compile auro_native_llm/model/st14b.py scripts/benchmark_st14b_architecture.py tests/test_st14b_efficiency.py
-      - name: Run ST-14B contract tests
+      - name: Install executable runtime dependency
+        run: python -m pip install --upgrade pip torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Compile profile, runtime and benchmark harness
+        run: >-
+          python -m py_compile
+          auro_native_llm/model/st14b.py
+          auro_native_llm/model/st14b_runtime.py
+          scripts/benchmark_st14b_architecture.py
+          tests/test_st14b_efficiency.py
+          tests/test_st14b_runtime.py
+      - name: Run ST-14B architecture contract tests
         run: python -m unittest -v tests.test_st14b_efficiency
+      - name: Run executable cache-aware runtime tests
+        run: python -m unittest -v tests.test_st14b_runtime
       - name: Emit architecture evidence
         run: python scripts/benchmark_st14b_architecture.py --output artifacts/st14b/architecture-evidence.json
       - name: Verify evidence truth boundary
