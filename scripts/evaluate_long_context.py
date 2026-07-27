@@ -36,7 +36,7 @@ def smoke_payload() -> Dict[str, Any]:
             "expected": expected,
             "observed": expected,
         })
-    losses = [2.0 + (index / 4096.0) * 0.05 for index in range(4096)]
+    losses = [2.0] * 4096
     return {
         "model_id": "Auro-smoke",
         "checkpoint_sha256": "smoke-not-a-checkpoint",
@@ -50,7 +50,7 @@ def smoke_payload() -> Dict[str, Any]:
         "num_experts": 8,
         "baseline": {
             "retrieval": {"accuracy": 1.0},
-            "perplexity": {"first_to_last_ratio": 1.03},
+            "perplexity": {"first_to_last_ratio": 1.0},
             "routing": {"coefficient_of_variation": 0.0},
             "protected_metrics": {"short_context_accuracy": 0.90},
         },
