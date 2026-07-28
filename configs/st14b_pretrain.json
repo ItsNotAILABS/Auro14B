@@ -1,0 +1,48 @@
+{
+  "schema": "auro.st14b.train.v1",
+  "model": {
+    "model_id": "AURO-ST-14B",
+    "vocab_size": 128000,
+    "hidden_size": 5120,
+    "num_layers": 40,
+    "num_heads": 40,
+    "num_kv_heads": 5,
+    "intermediate_size": 18432,
+    "max_seq_len": 8192,
+    "rope_theta": 10000.0,
+    "norm_eps": 1e-5,
+    "tie_word_embeddings": true,
+    "activation": "swiglu",
+    "normalization": "rmsnorm",
+    "attention": "gqa",
+    "gqa_ratio": 8
+  },
+  "training": {
+    "precision": "bf16",
+    "optimizer": "adamw",
+    "learning_rate": 0.00015,
+    "min_learning_rate": 0.000015,
+    "warmup_steps": 2000,
+    "weight_decay": 0.1,
+    "gradient_clip": 1.0,
+    "sequence_length": 8192,
+    "global_batch_tokens": 4194304,
+    "gradient_checkpointing": true,
+    "activation_checkpointing": "full",
+    "distributed_strategy": "fsdp_or_deepspeed_zero3",
+    "checkpoint_format": "safetensors_sharded",
+    "checkpoint_interval_steps": 500,
+    "evaluation_interval_steps": 500,
+    "seed": 1337
+  },
+  "promotion_gates": {
+    "loss_curve_required": true,
+    "checkpoint_hashes_required": true,
+    "tokenizer_hash_required": true,
+    "exact_parameter_count_required": true,
+    "quality_evaluation_required": true,
+    "runtime_benchmark_required": true,
+    "h100_fp8_receipt_required": true
+  },
+  "status": "READY_FOR_COMPUTE"
+}

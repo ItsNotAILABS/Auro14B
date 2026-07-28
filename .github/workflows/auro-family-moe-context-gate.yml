@@ -1,0 +1,133 @@
+name: AURO Family Evidence Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install focused dependencies
+        run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile evidence surfaces
+        run: |
+          python -m py_compile \
+            auro_native_llm/atomic_colony.py \
+            auro_native_llm/model/family_upgrade.py \
+            auro_native_llm/model/auro4b_architecture.py \
+            scripts/inventory_auro_checkpoints.py
+          node --check products/nexus-relay/src/security.js
+          node --check products/nexus-relay/egress/server.mjs
+      - name: Run family, context, custody, and atomic tests
+        run: |
+          python -m pytest -q \
+            tests/test_family_moe_context_policy.py \
+            tests/test_auro4b_architecture.py \
+            tests/test_long_context_envelope.py \
+            tests/test_atomic_colony.py \
+            tests/test_model_taxonomy.py \
+            tests/test_checkpoint_inventory_custody.py
+      - name: Run Relay replay-protection tests
+        run: node --test products/nexus-relay/test/egress-replay.test.js
+      - name: Prove dummy checkpoint is incomplete
+        run: |
+          mkdir -p /tmp/auro-checkpoints/Auro-2B-dummy
+          printf '{"model_id":"Auro-2B"}\n' > /tmp/auro-checkpoints/Auro-2B-dummy/manifest.json
+          printf 'dummy-weights' > /tmp/auro-checkpoints/Auro-2B-dummy/model.safetensors
+          python scripts/inventory_auro_checkpoints.py \
+            --root /tmp/auro-checkpoints \
+            --output evidence/checkpoint-inventory-smoke.json
+          python - <<'PY'
+          import json
+          report = json.load(open('evidence/checkpoint-inventory-smoke.json'))
+          assert report['auro_2b_artifact_present'] is True
+          assert report['auro_2b_integrity_verified'] is False
+          assert report['auro_2b_promotion_ready'] is False
+          assert report['auro_2b_evidence_complete'] is False
+          PY
+      - name: Emit architecture claim receipt
+        run: |
+          mkdir -p evidence
+          python - <<'PY'
+          import hashlib
+          import json
+          import numpy as np
+          from auro_native_llm.context.envelope import ContextEnvelope
+          from auro_native_llm.model import family_config, release_ladder
+          from auro_native_llm.model.auro4b_architecture import FULL_ARCHITECTURE
+
+          family = {}
+          for model_id in ['Auro-156K','Auro-2B','Auro-4B','Auro-8B','Auro-14B','Auro-100B']:
+              cfg = family_config(model_id, mode='dev')
+              family[model_id] = {
+                  'use_moe': cfg.use_moe,
+                  'num_experts': cfg.num_experts,
+                  'top_k_experts': cfg.top_k_experts,
+                  'declared_context_tokens': cfg.max_seq_len,
+                  'trained_long_context_verified': False,
+                  'routing_quality_verified': False,
+              }
+          estimate = FULL_ARCHITECTURE.parameter_estimate()
+          tokens = np.arange(294_912 + 4096, dtype=np.int64) % 65521
+          dense, receipt, _ = ContextEnvelope().ingest(tokens)
+          payload = {
+              'schema': 'auro.evidence-boundary.receipt.v1',
+              'claim_class': 'architecture-contract-only',
+              'context_planes': {
+                  'persistent_logical_context': {
+                      'kind': 'SQLite/WAL/FTS5 virtualized retrieval',
+                      'configured_logical_tokens': 500000,
+                      'dense_attention_claim': False,
+                  },
+                  'governed_envelope': {
+                      'accepted_tokens': receipt.accepted_tokens,
+                      'dense_tokens': receipt.dense_tokens,
+                      'retrieved_historical_tokens': receipt.retrieved_tokens,
+                      'truncated_input_tokens': receipt.truncated_input_tokens,
+                      'dense_attention_claim': False,
+                  },
+              },
+              'family': family,
+              'auro4b': {
+                  'active_parameters_per_token_approx': estimate['active_total'],
+                  'stored_expert_capacity_approx': estimate['stored_total'],
+                  'trained_checkpoint_claim': False,
+              },
+              'release_ladder': release_ladder(),
+              'limitations': [
+                  'configuration is not a trained checkpoint',
+                  'MoE routing quality is not established by architecture tests',
+                  '294912 accepted tokens are reduced to a bounded dense view',
+                  '500K logical context is retrieval-backed, not dense attention',
+              ],
+          }
+          canonical = json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+          payload['receipt_sha256'] = hashlib.sha256(canonical).hexdigest()
+          with open('evidence/auro-evidence-boundary.json', 'w') as handle:
+              json.dump(payload, handle, indent=2, sort_keys=True)
+          assert receipt.accepted_tokens == 294_912
+          assert receipt.dense_tokens == 32_768
+          assert receipt.retrieved_tokens <= 8_192
+          assert 3_900_000_000 <= estimate['active_total'] <= 4_150_000_000
+          assert estimate['stored_total'] > estimate['active_total']
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-evidence-gate-${{ github.sha }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 90
