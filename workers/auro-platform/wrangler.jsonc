@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "auro-sovereign-platform",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-07-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "ai": { "binding": "AI" },
+  "browser": { "binding": "BROWSER" },
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "durable_objects": {
+    "bindings": [{ "name": "AuroPlatform", "class_name": "AuroPlatform" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AuroPlatform"] }],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/agents/*", "/api/*", "/health"]
+  },
+  "vars": {
+    "WORKERS_AI_MODEL": "@cf/moonshotai/kimi-k2.6",
+    "CLOUDFLARE_MCP_URL": "https://mcp.cloudflare.com/mcp",
+    "ALLOW_CLOUDFLARE_MUTATIONS": "false"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.05 }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "mcp_servers": [
+    {
+      "name": "local_lab",
+      "endpoint": "http://127.0.0.1:8081/mcp",
+      "timeout": 15
+    }
+  ],
+  "js_services": [
+    {
+      "name": "scientific_lab",
+      "base_url": "http://127.0.0.1:9000",
+      "schema_path": "config/scientific_lab.openapi.json",
+      "timeout": 15
+    }
+  ]
+}

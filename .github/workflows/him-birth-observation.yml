@@ -1,0 +1,103 @@
+name: HIM Language Maturation Observation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/run_him_birth_observation.py
+      - auro_native_llm/**
+      - tests/test_spatial_lexicon.py
+      - working-papers/**
+      - .github/workflows/him-birth-observation.yml
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: .
+  OBSERVATION_PROTOCOL: auro.him.language-maturation.v3
+
+jobs:
+  mature-him:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout exact repository state
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtime dependencies
+        run: python -m pip install --upgrade pip numpy pytest
+      - name: Compile language and observation engines
+        run: |
+          python -m py_compile auro_native_llm/language/spatial_lexicon.py
+          python -m py_compile auro_native_llm/him/mature.py
+          python -m py_compile scripts/run_him_birth_observation.py
+      - name: Test lexical spatial executive and organism paths
+        run: python -m pytest -q tests/test_spatial_lexicon.py tests/test_atomic_colony.py
+      - name: Isolate and run explicitly labelled lightweight fixture
+        id: observation
+        continue-on-error: true
+        run: |
+          for candidate in \
+            checkpoints/auro_minds/Auro-2B_continual \
+            checkpoints/auro_minds/Auro-2B_physics \
+            checkpoints/open/HIM-native-v0; do
+            if [ -e "$candidate" ]; then mv "$candidate" "${candidate}.observation-disabled"; fi
+          done
+          python scripts/run_him_birth_observation.py --allow-lightweight-fallback
+      - name: Verify receipts and preserve non-promotion result
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root = Path('artifacts/him-birth-observation')
+          summary = json.loads((root / 'summary.json').read_text())
+          rows = [json.loads(line) for line in (root / 'cycle.jsonl').read_text().splitlines() if line.strip()]
+          assert summary['schema'] == 'auro.him.language-maturation.v3'
+          assert summary['checkpoint_class'] == 'lightweight_fixture'
+          assert summary['promotion_eligible'] is False
+          assert summary['external_custody_claim'] is False
+          assert summary['durable_cross_session_memory_tested'] is False
+          assert len(rows) == 9, len(rows)
+          assert all(row['language_receipt'] for row in rows)
+          previous = '0' * 64
+          for expected, row in enumerate(rows, 1):
+              assert row['sequence'] == expected
+              assert row['previous_hash'] == previous
+              claimed = row['hash']
+              material = dict(row)
+              material.pop('hash')
+              actual = hashlib.sha256(json.dumps(material, sort_keys=True, separators=(',', ':'), default=str).encode()).hexdigest()
+              assert claimed == actual
+              previous = claimed
+          assert previous == summary['receipt_head']
+          assert summary['chain_valid'] is True
+          assert summary['weight_update_performed'] is False
+          if not summary['all_records_successful'] or not summary['all_records_usable']:
+              assert summary['promotion_eligible'] is False
+          assert (root / 'FINAL_HIM_LANGUAGE_REPORT.md').stat().st_size > 100
+          assert (root / 'TRANSCRIPT.md').stat().st_size > 100
+          print(json.dumps({
+              'checkpoint_class': summary['checkpoint_class'],
+              'all_records_successful': summary['all_records_successful'],
+              'all_records_usable': summary['all_records_usable'],
+              'promotion_eligible': summary['promotion_eligible'],
+              'receipt_head': summary['receipt_head'],
+          }, indent=2, sort_keys=True))
+          PY
+      - name: Upload complete development record
+        uses: actions/upload-artifact@v4
+        with:
+          name: him-language-maturation-${{ github.sha }}
+          path: |
+            artifacts/him-birth-observation/**
+            working-papers/HIM_SPATIAL_LANGUAGE_MATURATION.md
+            working-papers/HIM_LANGUAGE_ENGINE_PRODUCTION_PASS.md
+          if-no-files-found: error
+          retention-days: 90

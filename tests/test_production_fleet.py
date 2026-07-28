@@ -28,3 +28,14 @@ def test_explicit_execute_only_approves_bounded_tools():
     result=NovaRuntime(endpoint,generator=FakeGenerator(),sdk=FakeSDK()).respond("Build it",execute=True)
     assert result["approved_actions"][0]["tool"] == "capsula"
     assert result["executions"][0]["ok"] is True
+
+def test_runtime_virtualizes_and_reuses_persistent_context(tmp_path,monkeypatch):
+    monkeypatch.setenv("AURO_CONTEXT_DB",str(tmp_path/"context.sqlite"))
+    endpoint=ModelEndpoint("test","http://127.0.0.1:1/v1","test",100)
+    runtime=NovaRuntime(endpoint,generator=FakeGenerator(),sdk=FakeSDK())
+    first=runtime.respond("Remember project codename HELIOS")
+    assert first["context"]["logical_tokens"]==0
+    second=runtime.respond("What is the project codename?")
+    assert second["context"]["logical_tokens"]>0
+    assert "HELIOS" in second["context"]["context"]
+    assert second["context"]["injected_tokens"]<=second["context"]["token_budget"]

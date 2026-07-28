@@ -1,0 +1,94 @@
+name: Evidence Security Production Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile hardened surfaces
+        run: |
+          python -m py_compile \
+            scripts/inventory_auro_checkpoints.py \
+            scripts/run_him_birth_observation.py \
+            scripts/run_continuous_worker.py \
+            auro_native_llm/continuous/receipts.py \
+            auro_native_llm/continuous/relay_bridge.py \
+            auro_native_llm/continuous/job_queue.py \
+            auro_native_llm/nova/runtime_state.py \
+            auro_native_llm/nova/signallens_perception.py
+          node --check products/nexus-relay/src/security.js
+          node --check products/nexus-relay/src/index.js
+          node --check products/nexus-relay/egress/server.mjs
+      - name: Run hardened Python gates
+        run: |
+          python -m pytest -q \
+            tests/test_checkpoint_inventory_custody.py \
+            tests/test_continuous_evidence_security.py \
+            tests/test_continuous_job_queue.py \
+            tests/test_nova_runtime_hardening.py \
+            tests/test_family_moe_context_policy.py \
+            tests/test_auro4b_architecture.py \
+            tests/test_long_context_envelope.py
+      - name: Run Relay replay tests
+        run: node --test products/nexus-relay/test/egress-replay.test.js
+      - name: Emit hardening receipt
+        env:
+          AURO_RECEIPT_SIGNING_KEY: ci-test-key-not-production
+          AURO_RECEIPT_SIGNER_ID: github-actions-test
+        run: |
+          mkdir -p evidence
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          from auro_native_llm.continuous.receipts import AgentReceipt, ReceiptStore
+          from auro_native_llm.nova.runtime_state import NovaRuntimeState
+
+          root = Path('evidence/hardening')
+          store = ReceiptStore(root)
+          first = AgentReceipt(run_id='ci', agent='security', status='passed', started_at_unix=1, completed_at_unix=2)
+          store.write(first)
+          state = NovaRuntimeState(root / 'nova.sqlite3')
+          session = state.create_session('github-actions')
+          action = {'tool': 'relay.read', 'url': 'https://example.com'}
+          approval = state.issue_approval(session, 'github-actions', action)
+          consumed = state.consume_approval(approval['approval_id'], session, 'github-actions', action)
+          runtime_receipt = state.record_receipt(session, 'approval.consumed', consumed, replay_key='ci-approval')
+          state.close()
+          payload = {
+            'schema': 'auro.evidence-security.gate.v1',
+            'checkpoint_dummy_rejected': True,
+            'relay_nonce_replay_rejected': True,
+            'relay_authorship_required': True,
+            'nova_durable_session': session,
+            'nova_runtime_receipt': runtime_receipt['receipt_sha256'],
+            'continuous_receipt_chain_head': json.loads((root / 'chain-head.json').read_text()),
+            'training_execution_claim': False,
+            'external_signallens_deployment_claim': False,
+          }
+          payload['receipt_sha256'] = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+          Path('evidence/evidence-security-gate.json').write_text(json.dumps(payload, indent=2, sort_keys=True) + '\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evidence-security-${{ github.sha }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 90

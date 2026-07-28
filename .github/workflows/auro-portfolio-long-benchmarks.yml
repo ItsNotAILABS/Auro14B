@@ -1,0 +1,86 @@
+name: AURO Portfolio Long Benchmarks
+
+on:
+  pull_request:
+    paths:
+      - 'benchmarks/portfolio_flows.py'
+      - 'tests/test_portfolio_flows.py'
+      - '.github/workflows/auro-portfolio-long-benchmarks.yml'
+  workflow_dispatch:
+    inputs:
+      duration_seconds:
+        description: 'Benchmark duration in seconds'
+        required: false
+        default: '900'
+      iterations:
+        description: 'Iterations per case per round'
+        required: false
+        default: '10'
+
+permissions:
+  contents: read
+
+jobs:
+  contract-and-local-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CPU runtime
+        run: pip install --index-url https://download.pytorch.org/whl/cpu torch
+      - name: Compile benchmark suite
+        run: python -m py_compile benchmarks/portfolio_flows.py tests/test_portfolio_flows.py
+      - name: Run portfolio flow tests
+        run: python -m unittest -v tests.test_portfolio_flows
+      - name: Run sustained local benchmark
+        env:
+          AURO_BENCH_DURATION_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.duration_seconds || '120' }}
+          AURO_BENCH_ITERATIONS: ${{ github.event_name == 'workflow_dispatch' && inputs.iterations || '3' }}
+        run: python benchmarks/portfolio_flows.py --output artifacts/portfolio-bench/report.json
+      - name: Verify evidence boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('artifacts/portfolio-bench/report.json').read_text())
+          assert report['schema'] == 'auro.portfolio.long_benchmark.v1'
+          assert report['summary']['failed'] == 0
+          assert report['truth_boundary']['uber_booking_performed'] is False
+          assert report['truth_boundary']['live_browser_requires_configured_gateway'] is True
+          assert report['truth_boundary']['live_iot_requires_configured_gateway'] is True
+          assert report['evidence_hash'].startswith('0x')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-portfolio-long-benchmark-report
+          path: artifacts/portfolio-bench/report.json
+
+  configured-live-gateways:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NOVA_IOT_BENCHMARK_URL: ${{ secrets.NOVA_IOT_BENCHMARK_URL }}
+      AURO_BROWSER_BENCHMARK_URL: ${{ secrets.AURO_BROWSER_BENCHMARK_URL }}
+      AURO_CHROME_CDP_BENCHMARK_URL: ${{ secrets.AURO_CHROME_CDP_BENCHMARK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CPU runtime
+        run: pip install --index-url https://download.pytorch.org/whl/cpu torch
+      - name: Require live gateway configuration
+        run: |
+          test -n "$NOVA_IOT_BENCHMARK_URL"
+          test -n "$AURO_BROWSER_BENCHMARK_URL"
+          test -n "$AURO_CHROME_CDP_BENCHMARK_URL"
+      - name: Run configured live gateway benchmark
+        run: python benchmarks/portfolio_flows.py --duration-seconds '${{ inputs.duration_seconds }}' --iterations '${{ inputs.iterations }}' --output artifacts/portfolio-bench/live-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-live-gateway-benchmark-report
+          path: artifacts/portfolio-bench/live-report.json

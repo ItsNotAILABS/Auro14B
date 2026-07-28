@@ -1,7 +1,8 @@
 """Auro native local server — MESIE compute plane.
 
 Validates the serving contract, optionally starts a stdlib HTTP server that
-exposes the Auro family via MESIE-native generate/embed (no cloud LLM).
+exposes the Auro family via MESIE-native generate/embed (no cloud LLM), plus a
+read-only Browser-Brain archive for preserved HIM/AURO conversations.
 """
 
 from __future__ import annotations
@@ -9,9 +10,11 @@ from __future__ import annotations
 import argparse
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import Any, Dict
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
+from auro_native_llm.browser_brain.service import BrowserBrainService
 from auro_native_llm.native_runtime import AuroNativeRuntime
 from auro_native_llm.receipt import emit_receipt, load_json_config
 
@@ -29,6 +32,11 @@ def main() -> None:
     parser.add_argument("--host", default=None, help="Override host")
     parser.add_argument("--port", type=int, default=None, help="Override port")
     parser.add_argument("--parent", default="Auro-14B", help="Default parent model")
+    parser.add_argument(
+        "--repository-root",
+        default=str(Path(__file__).resolve().parents[2]),
+        help="Repository root scanned by the read-only Browser-Brain archive",
+    )
     args = parser.parse_args()
 
     config = load_json_config(args.config)
@@ -37,7 +45,6 @@ def main() -> None:
     if missing:
         raise SystemExit(f"missing serving config keys: {', '.join(missing)}")
 
-    # Annotate contract with native MESIE compute plane
     config = dict(config)
     config.setdefault("compute_plane", "MESIE")
     config.setdefault("native", True)
@@ -52,6 +59,7 @@ def main() -> None:
     host = args.host or server_cfg.get("default_host", "127.0.0.1")
     port = int(args.port or server_cfg.get("default_port", 8090))
     runtime = AuroNativeRuntime(parent_model_id=args.parent)
+    browser_brain = BrowserBrainService(args.repository_root)
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt: str, *a: Any) -> None:
@@ -75,15 +83,61 @@ def main() -> None:
             return data if isinstance(data, dict) else {}
 
         def do_GET(self) -> None:  # noqa: N802
-            path = urlparse(self.path).path
+            parsed = urlparse(self.path)
+            path = parsed.path
+            query = parse_qs(parsed.query)
             if path in ("/health", "/v1/health"):
-                self._json(200, runtime.health())
+                health = runtime.health()
+                health["browser_brain"] = {
+                    "read_only": True,
+                    "conversation_count": browser_brain.index()["conversation_count"],
+                }
+                self._json(200, health)
                 return
             if path in ("/v1/models", "/models"):
                 self._json(200, runtime.serve_models_payload())
                 return
             if path in ("/v1/receipts/latest", "/receipts/latest"):
                 self._json(200, receipt)
+                return
+            if path in ("/v1/browser-brain", "/browser-brain"):
+                index = browser_brain.index()
+                self._json(200, {
+                    "schema": "auro.browser-brain.discovery.v1",
+                    "read_only": True,
+                    "conversation_count": index["conversation_count"],
+                    "index_sha256": index["index_sha256"],
+                    "routes": [
+                        "/v1/browser-brain/conversations",
+                        "/v1/browser-brain/conversations/{archive_id}",
+                        "/v1/browser-brain/conversations/{archive_id}/timeline",
+                        "/v1/browser-brain/conversations/{archive_id}/continuation",
+                    ],
+                })
+                return
+            if path == "/v1/browser-brain/conversations":
+                needle = (query.get("q") or [""])[0]
+                limit = int((query.get("limit") or ["100"])[0])
+                self._json(200, browser_brain.list(needle, limit))
+                return
+            prefix = "/v1/browser-brain/conversations/"
+            if path.startswith(prefix):
+                suffix = path[len(prefix):].strip("/")
+                parts = suffix.split("/") if suffix else []
+                archive_id = parts[0] if parts else ""
+                if not archive_id:
+                    self._json(400, {"error": "archive_id required"})
+                    return
+                if len(parts) == 1:
+                    payload = browser_brain.get(archive_id)
+                elif parts[1] == "timeline":
+                    payload = browser_brain.timeline(archive_id)
+                elif parts[1] == "continuation":
+                    maximum = int((query.get("max_characters") or ["24000"])[0])
+                    payload = browser_brain.continuation_context(archive_id, maximum)
+                else:
+                    payload = None
+                self._json(200, payload) if payload is not None else self._json(404, {"error": "conversation not found", "archive_id": archive_id})
                 return
             self._json(404, {"error": "not found", "path": path})
 
@@ -141,6 +195,11 @@ def main() -> None:
                 "compute_plane": "MESIE",
                 "parent": args.parent,
                 "models": runtime.family_models.list_models(),
+                "browser_brain": {
+                    "read_only": True,
+                    "repository_root": str(Path(args.repository_root).resolve()),
+                    "conversation_count": browser_brain.index()["conversation_count"],
+                },
             },
             indent=2,
         )

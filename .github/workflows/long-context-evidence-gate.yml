@@ -1,0 +1,64 @@
+name: AURO Long Context Evidence Gate
+
+on:
+  pull_request:
+    paths:
+      - "auro_native_llm/evaluation/long_context.py"
+      - "auro_native_llm/evaluation/promotion.py"
+      - "scripts/evaluate_long_context.py"
+      - "tests/test_long_context_evidence.py"
+      - "tests/test_long_context_promotion.py"
+      - ".github/workflows/long-context-evidence-gate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "auro_native_llm/evaluation/long_context.py"
+      - "auro_native_llm/evaluation/promotion.py"
+      - "scripts/evaluate_long_context.py"
+
+jobs:
+  evidence-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile evidence lane
+        run: |
+          python -m py_compile \
+            auro_native_llm/evaluation/long_context.py \
+            auro_native_llm/evaluation/promotion.py \
+            scripts/evaluate_long_context.py
+      - name: Run focused evidence tests
+        run: |
+          python -m pytest -q \
+            tests/test_long_context_evidence.py \
+            tests/test_long_context_promotion.py
+      - name: Execute deterministic pipeline smoke
+        run: |
+          mkdir -p evidence
+          python scripts/evaluate_long_context.py \
+            --smoke \
+            --output evidence/long-context-smoke.json
+          python - <<'PY'
+          import json
+          payload = json.load(open('evidence/long-context-smoke.json'))
+          assert payload['retrieval']['passed']
+          assert payload['perplexity']['passed']
+          assert payload['routing']['passed']
+          assert payload['regression']['passed']
+          assert payload['promotion']['decision'] == 'quarantine'
+          assert payload['exact_checkpoint'] is False
+          assert payload['claim_boundary']['synthetic_smoke_is_quality_evidence'] is False
+          print({
+              'mechanics_passed': True,
+              'promotion': payload['promotion']['decision'],
+              'evidence_sha256': payload['evidence_sha256'],
+          })
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-long-context-smoke-receipt
+          path: evidence/long-context-smoke.json
