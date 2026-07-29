@@ -1,10 +1,10 @@
 {
-  "schema": "auro.native_llm.family_charter.v1",
+  "schema": "auro.native_llm.family_charter.v2",
   "family_id": "Auro",
   "family_name": "Auro Native LLM Family",
   "repository": "ItsNotAILABS/Auro14B",
-  "status": "production-scaffold-not-trained-checkpoint",
-  "claim_boundary": "defines architecture and multi-embedded sub-agent contracts only; no trained weights claimed",
+  "status": "mixed-checkpoint-and-architecture-family",
+  "claim_boundary": "family membership and architecture declarations do not prove that every named checkpoint is trained or promoted; each lane carries independent evidence",
   "base_substrate": "MESIE spectral intelligence + agentic ghosts + AISVectorPolyglot",
   "compute_plane": "MESIE",
   "native": true,
@@ -13,18 +13,49 @@
     "mesie.compute.torch_spectral",
     "mesie.foundation.transformer",
     "phantom_native.neurocore",
-    "mesie.spectral_fft_fallback"
+    "mesie.spectral_fft_fallback",
+    "auro.browser_webgpu_cluster"
   ],
   "polyglot_types": ["python", "julia", "haskell"],
   "lanes": [
+    {
+      "model_id": "Auro-156K",
+      "parameter_target": 156000,
+      "tier": "atomic",
+      "config": "native_llm/configs/family/auro_156k.json",
+      "default_roles": ["routing_seed", "classifier", "json_repair", "tool_selection", "style_guard"],
+      "can_embed_subagents": false,
+      "deploy_profile": "wasm-and-high-multiplicity-swarm"
+    },
+    {
+      "model_id": "Auro-250M",
+      "parameter_target": 250000000,
+      "tier": "atomic",
+      "config": "native_llm/configs/family/auro_250m.json",
+      "default_roles": ["intent_extract", "retrieval_filter", "structured_transform", "code_triage", "memory_consolidation", "semantic_outline"],
+      "can_embed_subagents": true,
+      "embeddable_tiers": ["atomic"],
+      "deploy_profile": "phone-browser-wasm-and-embedded-expert"
+    },
+    {
+      "model_id": "Auro-500M",
+      "parameter_target": 500000000,
+      "tier": "atomic",
+      "config": "native_llm/configs/family/auro_500m.json",
+      "default_roles": ["tool_execution_plan", "code_patch", "evidence_review", "local_worker", "expert_consensus", "text_expansion", "creative_branch"],
+      "can_embed_subagents": true,
+      "embeddable_tiers": ["atomic"],
+      "deploy_profile": "phone-high-memory-laptop-and-embedded-triad-expert"
+    },
     {
       "model_id": "Auro-2B",
       "parameter_target": 2000000000,
       "tier": "edge",
       "config": "native_llm/configs/family/auro_2b.json",
       "default_roles": ["router", "tool_call", "embed_fast", "spectral_triage"],
-      "can_embed_subagents": false,
-      "deploy_profile": "on-device-edge"
+      "can_embed_subagents": true,
+      "embeddable_tiers": ["atomic"],
+      "deploy_profile": "on-device-edge-and-triad-parent"
     },
     {
       "model_id": "Auro-4B",
@@ -33,7 +64,7 @@
       "config": "native_llm/configs/family/auro_4b.json",
       "default_roles": ["code_edit", "spectral_match", "json_struct", "tool_plan"],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["edge"],
+      "embeddable_tiers": ["atomic", "edge"],
       "deploy_profile": "laptop-specialist"
     },
     {
@@ -43,7 +74,7 @@
       "config": "native_llm/configs/family/auro_8b.json",
       "default_roles": ["reason", "plan", "critique", "spectral_explain"],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["edge", "specialist"],
+      "embeddable_tiers": ["atomic", "edge", "specialist"],
       "deploy_profile": "workstation-general"
     },
     {
@@ -53,7 +84,7 @@
       "config": "native_llm/configs/family/auro_14b.json",
       "default_roles": ["orchestrator", "council_chair", "instruct_dev", "multi_agent_router"],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["edge", "specialist", "general"],
+      "embeddable_tiers": ["atomic", "edge", "specialist", "general"],
       "deploy_profile": "dev-integration-primary"
     },
     {
@@ -63,24 +94,35 @@
       "config": "native_llm/configs/family/auro_100b.json",
       "default_roles": ["frontier_research", "long_horizon", "safety_review", "deep_council"],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["edge", "specialist", "general", "orchestrator"],
+      "embeddable_tiers": ["atomic", "edge", "specialist", "general", "orchestrator"],
       "deploy_profile": "cluster-frontier"
     }
   ],
+  "auro_2b_triad": {
+    "schema": "auro.2b_triad.v1",
+    "parent": "Auro-2B",
+    "specialists": ["Auro-500M-SENSUS", "Auro-500M-PRAXIS", "Auro-500M-VERBUM"],
+    "dynamic_atomic_models": ["Auro-250M", "Auro-156K"],
+    "mesie_each_turn": true,
+    "consensus_rounds": 2,
+    "final_renderer": "Python/WASM fluidizer",
+    "parameter_accounting": "report every loaded checkpoint separately; three 500M instances do not convert Auro-2B into a 3.5B checkpoint"
+  },
   "multi_embedded_subagents": {
-    "schema": "auro.native_llm.multi_embedded_subagents.v1",
-    "description": "Larger Auro lanes host smaller Auro lanes as embedded sub-agents with receipted dispatch",
-    "routing_policy": "role-then-tier-then-capacity",
+    "schema": "auro.native_llm.multi_embedded_subagents.v2",
+    "description": "Larger AURO lanes host smaller AURO lanes through bounded task capsules and receipted dispatch",
+    "routing_policy": "capability-then-smallest-capacity-then-checkpoint-evidence",
     "shared_memory": "TAURUS + MESIE spectral embeddings",
     "spawn_backend": "mesie.agentic.AgentSpawner",
-    "required_fields": [
-      "parent_model_id",
-      "child_model_id",
-      "role",
-      "task_id",
-      "embedding",
-      "receipt"
-    ]
+    "required_fields": ["parent_model_id", "child_model_id", "role", "task_id", "capsule_hash", "embedding", "receipt"]
+  },
+  "training_fabric": {
+    "browser_webgpu": {
+      "coordinator": "auro_native_llm.webgpu_cluster.coordinator",
+      "node": "browser-brain/training/node.html",
+      "activation": "AURO_WEBGPU_CLUSTER_URL",
+      "claim_boundary": "configured transport is not hardware proof; completed browser-webgpu receipts are required"
+    }
   },
   "type_contracts": {
     "python": "auro_native_llm.types",
@@ -88,9 +130,6 @@
     "haskell": "bindings/haskell/AuroFamily.hs"
   },
   "legacy_lanes_retained": [
-    {
-      "model_id": "Auro-200B-Base",
-      "note": "retained as optional ultra-frontier architecture target; primary family cap is 100B"
-    }
+    {"model_id": "Auro-200B-Base", "note": "retained as optional ultra-frontier architecture target; primary family cap is 100B"}
   ]
 }
