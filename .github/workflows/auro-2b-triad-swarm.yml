@@ -1,0 +1,86 @@
+name: AURO 2B Triad and Atomic Swarm Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  triad-atomic-gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install focused runtime
+        run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile model family, triad, production and WebGPU surfaces
+        run: |
+          python -m py_compile \
+            auro_native_llm/types.py \
+            auro_native_llm/family.py \
+            auro_native_llm/subagents.py \
+            auro_native_llm/model/__init__.py \
+            auro_native_llm/model/atomic_family.py \
+            auro_native_llm/model/fluidizer.py \
+            auro_native_llm/model/triad_swarm.py \
+            auro_native_llm/polyglot/cuda_plane.py \
+            auro_native_llm/polyglot/webgpu_cluster.py \
+            auro_native_llm/webgpu_cluster/coordinator.py \
+            auro_native_llm/production_fleet/runtime.py \
+            auro_native_llm/production_fleet/server.py \
+            scripts/run_auro2b_triad_benchmark.py
+      - name: Validate browser code syntax
+        run: |
+          node --check browser-brain/training/node.js
+          node --check browser-brain/src/python-wasm-fluidizer.js
+          node --check browser-brain/src/python-bridge.js
+          node --check browser-brain/src/brain.js
+      - name: Run atomic family, triad, WebGPU, fluidizer and API tests
+        run: |
+          python -m pytest -q \
+            tests/test_atomic_family_v2.py \
+            tests/test_auro2b_triad_swarm.py \
+            tests/test_webgpu_cluster.py \
+            tests/test_python_wasm_fluidizer.py \
+            tests/test_triad_production_api.py
+      - name: Verify Python Julia and Haskell family contracts agree
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          py = Path('auro_native_llm/types.py').read_text()
+          jl = Path('bindings/julia/AuroFamily/src/AuroFamily.jl').read_text()
+          hs = Path('bindings/haskell/AuroFamily.hs').read_text()
+          for token in ('Auro-156K', 'Auro-250M', 'Auro-500M', 'Auro-2B', 'Auro-4B', 'Auro-8B', 'Auro-14B', 'Auro-100B'):
+              assert token in py and token in jl and token in hs, token
+          assert '2.0.0' in py and '2.0.0' in jl and '2.0.0' in hs
+          PY
+      - name: Run quarantined mechanics benchmark
+        run: python scripts/run_auro2b_triad_benchmark.py --mode fixture --output evidence/auro-2b-triad-benchmark.json
+      - name: Verify benchmark truth boundary
+        run: |
+          python - <<'PY'
+          import json
+          report=json.load(open('evidence/auro-2b-triad-benchmark.json'))
+          assert report['mode']=='fixture'
+          assert report['mechanics_pass'] is True
+          assert report['quality_claim'] is False
+          assert report['checkpoint_claim'] is False
+          assert report['promotion_status']=='permanently_quarantined_fixture'
+          assert all(case['promotion_ready'] is False for case in report['cases'])
+          assert len(report['report_sha256'])==64
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-2b-triad-atomic-evidence-${{ github.sha }}
+          path: evidence/auro-2b-triad-benchmark.json
+          if-no-files-found: error
