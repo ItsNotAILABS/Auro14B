@@ -16,6 +16,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import math
 import secrets
+import sys
 import threading
 import time
 from typing import Any, Sequence
@@ -30,6 +31,8 @@ def encode_f32(values: Sequence[float]) -> str:
     data = array("f", (float(value) for value in values))
     if data.itemsize != 4:
         raise RuntimeError("platform float array is not 32-bit")
+    if sys.byteorder != "little":
+        data.byteswap()
     return base64.b64encode(data.tobytes()).decode("ascii")
 
 
@@ -39,6 +42,8 @@ def decode_f32(value: str) -> list[float]:
         raise ValueError("float32 payload byte length must be divisible by four")
     data = array("f")
     data.frombytes(raw)
+    if sys.byteorder != "little":
+        data.byteswap()
     return [float(item) for item in data]
 
 
@@ -85,6 +90,7 @@ class MatmulJob:
             "a": {"shape": [self.m, self.k], "base64": self.a_base64, "dtype": "float32-le"},
             "b": {"shape": [self.k, self.n], "base64": self.b_base64, "dtype": "float32-le"},
             "output_shape": [self.m, self.n],
+            "lease_expires_at": self.lease_expires_at,
         }
 
 
@@ -130,6 +136,8 @@ class Cluster:
         return job
 
     def claim(self, worker_id: str, *, wait_seconds: float = 10.0, capabilities: dict[str, Any] | None = None) -> dict[str, Any] | None:
+        if not worker_id or len(worker_id) > 160:
+            raise ValueError("worker_id must contain 1..160 characters")
         deadline = time.time() + max(0.0, min(float(wait_seconds), 30.0))
         with self._condition:
             self._workers[worker_id] = {"last_seen": time.time(), "capabilities": dict(capabilities or {})}
@@ -203,7 +211,7 @@ class Cluster:
                 "workers": workers,
                 "queue_depth": len(self._queue),
                 "max_matrix_elements": self.max_matrix_elements,
-                "training_backend_claim": "configured browser WebGPU transport; hardware use requires completed WebGPU worker receipts",
+                "training_backend_claim": "configured browser WebGPU transport; hardware use requires completed browser-webgpu worker receipts",
             }
 
     def get_job(self, job_id: str) -> dict[str, Any] | None:
@@ -230,7 +238,7 @@ class Cluster:
 class CoordinatorHandler(BaseHTTPRequestHandler):
     cluster = Cluster()
     token = ""
-    server_version = "AuroWebGPUCoordinator/1.0"
+    server_version = "AuroWebGPUCoordinator/1.1"
 
     def do_OPTIONS(self) -> None:
         self.send_response(204)
@@ -257,7 +265,10 @@ class CoordinatorHandler(BaseHTTPRequestHandler):
                         capabilities = value
                 except json.JSONDecodeError:
                     pass
-            job = self.cluster.claim(worker_id, wait_seconds=float(query.get("wait", ["10"])[0]), capabilities=capabilities)
+            try:
+                job = self.cluster.claim(worker_id, wait_seconds=float(query.get("wait", ["10"])[0]), capabilities=capabilities)
+            except ValueError as exc:
+                return self._json(400, {"error": str(exc)})
             return self._json(200, {"job": job})
         if parsed.path.startswith("/job/"):
             row = self.cluster.get_job(parsed.path.removeprefix("/job/"))
@@ -284,7 +295,7 @@ class CoordinatorHandler(BaseHTTPRequestHandler):
                 receipt = self.cluster.complete(str(body["job_id"]), str(body["worker_id"]), result_base64=body.get("result", {}).get("base64"), shape=body.get("result", {}).get("shape"), elapsed_ms=body.get("elapsed_ms"), error=body.get("error"), backend=str(body.get("backend") or "webgpu"))
                 return self._json(200, {"ok": True, "receipt": receipt})
             return self._json(404, {"error": "not found"})
-        except (ValueError, KeyError, TypeError, TimeoutError) as exc:
+        except (ValueError, KeyError, TypeError, TimeoutError, json.JSONDecodeError) as exc:
             return self._json(400, {"error": str(exc)[:500]})
 
     def _authorized(self) -> bool:
@@ -300,7 +311,12 @@ class CoordinatorHandler(BaseHTTPRequestHandler):
         return value
 
     def _cors(self) -> None:
-        self.send_header("access-control-allow-origin", "http://127.0.0.1")
+        origin = self.headers.get("origin", "")
+        if origin:
+            parsed = urlsplit(origin)
+            if parsed.scheme in {"http", "https"} and parsed.hostname in {"127.0.0.1", "localhost", "::1"}:
+                self.send_header("access-control-allow-origin", origin)
+                self.send_header("vary", "origin")
         self.send_header("access-control-allow-methods", "GET,POST,OPTIONS")
         self.send_header("access-control-allow-headers", "content-type,x-auro-cluster-token")
         self.send_header("cache-control", "no-store")
