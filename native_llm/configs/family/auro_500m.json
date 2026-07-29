@@ -1,0 +1,38 @@
+{
+  "schema": "auro.native_llm.model_config.v2",
+  "model_id": "Auro-500M",
+  "family_id": "Auro",
+  "status": "architecture-target-not-trained-checkpoint",
+  "parameter_target": 500000000,
+  "tier": "atomic",
+  "architecture": {
+    "family": "decoder-only-transformer-moe",
+    "objective": "causal-language-modeling",
+    "hidden_size": 1024,
+    "layers": 24,
+    "attention_heads": 16,
+    "kv_heads": 4,
+    "intermediate_size": 3584,
+    "activation": "swiglu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 8192,
+    "vocab_size_target": 64000,
+    "experts": 8,
+    "top_k": 2,
+    "moe_every": 2,
+    "active_parameters_per_token_estimate": 524960768,
+    "stored_parameters_estimate": 1317684224
+  },
+  "subagent_roles": ["tool_execution_plan", "code_patch", "evidence_review", "local_worker", "expert_consensus", "text_expansion", "creative_branch"],
+  "can_embed_subagents": true,
+  "embeddable_tiers": ["atomic"],
+  "variants": [
+    {"model_id": "Auro-500M-SENSUS", "role": "evidence_and_perception", "distinct_adapter_required": true},
+    {"model_id": "Auro-500M-PRAXIS", "role": "code_and_execution", "distinct_adapter_required": true},
+    {"model_id": "Auro-500M-VERBUM", "role": "language_and_expression", "distinct_adapter_required": true}
+  ],
+  "deploy_profiles": ["phone-high-memory", "laptop", "edge-gpu", "embedded-expert"],
+  "purpose": "independent edge worker and one member of the three-model Auro-2B specialist triad",
+  "required_receipts": ["weights", "tokenizer", "training", "specialization_adapter", "evaluation", "serving", "promotion"]
+}
