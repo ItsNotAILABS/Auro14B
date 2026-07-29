@@ -1,24 +1,17 @@
 {- |
 Module      : AuroFamily
-Description : Auro native LLM family types — 2B / 4B / 8B / 14B / 100B
-              multi-embedded sub-agents. Mirrors Python auro_native_llm.types
-              and Julia AuroFamily.
-Copyright   : (c) Alfredo Medina / ItsNotAILABS, 2026
-License     : Apache-2.0
-Stability   : Experimental (scaffold — no trained checkpoint claims)
+Description : AURO family types from 156K through 100B.
 
-Contract version: 1.0.0
+Mirrors Python `auro_native_llm.types` and Julia `AuroFamily`.
+Architecture/routing contracts do not claim trained checkpoint evidence.
+Contract version: 2.0.0
 -}
-
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StrictData #-}
 
 module AuroFamily
-  ( -- * Contract
-    contractVersion
+  ( contractVersion
   , familyId
-    -- * Tiers & roles
   , ModelTier(..)
   , SubAgentRole(..)
   , tierRank
@@ -26,50 +19,40 @@ module AuroFamily
   , tierForModelId
   , parameterTarget
   , roleDefaultTier
-    -- * Architecture & lanes
+  , rolePreferredModel
   , ArchitectureSpec(..)
   , ModelLane(..)
   , SubAgentSpec(..)
   , SubAgentDispatch(..)
   , familyModelIds
   , canHost
+  , canHostModels
   , resolveChildModelId
   , builtinLanes
   ) where
 
-import Data.List (sortOn)
+import Data.List (find, sortOn)
 import GHC.Generics (Generic)
 
--- ---------------------------------------------------------------------------
--- Contract constants
--- ---------------------------------------------------------------------------
-
 contractVersion :: String
-contractVersion = "1.0.0"
+contractVersion = "2.0.0"
 
 familyId :: String
 familyId = "Auro"
 
--- ---------------------------------------------------------------------------
--- Tiers
--- ---------------------------------------------------------------------------
-
-data ModelTier
-  = Edge          -- ^ Auro-2B
-  | Specialist    -- ^ Auro-4B
-  | General       -- ^ Auro-8B
-  | Orchestrator  -- ^ Auro-14B
-  | Frontier      -- ^ Auro-100B
+data ModelTier = Atomic | Edge | Specialist | General | Orchestrator | Frontier
   deriving (Eq, Ord, Show, Read, Generic, Enum, Bounded)
 
 tierRank :: ModelTier -> Int
-tierRank Edge         = 0
-tierRank Specialist   = 1
-tierRank General      = 2
-tierRank Orchestrator = 3
-tierRank Frontier     = 4
+tierRank Atomic       = 0
+tierRank Edge         = 1
+tierRank Specialist   = 2
+tierRank General      = 3
+tierRank Orchestrator = 4
+tierRank Frontier     = 5
 
 modelIdForTier :: ModelTier -> String
+modelIdForTier Atomic       = "Auro-500M"
 modelIdForTier Edge         = "Auro-2B"
 modelIdForTier Specialist   = "Auro-4B"
 modelIdForTier General      = "Auro-8B"
@@ -77,42 +60,50 @@ modelIdForTier Orchestrator = "Auro-14B"
 modelIdForTier Frontier     = "Auro-100B"
 
 tierForModelId :: String -> Maybe ModelTier
-tierForModelId "Auro-2B"   = Just Edge
-tierForModelId "Auro-4B"   = Just Specialist
-tierForModelId "Auro-8B"   = Just General
-tierForModelId "Auro-14B"  = Just Orchestrator
-tierForModelId "Auro-100B" = Just Frontier
-tierForModelId _           = Nothing
+tierForModelId "Auro-156K"        = Just Atomic
+tierForModelId "Auro-250M"        = Just Atomic
+tierForModelId "Auro-500M"        = Just Atomic
+tierForModelId "Auro-500M-SENSUS" = Just Atomic
+tierForModelId "Auro-500M-PRAXIS" = Just Atomic
+tierForModelId "Auro-500M-VERBUM" = Just Atomic
+tierForModelId "Auro-2B"          = Just Edge
+tierForModelId "Auro-4B"          = Just Specialist
+tierForModelId "Auro-8B"          = Just General
+tierForModelId "Auro-14B"         = Just Orchestrator
+tierForModelId "Auro-100B"        = Just Frontier
+tierForModelId _                   = Nothing
 
 parameterTarget :: String -> Maybe Integer
-parameterTarget "Auro-2B"   = Just 2000000000
-parameterTarget "Auro-4B"   = Just 4000000000
-parameterTarget "Auro-8B"   = Just 8000000000
-parameterTarget "Auro-14B"  = Just 14000000000
-parameterTarget "Auro-100B" = Just 100000000000
-parameterTarget _           = Nothing
+parameterTarget "Auro-156K"        = Just 156000
+parameterTarget "Auro-250M"        = Just 250000000
+parameterTarget "Auro-500M"        = Just 500000000
+parameterTarget "Auro-500M-SENSUS" = Just 500000000
+parameterTarget "Auro-500M-PRAXIS" = Just 500000000
+parameterTarget "Auro-500M-VERBUM" = Just 500000000
+parameterTarget "Auro-2B"          = Just 2000000000
+parameterTarget "Auro-4B"          = Just 4000000000
+parameterTarget "Auro-8B"          = Just 8000000000
+parameterTarget "Auro-14B"         = Just 14000000000
+parameterTarget "Auro-100B"        = Just 100000000000
+parameterTarget _                   = Nothing
 
 familyModelIds :: [String]
-familyModelIds = ["Auro-2B", "Auro-4B", "Auro-8B", "Auro-14B", "Auro-100B"]
-
--- ---------------------------------------------------------------------------
--- Roles
--- ---------------------------------------------------------------------------
+familyModelIds = ["Auro-156K", "Auro-250M", "Auro-500M", "Auro-2B", "Auro-4B", "Auro-8B", "Auro-14B", "Auro-100B"]
 
 data SubAgentRole
-  = -- Edge
-    Router | ToolCall | EmbedFast | SpectralTriage
-  | -- Specialist
-    CodeEdit | SpectralMatch | JsonStruct | ToolPlan
-  | -- General
-    Reason | Plan | Critique | SpectralExplain
-  | -- Orchestrator
-    OrchestratorRole | CouncilChair | InstructDev | MultiAgentRouter
-  | -- Frontier
-    FrontierResearch | LongHorizon | SafetyReview | DeepCouncil
+  = RoutingSeed | Classifier | JsonRepair | ToolSelection | StyleGuard
+  | IntentExtract | RetrievalFilter | StructuredTransform | CodeTriage | MemoryConsolidation | SemanticOutline
+  | ToolExecutionPlan | CodePatch | EvidenceReview | LocalWorker | ExpertConsensus | TextExpansion | CreativeBranch
+  | Router | ToolCall | EmbedFast | SpectralTriage
+  | CodeEdit | SpectralMatch | JsonStruct | ToolPlan
+  | Reason | Plan | Critique | SpectralExplain
+  | OrchestratorRole | CouncilChair | InstructDev | MultiAgentRouter
+  | FrontierResearch | LongHorizon | SafetyReview | DeepCouncil
   deriving (Eq, Ord, Show, Read, Generic, Enum, Bounded)
 
 roleDefaultTier :: SubAgentRole -> ModelTier
+roleDefaultTier role
+  | role `elem` atomicRoles = Atomic
 roleDefaultTier Router           = Edge
 roleDefaultTier ToolCall         = Edge
 roleDefaultTier EmbedFast        = Edge
@@ -134,9 +125,19 @@ roleDefaultTier LongHorizon      = Frontier
 roleDefaultTier SafetyReview     = Frontier
 roleDefaultTier DeepCouncil      = Frontier
 
--- ---------------------------------------------------------------------------
--- Specs (unique record field names across the module)
--- ---------------------------------------------------------------------------
+atomicRoles :: [SubAgentRole]
+atomicRoles =
+  [ RoutingSeed, Classifier, JsonRepair, ToolSelection, StyleGuard
+  , IntentExtract, RetrievalFilter, StructuredTransform, CodeTriage, MemoryConsolidation, SemanticOutline
+  , ToolExecutionPlan, CodePatch, EvidenceReview, LocalWorker, ExpertConsensus, TextExpansion, CreativeBranch
+  ]
+
+rolePreferredModel :: SubAgentRole -> Maybe String
+rolePreferredModel role
+  | role `elem` [RoutingSeed, Classifier, JsonRepair, ToolSelection, StyleGuard] = Just "Auro-156K"
+  | role `elem` [IntentExtract, RetrievalFilter, StructuredTransform, CodeTriage, MemoryConsolidation, SemanticOutline] = Just "Auro-250M"
+  | role `elem` [ToolExecutionPlan, CodePatch, EvidenceReview, LocalWorker, ExpertConsensus, TextExpansion, CreativeBranch] = Just "Auro-500M"
+  | otherwise = Nothing
 
 data ArchitectureSpec = ArchitectureSpec
   { archHiddenSize                :: !Int
@@ -177,47 +178,42 @@ data SubAgentDispatch = SubAgentDispatch
   , dispatchError          :: !(Maybe String)
   } deriving (Eq, Show, Generic)
 
--- ---------------------------------------------------------------------------
--- Multi-embedded hosting rules
--- ---------------------------------------------------------------------------
-
 canHost :: ModelTier -> ModelTier -> Bool
 canHost parent child = tierRank parent > tierRank child
 
+canHostModels :: String -> String -> Bool
+canHostModels parent child =
+  case (parameterTarget parent, parameterTarget child) of
+    (Just p, Just c) -> p > c
+    _                -> False
+
 resolveChildModelId :: String -> SubAgentRole -> Either String String
 resolveChildModelId parentModelId role =
-  case tierForModelId parentModelId of
-    Nothing -> Left $ "unknown parent model_id: " ++ parentModelId
-    Just parentTier ->
-      let preferred = roleDefaultTier role
-          ordered   = sortOn tierRank [minBound .. maxBound :: ModelTier]
-          candidates =
-            [ t
-            | t <- ordered
-            , tierRank t >= tierRank preferred
-            , canHost parentTier t
-            ]
-      in case candidates of
-           (t:_) -> Right (modelIdForTier t)
-           []    ->
-             if roleDefaultTier role == parentTier
-               then Right parentModelId
-               else Left $ "no embeddable lane for role under parent=" ++ parentModelId
-
--- ---------------------------------------------------------------------------
--- Builtin family table
--- ---------------------------------------------------------------------------
+  case rolePreferredModel role of
+    Just child -> if canHostModels parentModelId child
+                    then Right child
+                    else Left $ "parent=" ++ parentModelId ++ " cannot host child=" ++ child
+    Nothing ->
+      case tierForModelId parentModelId of
+        Nothing -> Left $ "unknown parent model_id: " ++ parentModelId
+        Just parentTier ->
+          let preferred = roleDefaultTier role
+              ordered = sortOn tierRank [minBound .. maxBound :: ModelTier]
+              candidates = [modelIdForTier t | t <- ordered, tierRank t >= tierRank preferred, canHostModels parentModelId (modelIdForTier t)]
+          in case candidates of
+               (child:_) -> Right child
+               [] -> case find ((== parentModelId) . laneModelId) builtinLanes of
+                       Just lane | role `elem` laneRoles lane -> Right parentModelId
+                       _ -> Left $ "no embeddable lane for role under parent=" ++ parentModelId
 
 builtinLanes :: [ModelLane]
 builtinLanes =
-  [ ModelLane "Auro-2B"   2000000000   Edge         False []
-      [Router, ToolCall, EmbedFast, SpectralTriage]
-  , ModelLane "Auro-4B"   4000000000   Specialist   True  [Edge]
-      [CodeEdit, SpectralMatch, JsonStruct, ToolPlan]
-  , ModelLane "Auro-8B"   8000000000   General      True  [Edge, Specialist]
-      [Reason, Plan, Critique, SpectralExplain]
-  , ModelLane "Auro-14B"  14000000000  Orchestrator True  [Edge, Specialist, General]
-      [OrchestratorRole, CouncilChair, InstructDev, MultiAgentRouter]
-  , ModelLane "Auro-100B" 100000000000 Frontier     True  [Edge, Specialist, General, Orchestrator]
-      [FrontierResearch, LongHorizon, SafetyReview, DeepCouncil]
+  [ ModelLane "Auro-156K" 156000 Atomic False [] [RoutingSeed, Classifier, JsonRepair, ToolSelection, StyleGuard]
+  , ModelLane "Auro-250M" 250000000 Atomic True [Atomic] [IntentExtract, RetrievalFilter, StructuredTransform, CodeTriage, MemoryConsolidation, SemanticOutline]
+  , ModelLane "Auro-500M" 500000000 Atomic True [Atomic] [ToolExecutionPlan, CodePatch, EvidenceReview, LocalWorker, ExpertConsensus, TextExpansion, CreativeBranch]
+  , ModelLane "Auro-2B" 2000000000 Edge True [Atomic] [Router, ToolCall, EmbedFast, SpectralTriage]
+  , ModelLane "Auro-4B" 4000000000 Specialist True [Atomic, Edge] [CodeEdit, SpectralMatch, JsonStruct, ToolPlan]
+  , ModelLane "Auro-8B" 8000000000 General True [Atomic, Edge, Specialist] [Reason, Plan, Critique, SpectralExplain]
+  , ModelLane "Auro-14B" 14000000000 Orchestrator True [Atomic, Edge, Specialist, General] [OrchestratorRole, CouncilChair, InstructDev, MultiAgentRouter]
+  , ModelLane "Auro-100B" 100000000000 Frontier True [Atomic, Edge, Specialist, General, Orchestrator] [FrontierResearch, LongHorizon, SafetyReview, DeepCouncil]
   ]
