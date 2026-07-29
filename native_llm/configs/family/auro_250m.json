@@ -1,0 +1,33 @@
+{
+  "schema": "auro.native_llm.model_config.v2",
+  "model_id": "Auro-250M",
+  "family_id": "Auro",
+  "status": "architecture-target-not-trained-checkpoint",
+  "parameter_target": 250000000,
+  "tier": "atomic",
+  "architecture": {
+    "family": "decoder-only-transformer-moe",
+    "objective": "causal-language-modeling",
+    "hidden_size": 768,
+    "layers": 18,
+    "attention_heads": 12,
+    "kv_heads": 4,
+    "intermediate_size": 2560,
+    "activation": "swiglu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 4096,
+    "vocab_size_target": 64000,
+    "experts": 8,
+    "top_k": 2,
+    "moe_every": 2,
+    "active_parameters_per_token_estimate": 236799744,
+    "stored_parameters_estimate": 555304704
+  },
+  "subagent_roles": ["intent_extract", "retrieval_filter", "structured_transform", "code_triage", "memory_consolidation", "semantic_outline"],
+  "can_embed_subagents": true,
+  "embeddable_tiers": ["atomic"],
+  "deploy_profiles": ["phone", "browser-wasm", "cpu", "embedded-expert"],
+  "purpose": "mobile expert, retrieval and transformation worker, and child of 500M or 2B parents",
+  "required_receipts": ["weights", "tokenizer", "training", "evaluation", "mobile_serving", "promotion"]
+}
