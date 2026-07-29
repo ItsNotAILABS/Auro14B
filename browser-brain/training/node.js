@@ -4,7 +4,7 @@ const params=new URLSearchParams(location.search);
 const coordinator=(params.get('coordinator')||'http://127.0.0.1:8765').replace(/\/$/,'');
 const token=params.get('token')||'';
 const workerId=params.get('worker_id')||`browser-${crypto.randomUUID()}`;
-let stopped=false,device=null,adapter=null,jobs=0;
+let stopped=true,running=false,device=null,adapter=null,jobs=0;
 
 function decode64(value){const raw=atob(value),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);return new Float32Array(bytes.buffer)}
 function encode64(values){const bytes=new Uint8Array(values.buffer,values.byteOffset,values.byteLength);let out='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)out+=String.fromCharCode(...bytes.subarray(i,Math.min(bytes.length,i+chunk)));return btoa(out)}
@@ -29,8 +29,12 @@ fn main(@builtin(local_invocation_id) lid:vec3<u32>,@builtin(workgroup_id) wid:v
   let aCol=t*8u+lid.x;
   let bRow=t*8u+lid.y;
   let idx=lid.y*8u+lid.x;
-  tileA[idx]=select(0.0,A[row*dims.k+aCol],row<dims.m&&aCol<dims.k);
-  tileB[idx]=select(0.0,B[bRow*dims.n+col],bRow<dims.k&&col<dims.n);
+  var av=0.0;
+  var bv=0.0;
+  if(row<dims.m&&aCol<dims.k){av=A[row*dims.k+aCol];}
+  if(bRow<dims.k&&col<dims.n){bv=B[bRow*dims.n+col];}
+  tileA[idx]=av;
+  tileB[idx]=bv;
   workgroupBarrier();
   for(var p=0u;p<8u;p=p+1u){sum=sum+tileA[lid.y*8u+p]*tileB[p*8u+lid.x];}
   workgroupBarrier();
@@ -49,16 +53,19 @@ async function ensureDevice(){
  return device;
 }
 
-function storageBuffer(dev,data,usage=GPUBufferUsage.STORAGE){const b=dev.createBuffer({size:Math.max(4,(data.byteLength+3)&~3),usage:usage|GPUBufferUsage.COPY_DST});dev.queue.writeBuffer(b,0,data);return b}
+function storageBuffer(dev,data,usage=GPUBufferUsage.STORAGE){const buffer=dev.createBuffer({size:Math.max(4,(data.byteLength+3)&~3),usage:usage|GPUBufferUsage.COPY_DST});dev.queue.writeBuffer(buffer,0,data);return buffer}
 async function matmul(a,b,m,k,n){
  const dev=await ensureDevice(),start=performance.now();
  const module=dev.createShaderModule({code:shader});
+ const compilation=await module.getCompilationInfo();
+ const errors=compilation.messages.filter(message=>message.type==='error');
+ if(errors.length)throw new Error(`WGSL compilation failed: ${errors.map(item=>item.message).join('; ')}`);
  const pipeline=dev.createComputePipeline({layout:'auto',compute:{module,entryPoint:'main'}});
  const aBuffer=storageBuffer(dev,a),bBuffer=storageBuffer(dev,b);
  const cBytes=m*n*4,cBuffer=dev.createBuffer({size:Math.max(4,cBytes),usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_SRC});
  const dimsBuffer=dev.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
  dev.queue.writeBuffer(dimsBuffer,0,new Uint32Array([m,k,n,0]));
- const bind=pipeline.getBindGroupLayout(0),group=dev.createBindGroup({layout:bind,entries:[
+ const group=dev.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[
   {binding:0,resource:{buffer:aBuffer}},{binding:1,resource:{buffer:bBuffer}},{binding:2,resource:{buffer:cBuffer}},{binding:3,resource:{buffer:dimsBuffer}}
  ]});
  const read=dev.createBuffer({size:Math.max(4,cBytes),usage:GPUBufferUsage.COPY_DST|GPUBufferUsage.MAP_READ});
@@ -71,19 +78,27 @@ async function matmul(a,b,m,k,n){
 async function pull(){
  const capabilities=encodeURIComponent(JSON.stringify({webgpu:true,wasm:typeof WebAssembly!=='undefined',hardwareConcurrency:navigator.hardwareConcurrency||1}));
  const response=await fetch(`${coordinator}/job?worker_id=${encodeURIComponent(workerId)}&wait=15&capabilities=${capabilities}`,{headers:headers()});
- if(!response.ok)throw new Error(`job poll ${response.status}`);return (await response.json()).job;
+ if(!response.ok)throw new Error(`job poll ${response.status}: ${await response.text()}`);return (await response.json()).job;
 }
 async function submit(job,result,error=null){
  const body={job_id:job.job_id,worker_id:workerId,backend:'browser-webgpu',elapsed_ms:result?.elapsedMs||0,error,result:result?{shape:job.output_shape,base64:encode64(result.out)}:undefined};
  const response=await fetch(`${coordinator}/result`,{method:'POST',headers:headers(),body:JSON.stringify(body)});if(!response.ok)throw new Error(`result submit ${response.status}: ${await response.text()}`);return response.json();
 }
 async function loop(){
- stopped=false;$('#state').textContent='working';
+ if(running)return;running=true;stopped=false;$('#state').textContent='working';
  while(!stopped){
-  try{const job=await pull();if(!job)continue;const a=decode64(job.a.base64),b=decode64(job.b.base64);const [m,k]=job.a.shape,[bk,n]=job.b.shape;if(k!==bk)throw new Error('shape mismatch');const result=await matmul(a,b,m,k,n);await submit(job,result);jobs++;$('#jobs').textContent=String(jobs);log(`${job.job_id} ${m}x${k} @ ${k}x${n} in ${result.elapsedMs.toFixed(2)} ms`)}
-  catch(error){log(error.message);await new Promise(resolve=>setTimeout(resolve,1000))}
+  let job=null;
+  try{
+   job=await pull();if(!job)continue;
+   const a=decode64(job.a.base64),b=decode64(job.b.base64);const [m,k]=job.a.shape,[bk,n]=job.b.shape;if(k!==bk)throw new Error('shape mismatch');
+   const result=await matmul(a,b,m,k,n);await submit(job,result);jobs++;$('#jobs').textContent=String(jobs);log(`${job.job_id} ${m}x${k} @ ${k}x${n} in ${result.elapsedMs.toFixed(2)} ms`);
+  }catch(error){
+   log(error.message);
+   if(job)try{await submit(job,null,error.message)}catch(reportError){log(`failure receipt error: ${reportError.message}`)}
+   await new Promise(resolve=>setTimeout(resolve,1000));
+  }
  }
- $('#state').textContent='stopped';
+ running=false;$('#state').textContent='stopped';
 }
 async function benchmark(){const size=Number($('#size').value)||256,a=new Float32Array(size*size),b=new Float32Array(size*size);for(let i=0;i<a.length;i++){a[i]=Math.sin(i*.01);b[i]=Math.cos(i*.013)}const result=await matmul(a,b,size,size,size),gflops=(2*size*size*size)/(result.elapsedMs*1e6);$('#benchmark').textContent=`${size}²: ${result.elapsedMs.toFixed(2)} ms · ${gflops.toFixed(2)} GFLOP/s`;log($('#benchmark').textContent)}
-$('#start').onclick=()=>loop();$('#stop').onclick=()=>{stopped=true};$('#bench').onclick=()=>benchmark().catch(e=>log(e.message));$('#worker').textContent=workerId;ensureDevice().then(()=>{$('#state').textContent='ready'}).catch(e=>{$('#state').textContent='blocked';log(e.message)});
+$('#start').onclick=()=>loop();$('#stop').onclick=()=>{stopped=true};$('#bench').onclick=()=>benchmark().catch(error=>log(error.message));$('#worker').textContent=workerId;ensureDevice().then(()=>{$('#state').textContent='ready'}).catch(error=>{$('#state').textContent='blocked';log(error.message)});
