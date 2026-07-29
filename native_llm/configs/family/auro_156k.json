@@ -1,0 +1,29 @@
+{
+  "schema": "auro.native_llm.model_config.v2",
+  "model_id": "Auro-156K",
+  "family_id": "Auro",
+  "status": "reference-architecture-checkpoint-lane",
+  "parameter_target": 156000,
+  "tier": "atomic",
+  "architecture": {
+    "family": "decoder-only-transformer",
+    "objective": "causal-language-modeling",
+    "hidden_size": 64,
+    "layers": 2,
+    "attention_heads": 4,
+    "kv_heads": 2,
+    "intermediate_size": 64,
+    "activation": "silu",
+    "normalization": "rmsnorm",
+    "position_encoding": "rope",
+    "context_window_tokens_target": 1024,
+    "vocab_size_target": 1024,
+    "experts": 8,
+    "top_k": 2
+  },
+  "subagent_roles": ["routing_seed", "classifier", "json_repair", "tool_selection", "style_guard"],
+  "can_embed_subagents": false,
+  "deploy_profiles": ["wasm", "embedded", "high-multiplicity-swarm"],
+  "purpose": "ultralight routing, classification, repair and control cells",
+  "required_receipts": ["weights", "tokenizer", "training", "evaluation", "serving", "promotion"]
+}
