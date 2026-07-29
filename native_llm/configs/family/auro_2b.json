@@ -1,5 +1,5 @@
 {
-  "schema": "auro.native_llm.model_config.v1",
+  "schema": "auro.native_llm.model_config.v2",
   "model_id": "Auro-2B",
   "family_id": "Auro",
   "status": "development-target-not-trained-checkpoint",
@@ -20,7 +20,14 @@
     "vocab_size_target": 128000
   },
   "subagent_roles": ["router", "tool_call", "embed_fast", "spectral_triage"],
-  "can_embed_subagents": false,
-  "purpose": "edge and on-device sub-agent lane — fast routing, tool calls, spectral triage",
-  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving"]
+  "can_embed_subagents": true,
+  "embeddable_tiers": ["atomic"],
+  "embedded_triad": {
+    "required_members": ["Auro-500M-SENSUS", "Auro-500M-PRAXIS", "Auro-500M-VERBUM"],
+    "dynamic_children": ["Auro-250M", "Auro-156K"],
+    "flow": "MESIE ingress -> topic capsules -> atomic swarms -> 500M specialist synthesis -> three-way consensus -> 2B synthesis -> Python/WASM fluidizer -> MESIE egress",
+    "checkpoint_boundary": "each member must identify its own checkpoint or specialization adapter; agent instances are never summed into the 2B parameter count"
+  },
+  "purpose": "edge parent model, private assistant, tool router and supervisor of the three-500M specialist triad",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving", "triad_identity", "promotion"]
 }
