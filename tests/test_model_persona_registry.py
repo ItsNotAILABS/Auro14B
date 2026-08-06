@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from auro_native_llm.model.registry import MODEL_BY_ID, MODELS, model_manifest
 from auro_native_llm.production_fleet.capabilities import BUILTINS
 from auro_native_llm.production_fleet.personas import PERSONAS, get_persona, persona_manifest
+
+DOC = Path("docs/MODELS_PERSONAS_AND_FEATURES.md")
 
 
 def test_model_registry_is_unique_and_complete():
@@ -51,3 +55,14 @@ def test_registry_manifests_are_serializable_and_truthful():
     assert get_persona("browser_brain").execution_mode == "server-approved-only"
     assert MODEL_BY_ID["HIM-native-v0"].checkpoint_status == "fixture-only"
     assert "not assistant quality" in MODEL_BY_ID["HIM-native-v0"].claim_boundary
+
+
+def test_documentation_covers_every_model_and_persona():
+    text = DOC.read_text(encoding="utf-8")
+    for model in MODELS:
+        assert model.id in text
+    for persona in PERSONAS:
+        assert persona.name in text
+    assert "server-authoritative" in text
+    assert "untrusted evidence" in text
+    assert "architecture targets" in text
