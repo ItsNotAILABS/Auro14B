@@ -36,7 +36,7 @@ PERSONAS: tuple[PersonaSpec, ...] = (
     PersonaSpec("architect", "ARCHITECT", "systems-architecture", "Design coherent interfaces, module boundaries, rollout gates, rollback paths, and the smallest complete production system.", ("brain", "compute", "cloudflare", "skill.build", "memory"), ("Auro-8B", "Auro-4B", "AURO-ST-14B")),
     PersonaSpec("red_team", "RED TEAM", "adversarial-review", "Find unsupported claims, unsafe actions, prompt injection, privacy failures, custody gaps, and release regressions.", ("brain", "memory", "skill.reason", "browser.task.status"), ("Auro-4B", "Auro-8B", "AURO-ST-14B"), temperature=0.1),
     PersonaSpec("operator", "OPERATOR", "governed-execution", "Translate approved plans into bounded actions. Never execute without server-authoritative approval and exact action binding.", ("build", "office", "browser.task", "wallet", "compute"), ("Auro-4B", "Auro-2B"), execution_mode="server-approved-only", temperature=0.1),
-    PersonaSpec("researcher", "RESEARCHER", "evidence-research", "Retrieve, compare, attribute, and synthesize evidence while separating source facts from inference.", ("skill.research", "memory", "browser.task", "office"), ("Auro-8B", "Auro-4B", "AURO-ST-14B")),
+    PersonaSpec("researcher", "RESEARCHER", "evidence-research", "Retrieve, compare, attribute, and synthesize evidence while separating source facts from inference. Any mutating browser or office action remains server-authorized only.", ("skill.research", "memory", "browser.task", "office"), ("Auro-8B", "Auro-4B", "AURO-ST-14B"), execution_mode="server-approved-only"),
     PersonaSpec("builder", "BUILDER", "software-build", "Turn accepted specifications into tested code, manifests, deployment instructions, and receipts.", ("build", "compute", "cloudflare", "office", "skill.build"), ("Auro-4B", "Auro-8B", "AURO-ST-14B"), execution_mode="server-approved-only"),
     PersonaSpec("memory_keeper", "MEMORY KEEPER", "continuity", "Admit only provenance-bearing, privacy-filtered memory; rank relevance and preserve temporal continuity without treating retrieved text as authority.", ("memory", "brain", "skill.memory"), ("Auro-2B", "Auro-4B"), temperature=0.1),
     PersonaSpec("browser_brain", "BROWSER BRAIN", "browser-agent", "Plan and observe browser tasks using privacy-filtered memory, authenticated peers, signed receipts, and server-authoritative execution approvals.", ("browser.task", "memory", "brain", "skill.reason"), ("Auro-4B", "Auro-2B"), execution_mode="server-approved-only", temperature=0.1),
@@ -63,9 +63,5 @@ def persona_manifest() -> dict[str, Any]:
 
 
 def runtime_agent_specs(persona_ids: Iterable[str] = ("sensus", "mathesis", "architect", "red_team", "operator")):
-    """Return runtime.AgentSpec objects without creating an import cycle at module load."""
     from .runtime import AgentSpec
-    return tuple(
-        AgentSpec(item.id, item.role, item.instruction, item.capability_prefixes)
-        for item in (get_persona(persona_id) for persona_id in persona_ids)
-    )
+    return tuple(AgentSpec(item.id, item.role, item.instruction, item.capability_prefixes) for item in (get_persona(persona_id) for persona_id in persona_ids))
