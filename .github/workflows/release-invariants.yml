@@ -1,0 +1,117 @@
+name: AURO Release Invariants
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-invariants:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install focused Python dependencies
+        run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile and import canonical runtime before any feature test
+        run: |
+          python -m py_compile \
+            auro_native_llm/production_fleet/runtime.py \
+            auro_native_llm/production_fleet/model_orchestrator.py \
+            auro_native_llm/production_fleet/organ_sdk.py \
+            auro_native_llm/production_fleet/personas.py \
+            auro_native_llm/production_fleet/persona_runtime.py \
+            auro_native_llm/model/registry.py \
+            auro_native_llm/model/__init__.py \
+            auro_native_llm/open_weights.py \
+            scripts/train_open_him.py
+          PYTHONPATH=. python - <<'PY'
+          import ast
+          from pathlib import Path
+          import auro_native_llm.production_fleet.runtime as runtime
+          from auro_native_llm.production_fleet import PersonaRuntime, persona_manifest
+          from auro_native_llm.model import model_manifest
+          source=Path('auro_native_llm/production_fleet/runtime.py').read_text()
+          tree=ast.parse(source)
+          defs=[n for n in ast.walk(tree) if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef))]
+          assert sum(n.name=='_agent_prompt' for n in defs)==1
+          assert source.count('brain_cycle = self.capabilities.brain.cycle')==1
+          assert source.count('council = self.agents.run')==1
+          assert runtime.NovaRuntime is not None
+          assert PersonaRuntime is not None
+          assert persona_manifest()['personas']
+          assert model_manifest()['models']
+          PY
+      - name: Test checkpoint trainer loader routing approval and registry invariants
+        run: |
+          PYTHONPATH=. pytest -q \
+            tests/test_release_invariants.py \
+            tests/test_open_weights.py \
+            tests/test_model_persona_registry.py \
+            tests/test_persona_routing_and_approval.py
+      - name: Test Browser-Brain privacy admission server approval and signed mesh receipts
+        run: node --test browser-brain/security.test.mjs
+      - name: Enforce claim and authority boundaries
+        run: |
+          grep -q 'pipeline-fixture-only' auro_native_llm/open_weights.py
+          grep -q 'assistant_quality_proven.*False' auro_native_llm/open_weights.py
+          grep -q 'server_verified' auro_native_llm/production_fleet/runtime.py
+          grep -q 'approval_authority.*server' auro_native_llm/production_fleet/organ_sdk.py
+          grep -q 'unencrypted browser memory rejected' browser-brain/security.mjs
+          grep -q 'personas share model checkpoints' auro_native_llm/production_fleet/personas.py
+          grep -q 'Architecture target' docs/MODELS_PERSONAS_AND_FEATURES.md
+      - name: Emit release invariant receipt
+        run: |
+          mkdir -p evidence
+          python - <<'PY'
+          import hashlib,json,pathlib
+          paths=[
+            'auro_native_llm/production_fleet/runtime.py',
+            'auro_native_llm/production_fleet/model_orchestrator.py',
+            'auro_native_llm/production_fleet/organ_sdk.py',
+            'auro_native_llm/production_fleet/personas.py',
+            'auro_native_llm/production_fleet/persona_runtime.py',
+            'auro_native_llm/model/registry.py',
+            'auro_native_llm/model/__init__.py',
+            'auro_native_llm/open_weights.py',
+            'scripts/train_open_him.py',
+            'browser-brain/security.mjs',
+            'docs/MODELS_PERSONAS_AND_FEATURES.md',
+            '.github/workflows/release-invariants.yml',
+          ]
+          payload={
+            'schema':'auro.release-invariants.v3',
+            'canonical_runtime_compile_import':True,
+            'checkpoint_rehash_required':True,
+            'trainer_loader_roundtrip_contract':True,
+            'corpus_commit_runner_environment_bound':True,
+            'signed_checkpoint_serving_key_wired':True,
+            'browser_memory_privacy_admission':True,
+            'server_authoritative_execution':True,
+            'signed_action_set_membership':True,
+            'signed_peer_task_receipts':True,
+            'model_registry_wired':True,
+            'persona_registry_wired':True,
+            'persona_model_preferences_affect_routing':True,
+            'documentation_registry_consistent':True,
+            'offline_chrome_full_e2e_verified':False,
+            'files':{p:hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest() for p in paths},
+          }
+          payload['receipt_sha256']=hashlib.sha256(json.dumps(payload,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+          pathlib.Path('evidence/release-invariants.json').write_text(json.dumps(payload,indent=2,sort_keys=True)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-invariants-${{ github.sha }}
+          path: evidence/release-invariants.json
+          if-no-files-found: error
