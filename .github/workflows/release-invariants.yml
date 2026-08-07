@@ -27,11 +27,14 @@ jobs:
         run: |
           python -m py_compile \
             auro_native_llm/production_fleet/runtime.py \
+            auro_native_llm/production_fleet/model_orchestrator.py \
+            auro_native_llm/production_fleet/organ_sdk.py \
             auro_native_llm/production_fleet/personas.py \
             auro_native_llm/production_fleet/persona_runtime.py \
             auro_native_llm/model/registry.py \
             auro_native_llm/model/__init__.py \
-            auro_native_llm/open_weights.py
+            auro_native_llm/open_weights.py \
+            scripts/train_open_him.py
           PYTHONPATH=. python - <<'PY'
           import ast
           from pathlib import Path
@@ -49,17 +52,21 @@ jobs:
           assert persona_manifest()['personas']
           assert model_manifest()['models']
           PY
-      - name: Test checkpoint rehash and immutable training provenance
-        run: PYTHONPATH=. pytest -q tests/test_release_invariants.py
-      - name: Test model persona capability and documentation wiring
-        run: PYTHONPATH=. pytest -q tests/test_model_persona_registry.py
+      - name: Test checkpoint trainer loader routing approval and registry invariants
+        run: |
+          PYTHONPATH=. pytest -q \
+            tests/test_release_invariants.py \
+            tests/test_open_weights.py \
+            tests/test_model_persona_registry.py \
+            tests/test_persona_routing_and_approval.py
       - name: Test Browser-Brain privacy admission server approval and signed mesh receipts
         run: node --test browser-brain/security.test.mjs
-      - name: Enforce claim boundary
+      - name: Enforce claim and authority boundaries
         run: |
           grep -q 'pipeline-fixture-only' auro_native_llm/open_weights.py
           grep -q 'assistant_quality_proven.*False' auro_native_llm/open_weights.py
           grep -q 'server_verified' auro_native_llm/production_fleet/runtime.py
+          grep -q 'approval_authority.*server' auro_native_llm/production_fleet/organ_sdk.py
           grep -q 'unencrypted browser memory rejected' browser-brain/security.mjs
           grep -q 'personas share model checkpoints' auro_native_llm/production_fleet/personas.py
           grep -q 'Architecture target' docs/MODELS_PERSONAS_AND_FEATURES.md
@@ -70,25 +77,32 @@ jobs:
           import hashlib,json,pathlib
           paths=[
             'auro_native_llm/production_fleet/runtime.py',
+            'auro_native_llm/production_fleet/model_orchestrator.py',
+            'auro_native_llm/production_fleet/organ_sdk.py',
             'auro_native_llm/production_fleet/personas.py',
             'auro_native_llm/production_fleet/persona_runtime.py',
             'auro_native_llm/model/registry.py',
             'auro_native_llm/model/__init__.py',
             'auro_native_llm/open_weights.py',
+            'scripts/train_open_him.py',
             'browser-brain/security.mjs',
             'docs/MODELS_PERSONAS_AND_FEATURES.md',
             '.github/workflows/release-invariants.yml',
           ]
           payload={
-            'schema':'auro.release-invariants.v2',
+            'schema':'auro.release-invariants.v3',
             'canonical_runtime_compile_import':True,
             'checkpoint_rehash_required':True,
+            'trainer_loader_roundtrip_contract':True,
             'corpus_commit_runner_environment_bound':True,
+            'signed_checkpoint_serving_key_wired':True,
             'browser_memory_privacy_admission':True,
             'server_authoritative_execution':True,
+            'signed_action_set_membership':True,
             'signed_peer_task_receipts':True,
             'model_registry_wired':True,
             'persona_registry_wired':True,
+            'persona_model_preferences_affect_routing':True,
             'documentation_registry_consistent':True,
             'offline_chrome_full_e2e_verified':False,
             'files':{p:hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest() for p in paths},
