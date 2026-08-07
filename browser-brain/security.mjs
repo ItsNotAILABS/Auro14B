@@ -14,6 +14,11 @@ export function hmac(value, key) {
   return crypto.createHmac('sha256', key).update(canonical(value)).digest('hex');
 }
 
+function safeEqualHex(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || !/^[0-9a-f]{64}$/i.test(a) || !/^[0-9a-f]{64}$/i.test(b)) return false;
+  return crypto.timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'));
+}
+
 const SECRET_PATTERNS = [
   /\b(?:sk|pk|api)[-_][A-Za-z0-9_-]{16,}\b/g,
   /\bBearer\s+[A-Za-z0-9._~+/=-]{12,}\b/gi,
@@ -34,7 +39,9 @@ export function admitMemory(record, { allowedOrigins = [], encryption = 'require
   if (!origin || (allowedOrigins.length && !allowedOrigins.includes(origin))) throw new Error('untrusted provenance origin');
   if (!record.sourceUrl || !record.fetchedAt || !record.contentSha256) throw new Error('memory provenance incomplete');
   if (encryption === 'required' && record.encrypted !== true) throw new Error('unencrypted browser memory rejected');
-  let text = String(record.text || '');
+  const originalText = String(record.text || '');
+  if (!safeEqualHex(String(record.contentSha256), sha256(originalText))) throw new Error('memory content digest mismatch');
+  let text = originalText;
   const redactions = [];
   for (const pattern of SECRET_PATTERNS) text = text.replace(pattern, match => { redactions.push(sha256(match)); return '[REDACTED]'; });
   const injectionSignals = INJECTION_PATTERNS.filter(pattern => pattern.test(text)).map(pattern => pattern.source);
@@ -52,23 +59,15 @@ export function verifyServerApproval(grant, action, key, now = Date.now()) {
   const unsigned = { ...grant };
   const signature = unsigned.signature;
   delete unsigned.signature;
-  if (!signature || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(hmac(unsigned, key)))) return false;
-  if (unsigned.expiresAt <= now || unsigned.notBefore > now) return false;
-  if (unsigned.actionSha256 !== sha256(action)) return false;
-  if (!unsigned.approvalId || !unsigned.subject || unsigned.authority !== 'server') return false;
-  return true;
+  if (!safeEqualHex(signature, hmac(unsigned, key))) return false;
+  if (Number(unsigned.expiresAt) <= now || Number(unsigned.notBefore) > now) return false;
+  if (!safeEqualHex(String(unsigned.actionSha256 || ''), sha256(action))) return false;
+  return Boolean(unsigned.approvalId && unsigned.subject && unsigned.authority === 'server');
 }
 
 export function signTaskReceipt(task, { peerId, leaseId, previousSha256 = null, key, now = Date.now() }) {
   if (!peerId || !leaseId || !key) throw new Error('authenticated peer, durable lease, and key required');
-  const receipt = {
-    schema: 'auro.browser.mesh.task.v1',
-    taskSha256: sha256(task),
-    peerId,
-    leaseId,
-    previousSha256,
-    createdAt: now,
-  };
+  const receipt = { schema: 'auro.browser.mesh.task.v1', taskSha256: sha256(task), peerId, leaseId, previousSha256, createdAt: now };
   receipt.receiptSha256 = sha256(receipt);
   receipt.signature = hmac(receipt, key);
   return receipt;
@@ -79,9 +78,9 @@ export function verifyTaskReceipt(receipt, key) {
   const signature = receipt.signature;
   const unsigned = { ...receipt };
   delete unsigned.signature;
-  if (unsigned.receiptSha256 !== sha256({ ...unsigned, receiptSha256: undefined })) {
-    const probe = { ...unsigned }; delete probe.receiptSha256;
-    if (unsigned.receiptSha256 !== sha256(probe)) return false;
-  }
-  return Boolean(signature && crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(hmac(unsigned, key))));
+  const receiptSha256 = unsigned.receiptSha256;
+  delete unsigned.receiptSha256;
+  if (!safeEqualHex(receiptSha256, sha256(unsigned))) return false;
+  const signedBody = { ...unsigned, receiptSha256 };
+  return safeEqualHex(signature, hmac(signedBody, key));
 }
