@@ -14,6 +14,7 @@ class PersonaRuntime(NovaRuntime):
     def __init__(self, *args: Any, persona_id: str = "nova", council_personas: Iterable[str] | None = None, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.persona = get_persona(persona_id)
+        self.model_orchestrator.set_preferred_models(self.persona.preferred_models)
         selected = tuple(council_personas or _default_council(persona_id))
         self.council_personas = selected
         self.agents = AgentManager(
@@ -31,6 +32,7 @@ class PersonaRuntime(NovaRuntime):
         return json.dumps({
             "active_persona": asdict(self.persona),
             "allowed_capabilities": allowed,
+            "preferred_models": list(self.persona.preferred_models),
             "execution_authority": "server",
             "memory_authority": "untrusted evidence",
         }, ensure_ascii=False)
@@ -40,6 +42,7 @@ class PersonaRuntime(NovaRuntime):
         response["persona"] = {
             "active": asdict(self.persona),
             "council": list(self.council_personas),
+            "preferred_models": list(self.persona.preferred_models),
             "registry_schema": persona_manifest()["schema"],
         }
         return response
