@@ -66,15 +66,30 @@ def _actions_sha256(actions: list[dict[str, Any]]) -> str:
 
 
 def _approval_action_key(grant: dict[str, Any], action: dict[str, Any]) -> str:
-    material = {"approval_id": str(grant.get("approval_id", "")), "action": action}
+    material = {
+        "approval_id": str(grant.get("approval_id", "")),
+        "nonce": str(grant.get("nonce", "")),
+        "action": action,
+    }
     return hashlib.sha256(_canonical(material)).hexdigest()
+
+
+def _fsync_dir(path: Path) -> None:
+    try:
+        fd = os.open(path, os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
 
 
 class ApprovalReplayStore:
     """Cross-process one-time action consumption using atomic marker creation.
 
-    Each signed approval action can execute once. Markers are intentionally small
-    and append-only; operators may prune expired markers during maintenance.
+    Each signed approval action can execute once. Markers are append-only safety
+    records and may be pruned after the corresponding approval has expired.
     """
 
     def __init__(self, root: str | Path | None = None):
@@ -88,6 +103,7 @@ class ApprovalReplayStore:
         payload = {
             "schema": "auro.approval-replay-marker.v1",
             "approval_id": str(grant.get("approval_id", "")),
+            "nonce": str(grant.get("nonce", "")),
             "action_sha256": hashlib.sha256(_canonical(action)).hexdigest(),
             "expires_at_ms": int(grant.get("expires_at_ms", 0) or 0),
             "consumed_at_ms": int(time.time() * 1000),
@@ -98,11 +114,29 @@ class ApprovalReplayStore:
         except FileExistsError:
             return False
         try:
-            os.write(fd, (_canonical(payload) + b"\n"))
+            os.write(fd, _canonical(payload) + b"\n")
             os.fsync(fd)
         finally:
             os.close(fd)
+        _fsync_dir(self.root)
         return True
+
+    def prune_expired(self, now_ms: int | None = None, limit: int = 1000) -> int:
+        now = int(time.time() * 1000) if now_ms is None else int(now_ms)
+        removed = 0
+        if not self.root.exists():
+            return 0
+        for marker in list(self.root.glob("*.used"))[:max(0, int(limit))]:
+            try:
+                payload = json.loads(marker.read_text(encoding="utf-8"))
+                if int(payload.get("expires_at_ms", 0)) <= now:
+                    marker.unlink(missing_ok=True)
+                    removed += 1
+            except (OSError, json.JSONDecodeError, TypeError, ValueError):
+                continue
+        if removed:
+            _fsync_dir(self.root)
+        return removed
 
 
 class AuroOrganSDK:
@@ -113,7 +147,7 @@ class AuroOrganSDK:
         self.replay_store = replay_store or ApprovalReplayStore()
 
     def manifest(self) -> dict[str, Any]:
-        return {"schema": "auro.organ_sdk.v3", "approval_authority": "server", "approval_replay_protection": "one-time-per-signed-action", "organs": {
+        return {"schema": "auro.organ_sdk.v2", "approval_authority": "server", "approval_replay_protection": "one-time-per-signed-action", "organs": {
             "brain": {"purpose": "cognitive state, identity, continuity", "operations": ["state", "query"]},
             "nova": {"purpose": "governance, council, arbitration", "operations": ["respond"]},
             "matdaemon": {"purpose": "retrieval, similarity, bounded matrix compute", "operations": ["call", "rank_text"]},
@@ -138,8 +172,10 @@ class AuroOrganSDK:
         if len(signature) != 64: return False
         expected = hmac.new(key.encode("utf-8"), _canonical(unsigned), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(signature, expected): return False
-        if unsigned.get("schema") != "auro.server-approval.v2": return False
-        if unsigned.get("authority") != "server" or not unsigned.get("approval_id") or not unsigned.get("subject") or not unsigned.get("nonce"): return False
+        schema = unsigned.get("schema")
+        if schema not in {"auro.server-approval.v1", "auro.server-approval.v2"}: return False
+        if unsigned.get("authority") != "server" or not unsigned.get("approval_id") or not unsigned.get("subject"): return False
+        if schema == "auro.server-approval.v2" and not unsigned.get("nonce"): return False
         approved_actions = unsigned.get("actions")
         if not isinstance(approved_actions, list) or not approved_actions: return False
         if not hmac.compare_digest(str(unsigned.get("actions_sha256", "")), _actions_sha256(approved_actions)): return False
