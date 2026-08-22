@@ -50,6 +50,7 @@ class SpikingResidualGate:
             raise ValueError("threshold_quantile must be in (0, 1)")
         if not 0.0 <= self.config.minimum_gate <= self.config.maximum_gate <= 1.0:
             raise ValueError("gate bounds must satisfy 0 <= min <= max <= 1")
+        self.last_receipt: SpikingGateReceipt | None = None
 
     def apply(self, hidden: np.ndarray, residual: np.ndarray) -> tuple[np.ndarray, SpikingGateReceipt]:
         h = np.asarray(hidden, dtype=np.float64)
@@ -106,6 +107,7 @@ class SpikingResidualGate:
             regularizer=round(float(regularizer), 8),
             gate_mean=round(float(active_gain.mean()), 8),
         )
+        self.last_receipt = receipt
         return gated, receipt
 
     def manifest(self) -> dict[str, Any]:
@@ -113,6 +115,7 @@ class SpikingResidualGate:
             "schema": "auro.neuro.spiking-residual-gate.v1",
             "config": asdict(self.config),
             "trainable_parameters": 0,
+            "last_receipt": asdict(self.last_receipt) if self.last_receipt is not None else None,
             "physical_energy_claim": False,
             "biological_equivalence_claim": False,
         }
