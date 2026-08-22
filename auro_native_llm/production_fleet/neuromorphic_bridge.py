@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 
 def _bound(value: Any, low: float = 0.0, high: float = 4.0) -> float:
@@ -12,21 +12,50 @@ def _bound(value: Any, low: float = 0.0, high: float = 4.0) -> float:
         return low
 
 
-class NeuromorphicAwareGenerator:
-    """Inject compact neuromorphic state as non-authoritative runtime context.
+def _dedupe(values: Iterable[str]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(str(value) for value in values if str(value)))
 
-    This wrapper does not add tools or execution rights. It provides models with
-    a small control-state summary that can inform attention, pacing, and routing
-    explanations while preserving the server approval boundary. Existing system
-    instructions always remain ahead of the telemetry block.
+
+def neuromorphic_model_preferences(state: dict[str, Any], base_preferences: Iterable[str]) -> tuple[str, ...]:
+    """Return a bounded preference order; only connected lanes can actually run."""
+    base = _dedupe(base_preferences)
+    pressure = _bound(state.get("energy_pressure", 0.0), 0.0, 4.0)
+    spike_rate = _bound(state.get("spike_rate", 0.0), 0.0, 1.0)
+    orienting = bool(state.get("orienting_burst", False))
+    if pressure >= 1.0:
+        return _dedupe(("Auro-2B", "Auro-4B", *base))
+    if orienting:
+        return _dedupe(("Auro-4B", "Auro-2B", "AURO-ST-14B", *base))
+    if spike_rate >= 0.35:
+        return _dedupe(("Auro-4B", "Auro-8B", *base))
+    return base
+
+
+class NeuromorphicAwareGenerator:
+    """Inject telemetry and apply a bounded neuro-energy routing preference.
+
+    This wrapper does not add tools or execution rights. Existing system
+    instructions always remain ahead of the telemetry block. Dynamic routing
+    only reorders lanes already connected to the underlying model orchestrator.
     """
 
-    def __init__(self, generator: Callable, brain_supplier: Callable[[], Any]):
+    def __init__(
+        self,
+        generator: Callable,
+        brain_supplier: Callable[[], Any],
+        base_preferences: Iterable[str] = (),
+    ):
         self.generator = generator
         self.brain_supplier = brain_supplier
+        self.base_preferences = _dedupe(base_preferences)
 
     def __call__(self, messages: list[dict[str, str]], options: dict[str, Any]) -> dict[str, Any]:
         state = compact_neuromorphic_state(self.brain_supplier())
+        routing_preferences = neuromorphic_model_preferences(state, self.base_preferences)
+        setter = getattr(self.generator, "set_preferred_models", None)
+        if callable(setter) and routing_preferences:
+            setter(routing_preferences)
+        state = {**state, "routing_preferences": list(routing_preferences)}
         telemetry = {
             "role": "system",
             "content": (
@@ -52,7 +81,7 @@ def compact_neuromorphic_state(brain: Any) -> dict[str, Any]:
     substrate = snapshot.get("neuromorphic") or {}
     active = [str(value) for value in list(neuro.get("active_regions") or [])[:12]]
     return {
-        "schema": "him.neuromorphic-context.v1",
+        "schema": "him.neuromorphic-context.v2",
         "cycle": max(0, int(neuro.get("cycle") or substrate.get("cycle") or 0)),
         "spike_rate": _bound(neuro.get("spike_rate") or 0.0, 0.0, 1.0),
         "sparsity": _bound(neuro.get("sparsity") if neuro.get("sparsity") is not None else 1.0, 0.0, 1.0),
