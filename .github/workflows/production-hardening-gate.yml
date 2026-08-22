@@ -5,6 +5,7 @@ on:
     paths:
       - "auro_native_llm/production_fleet/**"
       - "auro_native_llm/brain/**"
+      - "scripts/verify_production_hardening.py"
       - "tests/test_production_authority_hardening.py"
       - "tests/test_neuromorphic_persistence_hardening.py"
       - ".github/workflows/production-hardening-gate.yml"
@@ -32,7 +33,9 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install --upgrade pip pytest
       - name: Compile production package
-        run: python -m compileall -q auro_native_llm tests/test_production_authority_hardening.py tests/test_neuromorphic_persistence_hardening.py
+        run: python -m compileall -q auro_native_llm scripts/verify_production_hardening.py tests/test_production_authority_hardening.py tests/test_neuromorphic_persistence_hardening.py
+      - name: Run standalone hardening verifier
+        run: python scripts/verify_production_hardening.py
       - name: Enforce authority API invariant
         run: |
           python - <<'PY'
