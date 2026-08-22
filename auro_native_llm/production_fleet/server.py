@@ -16,10 +16,38 @@ from .console import ASSETS
 API_VERSION = "2026-08-21"
 MAX_REQUEST_BYTES = 1_048_576
 MAX_MESSAGE_CHARS = 12_000
+MIN_PRODUCTION_SECRET_CHARS = 32
 
 
 def token_authorized(header: str, expected: str) -> bool:
     return bool(expected and header.startswith("Bearer ") and hmac.compare_digest(header[7:], expected))
+
+
+def production_mode() -> bool:
+    return os.getenv("AURO_ENV", "").strip().lower() == "production" or os.getenv("AURO_PRODUCTION", "").strip().lower() in {"1", "true", "yes"}
+
+
+def production_security_status(host: str | None = None) -> dict[str, Any]:
+    required = {
+        "AURO_API_TOKEN": os.getenv("AURO_API_TOKEN", ""),
+        "AURO_EXECUTION_TOKEN": os.getenv("AURO_EXECUTION_TOKEN", ""),
+        "AURO_APPROVAL_HMAC_KEY": os.getenv("AURO_APPROVAL_HMAC_KEY", ""),
+    }
+    checks = {name: len(value) >= MIN_PRODUCTION_SECRET_CHARS for name, value in required.items()}
+    distinct = len({value for value in required.values() if value}) == len(required)
+    production = production_mode()
+    ready = (not production) or (all(checks.values()) and distinct)
+    return {
+        "mode": "production" if production else "development",
+        "ready": ready,
+        "required_secret_min_chars": MIN_PRODUCTION_SECRET_CHARS,
+        "secret_checks": checks,
+        "secrets_distinct": distinct if production else None,
+        "bind_host": host,
+        "caller_boolean_approval": False,
+        "signed_action_approval": True,
+        "replay_protection": "one-time-per-action",
+    }
 
 
 def extract_user_message(messages: Any) -> str:
@@ -87,7 +115,20 @@ class Handler(BaseHTTPRequestHandler):
         self._require_api_auth()
         runtime = self.get_runtime()
         if path == "/v1/health/ready":
-            return self._json(200, {"ok": True, "status": "ready", "service": "auro-him-api", "receipt_chain": runtime.capabilities.ledger.verify(), "model_fleet": runtime.model_orchestrator.manifest()})
+            security = production_security_status()
+            receipt_chain = runtime.capabilities.ledger.verify()
+            neuro = runtime.capabilities.brain.snapshot().get("neuromorphic_persistence", {})
+            ready = bool(security["ready"] and receipt_chain.get("valid", False))
+            payload = {
+                "ok": ready,
+                "status": "ready" if ready else "not_ready",
+                "service": "auro-him-api",
+                "security": security,
+                "receipt_chain": receipt_chain,
+                "neuromorphic_persistence": neuro,
+                "model_fleet": runtime.model_orchestrator.manifest(),
+            }
+            return self._json(200 if ready else 503, payload)
         if path == "/v1": return self._json(200, self._discovery())
         if path == "/v1/models": return self._json(200, {"object": "list", "data": self._models()})
         if path.startswith("/v1/models/"):
@@ -190,7 +231,7 @@ class Handler(BaseHTTPRequestHandler):
         runtime = self.get_runtime()
         return [{"id": m["model"], "object": "model", "owned_by": "ItsNotAILABS" if m["provider"] == "repository-native-open-weights" else m["provider"], "auro_endpoint_id": m["id"], "role": m["role"], "provider": m["provider"], "capabilities": m["capabilities"], "local": m["local"], "parameter_count": m["parameter_count"], "parameter_count_verified": m["parameter_count_verified"], "identity_verified": m["identity_verified"], "agent_count_is_not_parameter_count": True} for m in runtime.model_orchestrator.manifest()["models"]]
     def _discovery(self) -> dict[str, Any]: return {"service": "Auro14B · HIM", "api_version": API_VERSION, "native_response": "/v1/him/respond", "openai_compatible": "/v1/chat/completions", "models": "/v1/models", "capabilities": "/v1/capabilities", "receipts": "/v1/receipts", "openapi": "/openapi.json"}
-    def _openapi(self) -> dict[str, Any]: return {"openapi": "3.1.0", "info": {"title": "Auro14B · HIM API", "version": API_VERSION}, "paths": {"/v1/health/live": {"get": {}}, "/v1/chat/completions": {"post": {}}, "/v1/capabilities/call": {"post": {}}}}
+    def _openapi(self) -> dict[str, Any]: return {"openapi": "3.1.0", "info": {"title": "Auro14B · HIM API", "version": API_VERSION}, "paths": {"/v1/health/live": {"get": {}}, "/v1/health/ready": {"get": {}}, "/v1/chat/completions": {"post": {}}, "/v1/capabilities/call": {"post": {}}}}
     def _error(self, status: int, code: str, message: str):
         if getattr(self, "wfile", None) is not None and not self.wfile.closed: self._json(status, {"error": {"code": code, "message": message, "request_id": getattr(self, "request_id", None)}})
     def _json(self, status: int, payload: Any): return self._bytes(status, "application/json; charset=utf-8", json.dumps(payload, ensure_ascii=False).encode())
@@ -213,6 +254,11 @@ def main():
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8090)
     args = parser.parse_args()
+    security = production_security_status(args.host)
+    if production_mode() and not security["ready"]:
+        missing = [name for name, ok in security["secret_checks"].items() if not ok]
+        detail = ", ".join(missing) if missing else "production secrets must be distinct"
+        raise SystemExit(f"AURO production security configuration invalid: {detail}")
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
 
 
