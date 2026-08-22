@@ -10,7 +10,7 @@ from .feline_neuromorphic import FelineNeuromorphicEngine
 
 
 class NeuromorphicStateStore:
-    schema = "him.neuromorphic-state.v1"
+    schema = "him.neuromorphic-state.v2"
 
     def __init__(self, path: str | Path):
         self.path = Path(path)
@@ -20,7 +20,7 @@ class NeuromorphicStateStore:
         base = Path(brain_state_path)
         return cls(base.with_suffix(base.suffix + ".neuromorphic.json"))
 
-    def save(self, engine: FelineNeuromorphicEngine) -> dict[str, Any]:
+    def save(self, engine: FelineNeuromorphicEngine, timing: Any | None = None) -> dict[str, Any]:
         body = {
             "schema": self.schema,
             "engine_schema": engine.schema,
@@ -41,6 +41,9 @@ class NeuromorphicStateStore:
                 }
                 for key, value in sorted(engine.edge_gain.items())
             ],
+            "timing_plasticity": {
+                "last_spike_cycle": dict(getattr(timing, "last_spike_cycle", {})),
+            } if timing is not None else None,
             "previous_hash": engine.previous_hash,
             "total_energy_ceu": engine.total_energy_ceu,
         }
@@ -52,7 +55,7 @@ class NeuromorphicStateStore:
         temp.replace(self.path)
         return {"path": str(self.path), "state_sha256": body["state_sha256"]}
 
-    def load(self, engine: FelineNeuromorphicEngine) -> bool:
+    def load(self, engine: FelineNeuromorphicEngine, timing: Any | None = None) -> bool:
         if not self.path.exists():
             return False
         body = json.loads(self.path.read_text(encoding="utf-8"))
@@ -60,7 +63,7 @@ class NeuromorphicStateStore:
         canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
         if not supplied or hashlib.sha256(canonical).hexdigest() != supplied:
             raise ValueError("neuromorphic state integrity mismatch")
-        if body.get("schema") != self.schema:
+        if body.get("schema") not in {"him.neuromorphic-state.v1", self.schema}:
             raise ValueError("unsupported neuromorphic state schema")
         if tuple(body.get("region_ids") or ()) != engine.region_ids:
             raise ValueError("neuromorphic state region inventory mismatch")
@@ -77,6 +80,13 @@ class NeuromorphicStateStore:
             key = (str(item["source"]), str(item["target"]), str(item["kind"]), str(item["pathway"]))
             if key in known_edges:
                 engine.edge_gain[key] = float(item["gain"])
+
+        if timing is not None:
+            saved_timing = body.get("timing_plasticity") or {}
+            saved_spikes = saved_timing.get("last_spike_cycle") or {}
+            for region, value in saved_spikes.items():
+                if region in timing.last_spike_cycle:
+                    timing.last_spike_cycle[region] = int(value)
 
         engine.cycle_number = int(body.get("cycle", 0))
         engine.previous_hash = str(body.get("previous_hash", engine.previous_hash))
