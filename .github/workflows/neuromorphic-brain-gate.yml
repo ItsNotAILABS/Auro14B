@@ -24,6 +24,7 @@ jobs:
         run: |
           python -m py_compile \
             auro_native_llm/brain/feline_neuromorphic.py \
+            auro_native_llm/brain/timing_plasticity.py \
             auro_native_llm/brain/neuromorphic_state.py \
             auro_native_llm/brain/neuromorphic_brain.py \
             auro_native_llm/brain/__init__.py \
@@ -41,6 +42,7 @@ jobs:
         run: |
           PYTHONPATH=. pytest -q \
             tests/test_feline_neuromorphic.py \
+            tests/test_timing_plasticity.py \
             tests/test_neuromorphic_bridge.py \
             tests/test_model_neuromorphic_residual.py \
             tests/test_neuromorphic_training_control.py \
@@ -62,7 +64,10 @@ jobs:
           assert snapshot['schema'] == 'him.brain.v2.neuromorphic'
           assert snapshot['neuromorphic']['region_count'] == 44
           assert snapshot['neuromorphic']['synapse_count'] > 0
+          assert snapshot['timing_plasticity']['claim_boundary']['stdp_inspired_timing_rule'] is True
+          assert snapshot['timing_plasticity']['claim_boundary']['biological_stdp_equivalence'] is False
           assert result.neuromorphic['energy_ceu'] > 0
+          assert 'timing_plasticity' in result.neuromorphic
           assert compact['can_authorize_execution'] is False
           assert compact['authority'] == 'telemetry_only'
           assert snapshot['neuromorphic']['energy_unit'] == 'normalized_compute_energy_unit_not_joule'
@@ -80,6 +85,7 @@ jobs:
           import hashlib, json, pathlib
           paths = [
             'auro_native_llm/brain/feline_neuromorphic.py',
+            'auro_native_llm/brain/timing_plasticity.py',
             'auro_native_llm/brain/neuromorphic_state.py',
             'auro_native_llm/brain/neuromorphic_brain.py',
             'auro_native_llm/neuro/spiking_gate.py',
@@ -92,6 +98,7 @@ jobs:
             'auro_native_llm/production_fleet/capabilities.py',
             'scripts/benchmark_neuromorphic_brain.py',
             'tests/test_feline_neuromorphic.py',
+            'tests/test_timing_plasticity.py',
             'tests/test_neuromorphic_bridge.py',
             'tests/test_model_neuromorphic_residual.py',
             'tests/test_neuromorphic_training_control.py',
@@ -101,10 +108,13 @@ jobs:
           ]
           benchmark = json.loads(pathlib.Path('evidence/neuromorphic-benchmark.json').read_text())
           body = {
-            'schema': 'auro.neuromorphic-brain-evidence.v4',
+            'schema': 'auro.neuromorphic-brain-evidence.v5',
             'canonical_him_wired': True,
             'explicit_synaptic_graph': True,
             'persistent_synaptic_state': True,
+            'timing_order_plasticity': True,
+            'timing_order_state_persistent': True,
+            'biological_stdp_equivalence_claim': False,
             'model_context_bridge_wired': True,
             'model_lane_neuro_energy_routing': True,
             'model_internal_residual_gate': True,
