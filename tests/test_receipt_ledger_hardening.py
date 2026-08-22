@@ -16,9 +16,8 @@ def test_receipt_ledger_round_trip_and_chain(tmp_path):
     assert first.sequence == 1
     assert second.sequence == 2
     assert second.previous_hash == first.receipt_hash
-    status = ledger.verify()
-    assert status["valid"] is True
-    assert status["durable_append"] is True
+    assert ledger.verify() == {"valid": True, "count": 2, "head": second.receipt_hash}
+    assert path.read_bytes().endswith(b"\n")
 
     restored = ReceiptLedger(path)
     assert restored.verify()["valid"] is True
