@@ -1,0 +1,78 @@
+name: AURO Neuromorphic Brain Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  neuromorphic-brain:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused dependencies
+        run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile canonical neuromorphic brain
+        run: |
+          python -m py_compile \
+            auro_native_llm/brain/feline_neuromorphic.py \
+            auro_native_llm/brain/neuromorphic_brain.py \
+            auro_native_llm/brain/__init__.py \
+            auro_native_llm/production_fleet/capabilities.py \
+            auro_native_llm/production_fleet/runtime.py
+      - name: Run neuromorphic contracts
+        run: PYTHONPATH=. pytest -q tests/test_feline_neuromorphic.py
+      - name: Verify production wiring
+        run: |
+          PYTHONPATH=. python - <<'PY'
+          from auro_native_llm.brain import HIMBrain
+          from auro_native_llm.production_fleet.capabilities import NativeCapabilities
+          brain = HIMBrain()
+          result = brain.cycle('urgent visual browser signal verify', importance=.9)
+          snapshot = brain.snapshot()
+          assert snapshot['schema'] == 'him.brain.v2.neuromorphic'
+          assert snapshot['neuromorphic']['region_count'] == 44
+          assert result.neuromorphic['energy_ceu'] > 0
+          assert snapshot['neuromorphic']['energy_unit'] == 'normalized_compute_energy_unit_not_joule'
+          assert snapshot['neuromorphic']['claim_boundary']['biological_cat_brain_simulation'] is False
+          PY
+      - name: Emit neuromorphic evidence receipt
+        run: |
+          mkdir -p evidence
+          python - <<'PY'
+          import hashlib, json, pathlib
+          paths = [
+            'auro_native_llm/brain/feline_neuromorphic.py',
+            'auro_native_llm/brain/neuromorphic_brain.py',
+            'auro_native_llm/brain/__init__.py',
+            'tests/test_feline_neuromorphic.py',
+            'docs/FELINE_NEUROMORPHIC_ARCHITECTURE.md',
+          ]
+          body = {
+            'schema': 'auro.neuromorphic-brain-evidence.v1',
+            'canonical_him_wired': True,
+            'sparse_spiking_tested': True,
+            'inhibitory_balance_tested': True,
+            'refractory_threshold_tested': True,
+            'normalized_energy_accounting_tested': True,
+            'execution_authority_escalation_allowed': False,
+            'biological_equivalence_claim': False,
+            'physical_energy_efficiency_verified': False,
+            'files': {p: hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest() for p in paths},
+          }
+          body['receipt_sha256'] = hashlib.sha256(json.dumps(body, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+          pathlib.Path('evidence/neuromorphic-brain.json').write_text(json.dumps(body, indent=2, sort_keys=True) + '\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neuromorphic-brain-${{ github.sha }}
+          path: evidence/neuromorphic-brain.json
+          if-no-files-found: error
