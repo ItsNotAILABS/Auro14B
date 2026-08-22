@@ -79,6 +79,22 @@ def test_canonical_him_brain_exposes_neuromorphic_state():
     assert snapshot["architecture_notes"]["biological_equivalence_claim"] is False
 
 
+def test_neuromorphic_state_persists_across_brain_restart(tmp_path):
+    state_path = tmp_path / "brain.json"
+    first = HIMBrain(state_path=state_path)
+    first.cycle("urgent visual signal", importance=0.95)
+    before = first.snapshot()["neuromorphic"]
+    assert before["cycle"] == 1
+    assert first.snapshot()["neuromorphic_persistence"]["enabled"] is True
+
+    second = HIMBrain(state_path=state_path)
+    after = second.snapshot()["neuromorphic"]
+    assert second.snapshot()["neuromorphic_persistence"]["restored_on_start"] is True
+    assert after["cycle"] == before["cycle"]
+    assert after["receipt_head"] == before["receipt_head"]
+    assert after["total_energy_ceu"] == before["total_energy_ceu"]
+
+
 def test_neuromorphic_layer_never_upgrades_execution_authority():
     brain = HIMBrain()
     cycle = brain.cycle("answer this visual observation", importance=0.2, execute_requested=False)
