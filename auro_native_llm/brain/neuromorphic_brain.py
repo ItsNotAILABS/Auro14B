@@ -1,0 +1,89 @@
+"""HIM brain controller with an attached feline-inspired spiking substrate."""
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Any
+
+from .feline_neuromorphic import FelineNeuromorphicEngine, NeuromorphicCycle
+from .fused import BrainRegion, HIMBrain as BaseHIMBrain
+
+
+@dataclass(frozen=True)
+class BrainCycle:
+    cycle: int
+    salience: float
+    coherence: float
+    anomaly: float
+    dominant_system: str
+    route: str
+    working_memory: tuple[str, ...]
+    receipt_hash: str
+    neuromorphic: dict[str, Any]
+
+
+class HIMBrain(BaseHIMBrain):
+    """Canonical cognitive controller plus event-driven spiking dynamics.
+
+    The base controller remains authoritative for salience, routing, working
+    memory, and receipt continuity. The neuromorphic substrate adds sparse event
+    dynamics and normalized compute-energy pressure. It is an inference/control
+    layer and does not alter language-model checkpoint weights.
+    """
+
+    schema = "him.brain.v2.neuromorphic"
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.neuromorphic = FelineNeuromorphicEngine(region.abbreviation for region in self.regions)
+        self.last_neuromorphic: NeuromorphicCycle | None = None
+
+    def cycle(self, observation: str, *, importance: float = 0.5, execute_requested: bool = False) -> BrainCycle:
+        before = dict(self.activations)
+        base = super().cycle(observation, importance=importance, execute_requested=execute_requested)
+        drives = {region: self.activations[region] for region in self.activations}
+        mean_delta = sum(abs(self.activations[key] - before[key]) for key in self.activations) / max(1, len(self.activations))
+        novelty = min(1.0, base.anomaly * 0.55 + mean_delta * 1.8)
+        neuro = self.neuromorphic.cycle(drives, salience=base.salience, novelty=novelty)
+        self.last_neuromorphic = neuro
+
+        # Neuromorphic pressure is advisory, not an authorization channel.
+        # High energy pressure can downgrade execution deliberation but can never
+        # upgrade an answer/deliberate route into execution.
+        route = base.route
+        if neuro.energy_pressure > 1.0 and route == "execute":
+            route = "deliberate"
+
+        return BrainCycle(
+            cycle=base.cycle,
+            salience=base.salience,
+            coherence=base.coherence,
+            anomaly=base.anomaly,
+            dominant_system=base.dominant_system,
+            route=route,
+            working_memory=base.working_memory,
+            receipt_hash=base.receipt_hash,
+            neuromorphic=asdict(neuro),
+        )
+
+    def snapshot(self) -> dict[str, Any]:
+        base = super().snapshot()
+        base["schema"] = self.schema
+        base["neuromorphic"] = self.neuromorphic.snapshot()
+        base["last_neuromorphic_cycle"] = asdict(self.last_neuromorphic) if self.last_neuromorphic else None
+        base["architecture_notes"] = {
+            "hierarchical_recurrent_processing": True,
+            "sparse_event_driven_activation": True,
+            "inhibitory_balance": True,
+            "adaptive_spike_thresholds": True,
+            "short_synaptic_traces": True,
+            "bounded_local_plasticity": True,
+            "orienting_burst_path": ["SC", "THL_L", "THL_R", "LC", "V1"],
+            "energy_homeostasis": "normalized CEU budget; hardware calibration pending",
+            "biological_equivalence_claim": False,
+        }
+        return base
+
+    state = snapshot
+
+
+__all__ = ["HIMBrain", "BrainCycle", "BrainRegion"]
