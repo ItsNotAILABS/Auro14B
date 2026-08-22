@@ -1,0 +1,13 @@
+{
+  "schema":"nexus.capability.v1",
+  "component":"auro-model-family",
+  "repository":"ItsNotAILABS/Auro14B",
+  "role":"checkpoint-family-and-governed-model-orchestration-plane",
+  "actions":["model.family.describe","model.checkpoint.inventory","model.context.retrieve","model.infer","model.council.plan","model.release_evidence"],
+  "risk_tiers":{"model.family.describe":"read","model.checkpoint.inventory":"read-local","model.context.retrieve":"read-sensitive","model.infer":"compute","model.council.plan":"plan","model.release_evidence":"read"},
+  "produces":["nexus.capability.v1","nexus.context-pack.v1","nexus.telemetry.v1","nexus.release-evidence.v1","nexus.artifact.v1"],
+  "consumes":["nexus.task.v1","nexus.budget.v1","nexus.policy-decision.v1"],
+  "limits":{"finished_14b_checkpoint_claim":false,"checkpoint_claim_requires_manifest":true,"external_side_effects":false,"private_reasoning_export":false},
+  "proof":{"state":"source","checkpoint_specific_evidence_required":true},
+  "authority":"ItsNotAILABS/nexus"
+}
