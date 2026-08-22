@@ -1,9 +1,9 @@
 """Mandatory AURO family upgrade policy.
 
 All standard AURO model construction passes through this policy. It enforces a
-Mixture-of-Experts path and raises the declared context window exactly fourfold
-relative to each repository family configuration. This changes architecture
-capacity; it does not claim trained or validated long-context performance.
+Mixture-of-Experts path, raises the declared context window exactly fourfold,
+and installs conservative neuromorphic-residual configuration metadata. These
+are architecture/runtime policies; they do not claim trained capability gains.
 """
 from __future__ import annotations
 
@@ -13,10 +13,27 @@ CONTEXT_MULTIPLIER = 4
 MIN_EXPERTS = 8
 MIN_TOP_K = 2
 POLICY_VERSION = "auro.family.moe-context.v1"
+NEUROMORPHIC_POLICY_VERSION = "auro.family.neuromorphic-residual.v1"
+
+
+def _install_neuromorphic_policy(config: Any) -> None:
+    """Install backwards-compatible residual-gate defaults in config.extra."""
+    extra = config.extra
+    extra.setdefault("neuromorphic_residual_policy", NEUROMORPHIC_POLICY_VERSION)
+    extra.setdefault("use_neuromorphic_residual", True)
+    extra.setdefault("neuromorphic_target_activity", 0.18)
+    extra.setdefault("neuromorphic_threshold_quantile", 0.82)
+    extra.setdefault("neuromorphic_minimum_gate", 0.35)
+    extra.setdefault("neuromorphic_energy_penalty_weight", 0.01)
+    extra.setdefault("neuromorphic_activity_penalty_weight", 0.02)
+    extra.setdefault("neuromorphic_inhibitory_gain", 0.35)
+    extra.setdefault("neuromorphic_checkpoint_quality_verified", False)
+    extra.setdefault("neuromorphic_physical_energy_verified", False)
 
 
 def apply_family_upgrade(config: Any) -> Any:
-    """Apply the mandatory family policy to an AuroLMConfig-compatible object."""
+    """Apply mandatory family policy to an AuroLMConfig-compatible object."""
+    _install_neuromorphic_policy(config)
     if config.extra.get("family_upgrade_policy") == POLICY_VERSION:
         return config
 
