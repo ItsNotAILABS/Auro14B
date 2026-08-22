@@ -63,7 +63,7 @@ class ReceiptLedger:
             if receipt.sequence != index or receipt.previous_hash != previous or _hash(material) != receipt.receipt_hash:
                 return {"valid": False, "failed_sequence": index, "head": previous}
             previous = receipt.receipt_hash
-        return {"valid": True, "count": len(self._receipts), "head": previous, "durable_append": self.path is not None}
+        return {"valid": True, "count": len(self._receipts), "head": previous}
 
     def tail(self, limit: int = 20):
         return [asdict(item) for item in self._receipts[-max(0, int(limit)):]]
