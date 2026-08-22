@@ -1,5 +1,3 @@
-from dataclasses import asdict
-
 from auro_native_llm.brain import FelineNeuromorphicEngine, HIMBrain, NeuromorphicConfig
 
 
@@ -35,6 +33,29 @@ def test_inhibitory_tone_rises_after_dense_recent_activity():
     assert third.inhibitory_tone > 0
 
 
+def test_visual_hierarchy_and_orienting_path_are_real_synapses():
+    regions = ("SC", "THL_L", "THL_R", "LC", "V1", "V2V3", "ITG_L", "FFA", "DLPFC_R")
+    engine = FelineNeuromorphicEngine(regions)
+    snapshot = engine.snapshot()
+    edges = {(item["source"], item["target"], item["kind"], item["pathway"]) for item in snapshot["synapses"]}
+    assert ("V1", "V2V3", "excitatory", "visual_feedforward") in edges
+    assert ("V2V3", "ITG_L", "excitatory", "visual_feedforward") in edges
+    assert ("SC", "THL_L", "excitatory", "orienting") in edges
+    assert ("THL_L", "V1", "excitatory", "orienting") in edges
+    assert snapshot["synapse_count"] >= 6
+
+
+def test_synaptic_events_consume_energy_and_propagate_on_later_cycle():
+    cfg = NeuromorphicConfig(base_threshold=0.25, refractory_cycles=0)
+    engine = FelineNeuromorphicEngine(("V1", "V2V3"), cfg)
+    first = engine.cycle({"V1": 1.0}, salience=1.0)
+    second = engine.cycle({"V1": 0.0, "V2V3": 0.0}, salience=0.4)
+    assert first.spike_count >= 1
+    assert second.synaptic_events >= 1
+    assert second.excitatory_current > 0
+    assert second.energy_ceu > cfg.idle_energy_ceu * 2
+
+
 def test_energy_pressure_can_throttle_spiking_without_claiming_physical_joules():
     cfg = NeuromorphicConfig(base_threshold=0.2, energy_budget_ceu=0.3)
     engine = FelineNeuromorphicEngine(("V1", "SC", "LC"), cfg)
@@ -43,6 +64,7 @@ def test_energy_pressure_can_throttle_spiking_without_claiming_physical_joules()
     assert cycle.energy_pressure > 1.0
     assert snap["energy_unit"] == "normalized_compute_energy_unit_not_joule"
     assert snap["claim_boundary"]["biological_cat_brain_simulation"] is False
+    assert snap["claim_boundary"]["physical_energy_efficiency_verified"] is False
 
 
 def test_canonical_him_brain_exposes_neuromorphic_state():
@@ -51,6 +73,7 @@ def test_canonical_him_brain_exposes_neuromorphic_state():
     snapshot = brain.snapshot()
     assert snapshot["schema"] == "him.brain.v2.neuromorphic"
     assert snapshot["neuromorphic"]["region_count"] == 44
+    assert snapshot["neuromorphic"]["synapse_count"] > 0
     assert cycle.neuromorphic["energy_ceu"] > 0
     assert "orienting_burst" in cycle.neuromorphic
     assert snapshot["architecture_notes"]["biological_equivalence_claim"] is False
