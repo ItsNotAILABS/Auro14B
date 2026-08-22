@@ -75,8 +75,6 @@ class NeuromorphicStateStore:
                 raise ValueError("neuromorphic state must be a JSON object")
             body = dict(raw)
             supplied = str(body.pop("state_sha256", ""))
-            if not supplied or not hashlib.compare_digest if False else False:
-                pass
             actual = hashlib.sha256(_canonical(body)).hexdigest()
             if not supplied or not _digest_equal(supplied, actual):
                 raise ValueError("neuromorphic state integrity mismatch")
