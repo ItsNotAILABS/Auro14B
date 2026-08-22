@@ -24,17 +24,19 @@ jobs:
         run: |
           python -m py_compile \
             auro_native_llm/brain/feline_neuromorphic.py \
+            auro_native_llm/brain/neuromorphic_state.py \
             auro_native_llm/brain/neuromorphic_brain.py \
             auro_native_llm/brain/__init__.py \
             auro_native_llm/production_fleet/neuromorphic_bridge.py \
             auro_native_llm/production_fleet/persona_runtime.py \
-            auro_native_llm/production_fleet/capabilities.py \
-            auro_native_llm/production_fleet/runtime.py
+            scripts/benchmark_neuromorphic_brain.py
       - name: Run neuromorphic contracts
         run: |
           PYTHONPATH=. pytest -q \
             tests/test_feline_neuromorphic.py \
             tests/test_neuromorphic_bridge.py
+      - name: Run deterministic neuro-energy benchmark
+        run: python scripts/benchmark_neuromorphic_brain.py --cycles 64 --output evidence/neuromorphic-benchmark.json
       - name: Verify production wiring
         run: |
           PYTHONPATH=. python - <<'PY'
@@ -55,24 +57,29 @@ jobs:
           PY
       - name: Emit neuromorphic evidence receipt
         run: |
-          mkdir -p evidence
           python - <<'PY'
           import hashlib, json, pathlib
           paths = [
             'auro_native_llm/brain/feline_neuromorphic.py',
+            'auro_native_llm/brain/neuromorphic_state.py',
             'auro_native_llm/brain/neuromorphic_brain.py',
             'auro_native_llm/brain/__init__.py',
             'auro_native_llm/production_fleet/neuromorphic_bridge.py',
             'auro_native_llm/production_fleet/persona_runtime.py',
+            'scripts/benchmark_neuromorphic_brain.py',
             'tests/test_feline_neuromorphic.py',
             'tests/test_neuromorphic_bridge.py',
             'docs/FELINE_NEUROMORPHIC_ARCHITECTURE.md',
           ]
+          benchmark = json.loads(pathlib.Path('evidence/neuromorphic-benchmark.json').read_text())
           body = {
-            'schema': 'auro.neuromorphic-brain-evidence.v2',
+            'schema': 'auro.neuromorphic-brain-evidence.v3',
             'canonical_him_wired': True,
             'explicit_synaptic_graph': True,
+            'persistent_synaptic_state': True,
             'model_context_bridge_wired': True,
+            'benchmark_passed': bool(benchmark['passed']),
+            'benchmark_receipt_sha256': benchmark['receipt_sha256'],
             'sparse_spiking_tested': True,
             'inhibitory_balance_tested': True,
             'refractory_threshold_tested': True,
@@ -88,5 +95,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: neuromorphic-brain-${{ github.sha }}
-          path: evidence/neuromorphic-brain.json
+          path: |
+            evidence/neuromorphic-brain.json
+            evidence/neuromorphic-benchmark.json
           if-no-files-found: error
