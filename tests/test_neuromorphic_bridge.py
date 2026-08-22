@@ -1,3 +1,4 @@
+from auro_native_llm.production_fleet.capabilities import BUILTINS, NativeCapabilities
 from auro_native_llm.production_fleet.neuromorphic_bridge import (
     NeuromorphicAwareGenerator,
     compact_neuromorphic_state,
@@ -14,7 +15,8 @@ class FakeBrain:
 
     def snapshot(self):
         return {
-            "neuromorphic": {"cycle": self.cycle},
+            "neuromorphic": {"cycle": self.cycle, "synapse_count": 12},
+            "neuromorphic_persistence": {"enabled": True, "restored_on_start": True},
             "last_neuromorphic_cycle": {
                 "cycle": self.cycle,
                 "spike_rate": self.spike_rate,
@@ -85,3 +87,17 @@ def test_generator_injects_telemetry_after_authoritative_system_message_and_rout
     assert orchestrator.preferences[:2] == ("Auro-2B", "Auro-4B")
     assert result["neuromorphic_context"]["can_authorize_execution"] is False
     assert result["neuromorphic_context"]["routing_preferences"][:2] == ["Auro-2B", "Auro-4B"]
+
+
+def test_neuromorphic_snapshot_is_read_only_governed_capability():
+    spec = next(item for item in BUILTINS if item.name == "brain.neuromorphic_snapshot")
+    assert spec.mutating is False
+    assert spec.approval_required is False
+
+    capabilities = object.__new__(NativeCapabilities)
+    capabilities.brain = FakeBrain()
+    result = capabilities._dispatch("brain.neuromorphic_snapshot", {})
+    assert result["authority"] == "telemetry_only"
+    assert result["can_authorize_execution"] is False
+    assert result["telemetry"]["synapse_count"] == 12
+    assert result["persistence"]["enabled"] is True
