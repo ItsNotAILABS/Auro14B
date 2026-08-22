@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 
 from .console import ASSETS
 
-API_VERSION = "2026-07-24"
+API_VERSION = "2026-08-21"
 MAX_REQUEST_BYTES = 1_048_576
 MAX_MESSAGE_CHARS = 12_000
 
@@ -55,7 +55,7 @@ def openai_completion(response: dict[str, Any], request_id: str) -> dict[str, An
 
 class Handler(BaseHTTPRequestHandler):
     runtime: Any = None
-    server_version = "AuroHIM/2.0"
+    server_version = "AuroHIM/2.1"
 
     @classmethod
     def get_runtime(cls):
@@ -113,9 +113,20 @@ class Handler(BaseHTTPRequestHandler):
         runtime = self.get_runtime()
         body = self._body()
         if path == "/v1/capabilities/call":
-            approved = bool(body.get("approved", False))
-            if approved: self._require_execution_auth()
-            return self._json(200, runtime.capabilities.call(str(body.get("name", "")), dict(body.get("arguments") or {}), approved=approved))
+            name = str(body.get("name", ""))
+            arguments = dict(body.get("arguments") or {})
+            approval_grant = None
+            if runtime.capabilities.requires_approval(name):
+                self._require_execution_auth()
+                from .capabilities import capability_action
+                from .organ_sdk import build_server_approval
+                action = capability_action(name, arguments)
+                approval_grant = build_server_approval(
+                    [action],
+                    subject=f"http-api:{self.request_id}",
+                    approval_id="cap_" + uuid.uuid4().hex,
+                )
+            return self._json(200, runtime.capabilities.call(name, arguments, approval_grant=approval_grant))
         if path == "/v1/context/query":
             pack = runtime.context.retrieve(self._message(body.get("query")), token_budget=int(body.get("token_budget") or runtime.context.default_budget), top_k=int(body.get("top_k") or 24))
             return self._json(200, pack.public())
@@ -131,7 +142,7 @@ class Handler(BaseHTTPRequestHandler):
         if path in {"/v1/respond", "/v1/him/respond"}:
             execute = bool(body.get("execute", False))
             if execute: self._require_execution_auth()
-            result = runtime.respond(self._message(body.get("message")), execute=execute)
+            result = runtime.respond(self._message(body.get("message")), execute=execute, approval_grant=body.get("approval_grant"))
             result["request_id"] = self.request_id
             return self._json(200, result)
         if path == "/v1/chat/completions":
@@ -141,7 +152,7 @@ class Handler(BaseHTTPRequestHandler):
             requested = str(body.get("model") or runtime.endpoint.model)
             allowed = {value for model in self._models() for value in (model["id"], model.get("auro_endpoint_id")) if value} | {"auro-him"}
             if requested not in allowed: raise ApiError(404, "model_not_found", "The requested model is not configured.")
-            result = runtime.respond(self._message(extract_user_message(body.get("messages"))), execute=execute)
+            result = runtime.respond(self._message(extract_user_message(body.get("messages"))), execute=execute, approval_grant=body.get("auro_approval_grant"))
             return self._json(200, openai_completion(result, self.request_id))
         raise ApiError(404, "not_found", "The requested route does not exist.")
 
