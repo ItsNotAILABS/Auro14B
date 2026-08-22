@@ -8,6 +8,7 @@ import pytest
 
 from auro_native_llm.production_fleet.capabilities import Capability, NativeCapabilities, _obj, capability_action
 from auro_native_llm.production_fleet.organ_sdk import ApprovalReplayStore, AuroOrganSDK, build_server_approval
+from auro_native_llm.production_fleet.server import production_security_status
 
 
 @dataclass
@@ -110,3 +111,30 @@ def test_non_positive_approval_ttl_is_rejected(monkeypatch):
     action = capability_action("test.mutate", {"value": "alpha"})
     with pytest.raises(ValueError):
         build_server_approval([action], "operator", "approval-bad-ttl", ttl_ms=0)
+
+
+def test_production_mode_fails_readiness_without_strong_distinct_secrets(monkeypatch):
+    monkeypatch.setenv("AURO_ENV", "production")
+    monkeypatch.delenv("AURO_API_TOKEN", raising=False)
+    monkeypatch.delenv("AURO_EXECUTION_TOKEN", raising=False)
+    monkeypatch.delenv("AURO_APPROVAL_HMAC_KEY", raising=False)
+    status = production_security_status("0.0.0.0")
+    assert status["mode"] == "production"
+    assert status["ready"] is False
+    assert not all(status["secret_checks"].values())
+
+
+def test_production_mode_requires_distinct_secrets(monkeypatch):
+    shared = "x" * 40
+    monkeypatch.setenv("AURO_ENV", "production")
+    monkeypatch.setenv("AURO_API_TOKEN", shared)
+    monkeypatch.setenv("AURO_EXECUTION_TOKEN", shared)
+    monkeypatch.setenv("AURO_APPROVAL_HMAC_KEY", "y" * 40)
+    assert production_security_status()["ready"] is False
+
+    monkeypatch.setenv("AURO_API_TOKEN", "a" * 40)
+    monkeypatch.setenv("AURO_EXECUTION_TOKEN", "b" * 40)
+    monkeypatch.setenv("AURO_APPROVAL_HMAC_KEY", "c" * 40)
+    status = production_security_status()
+    assert status["ready"] is True
+    assert status["secrets_distinct"] is True
