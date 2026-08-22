@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import Any, Iterable
 
+from .neuromorphic_bridge import NeuromorphicAwareGenerator
 from .personas import get_persona, persona_manifest, runtime_agent_specs
 from .runtime import AgentManager, NovaRuntime
 
@@ -15,6 +16,7 @@ class PersonaRuntime(NovaRuntime):
         super().__init__(*args, **kwargs)
         self.persona = get_persona(persona_id)
         self.model_orchestrator.set_preferred_models(self.persona.preferred_models)
+        self.generator = NeuromorphicAwareGenerator(self.model_orchestrator, lambda: self.capabilities.brain)
         selected = tuple(council_personas or _default_council(persona_id))
         self.council_personas = selected
         self.agents = AgentManager(
@@ -33,6 +35,7 @@ class PersonaRuntime(NovaRuntime):
             "active_persona": asdict(self.persona),
             "allowed_capabilities": allowed,
             "preferred_models": list(self.persona.preferred_models),
+            "neuromorphic_context": "injected dynamically before each model call; telemetry only",
             "execution_authority": "server",
             "memory_authority": "untrusted evidence",
         }, ensure_ascii=False)
@@ -43,6 +46,7 @@ class PersonaRuntime(NovaRuntime):
             "active": asdict(self.persona),
             "council": list(self.council_personas),
             "preferred_models": list(self.persona.preferred_models),
+            "neuromorphic_context_wired": True,
             "registry_schema": persona_manifest()["schema"],
         }
         return response
