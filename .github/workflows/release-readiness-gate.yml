@@ -1,0 +1,45 @@
+name: Exact Checkpoint Release Readiness
+
+on:
+  pull_request:
+    paths:
+      - "scripts/readiness_score.py"
+      - "scripts/checkpoint_promotion_gate.py"
+      - "scripts/tokenizer_audit.py"
+      - "tests/test_release_readiness.py"
+      - "evidence/readiness-input.json"
+      - ".github/workflows/release-readiness-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip pytest numpy
+      - name: Compile release authority scripts
+        run: python -m py_compile scripts/readiness_score.py scripts/checkpoint_promotion_gate.py scripts/tokenizer_audit.py
+      - name: Run release policy regressions
+        run: pytest -q tests/test_release_readiness.py
+      - name: Emit conservative readiness baseline
+        run: |
+          set +e
+          python scripts/readiness_score.py evidence/readiness-input.json --threshold 0.85 --output evidence/readiness.json
+          code=$?
+          set -e
+          test "$code" -eq 2
+          python - <<'PY'
+          import json
+          result = json.load(open("evidence/readiness.json", encoding="utf-8"))
+          assert result["ready"] is False
+          assert result["unresolved_blockers"]
+          assert result["claim_boundary"]["readiness_is_benchmark_accuracy"] is False
+          PY
