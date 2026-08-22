@@ -176,8 +176,10 @@ class Handler(BaseHTTPRequestHandler):
             text = self._message(body.get("text"))
             return self._json(200, runtime.context.ingest(text, source=str(body.get("source") or "api"), kind=str(body.get("kind") or "document"), importance=float(body.get("importance", .5)), metadata=dict(body.get("metadata") or {}), chunk_tokens=int(body.get("chunk_tokens") or 900), allow_sensitive=bool(body.get("allow_sensitive", False))))
         if path == "/v1/browser/tasks/claim":
+            self._require_execution_auth()
             return self._json(200, {"task": runtime.capabilities.browser.claim(str(body.get("worker_id") or "chrome"))})
         if path.startswith("/v1/browser/tasks/") and path.endswith("/complete"):
+            self._require_execution_auth()
             task_id = path.split("/")[4]
             return self._json(200, runtime.capabilities.browser.complete(task_id, body.get("result"), body.get("error")))
         if path in {"/v1/respond", "/v1/him/respond"}:
