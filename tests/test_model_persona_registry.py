@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from auro_native_llm.model.registry import MODEL_BY_ID, MODELS, model_manifest
+from auro_native_llm.model.registry import MODEL_BY_ID, MODELS, NEURO_FEATURE, model_manifest
 from auro_native_llm.production_fleet.capabilities import BUILTINS
 from auro_native_llm.production_fleet.personas import PERSONAS, get_persona, persona_manifest
 
@@ -48,13 +48,23 @@ def test_persona_parameter_and_memory_boundaries():
 def test_registry_manifests_are_serializable_and_truthful():
     models = model_manifest()
     personas = persona_manifest()
-    assert models["schema"] == "auro.model-feature-registry.v1"
+    assert models["schema"] == "auro.model-feature-registry.v2"
     assert personas["schema"] == "auro.persona-registry.v1"
     assert models["rules"]["architecture_is_not_training_evidence"] is True
     assert models["rules"]["declared_context_is_not_verified_quality"] is True
+    assert models["rules"]["neuromorphic_residual_is_not_quality_evidence"] is True
+    assert models["rules"]["neuromorphic_ceu_is_not_physical_energy"] is True
     assert get_persona("browser_brain").execution_mode == "server-approved-only"
     assert MODEL_BY_ID["HIM-native-v0"].checkpoint_status == "fixture-only"
     assert "not assistant quality" in MODEL_BY_ID["HIM-native-v0"].claim_boundary
+
+
+def test_neuromorphic_residual_is_only_registered_on_standard_auro_moe_family():
+    expected = {"Auro-156K", "Auro-2B", "Auro-4B", "Auro-8B", "Auro-14B", "Auro-100B"}
+    actual = {model.id for model in MODELS if NEURO_FEATURE in model.features}
+    assert actual == expected
+    assert NEURO_FEATURE not in MODEL_BY_ID["AURO-ST-14B"].features
+    assert "not claimed wired here" in MODEL_BY_ID["AURO-ST-14B"].claim_boundary
 
 
 def test_documentation_covers_every_model_and_persona():
