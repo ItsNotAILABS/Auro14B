@@ -32,7 +32,7 @@ class HIMBrain(BaseHIMBrain):
     normalized compute-energy pressure. It never alters language-model weights.
     """
 
-    schema = "him.brain.v3.neuromorphic"
+    schema = "him.brain.v2.neuromorphic"
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
