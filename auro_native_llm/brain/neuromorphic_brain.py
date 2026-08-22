@@ -7,6 +7,7 @@ from typing import Any
 from .feline_neuromorphic import FelineNeuromorphicEngine, NeuromorphicCycle
 from .fused import BrainRegion, HIMBrain as BaseHIMBrain
 from .neuromorphic_state import NeuromorphicStateStore
+from .timing_plasticity import TimingPlasticityController
 
 
 @dataclass(frozen=True)
@@ -27,21 +28,24 @@ class HIMBrain(BaseHIMBrain):
 
     The base controller remains authoritative for salience, routing, working
     memory, and receipt continuity. The neuromorphic substrate adds sparse event
-    dynamics, explicit synapses, plasticity, and normalized compute-energy
-    pressure. It is an inference/control layer and does not alter language-model
-    checkpoint weights.
+    dynamics, explicit synapses, local plasticity, timing plasticity, and
+    normalized compute-energy pressure. It never alters language-model weights.
     """
 
     schema = "him.brain.v2.neuromorphic"
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.neuromorphic = FelineNeuromorphicEngine(region.abbreviation for region in self.regions)
+        region_ids = tuple(region.abbreviation for region in self.regions)
+        self.neuromorphic = FelineNeuromorphicEngine(region_ids)
+        self.timing_plasticity = TimingPlasticityController(region_ids)
         self.last_neuromorphic: NeuromorphicCycle | None = None
         self.neuromorphic_store = NeuromorphicStateStore.for_brain_state(self.state_path) if self.state_path else None
         self.neuromorphic_state_restored = False
         if self.neuromorphic_store:
-            self.neuromorphic_state_restored = self.neuromorphic_store.load(self.neuromorphic)
+            self.neuromorphic_state_restored = self.neuromorphic_store.load(
+                self.neuromorphic, self.timing_plasticity
+            )
 
     def cycle(self, observation: str, *, importance: float = 0.5, execute_requested: bool = False) -> BrainCycle:
         before = dict(self.activations)
@@ -50,17 +54,21 @@ class HIMBrain(BaseHIMBrain):
         mean_delta = sum(abs(self.activations[key] - before[key]) for key in self.activations) / max(1, len(self.activations))
         novelty = min(1.0, base.anomaly * 0.55 + mean_delta * 1.8)
         neuro = self.neuromorphic.cycle(drives, salience=base.salience, novelty=novelty)
+        timing = self.timing_plasticity.apply(
+            self.neuromorphic,
+            neuro.active_regions,
+            salience=base.salience,
+        )
         self.last_neuromorphic = neuro
         if self.neuromorphic_store:
-            self.neuromorphic_store.save(self.neuromorphic)
+            self.neuromorphic_store.save(self.neuromorphic, self.timing_plasticity)
 
-        # Neuromorphic pressure is advisory, not an authorization channel.
-        # High energy pressure can downgrade execution deliberation but can never
-        # upgrade an answer/deliberate route into execution.
         route = base.route
         if neuro.energy_pressure > 1.0 and route == "execute":
             route = "deliberate"
 
+        neuro_payload = asdict(neuro)
+        neuro_payload["timing_plasticity"] = asdict(timing)
         return BrainCycle(
             cycle=base.cycle,
             salience=base.salience,
@@ -70,19 +78,27 @@ class HIMBrain(BaseHIMBrain):
             route=route,
             working_memory=base.working_memory,
             receipt_hash=base.receipt_hash,
-            neuromorphic=asdict(neuro),
+            neuromorphic=neuro_payload,
         )
 
     def snapshot(self) -> dict[str, Any]:
         base = super().snapshot()
         base["schema"] = self.schema
         base["neuromorphic"] = self.neuromorphic.snapshot()
+        base["timing_plasticity"] = self.timing_plasticity.snapshot()
         base["neuromorphic_persistence"] = {
             "enabled": self.neuromorphic_store is not None,
             "restored_on_start": self.neuromorphic_state_restored,
             "path": str(self.neuromorphic_store.path) if self.neuromorphic_store else None,
+            "timing_state_persisted": self.neuromorphic_store is not None,
         }
-        base["last_neuromorphic_cycle"] = asdict(self.last_neuromorphic) if self.last_neuromorphic else None
+        if self.last_neuromorphic:
+            last = asdict(self.last_neuromorphic)
+            if self.timing_plasticity.last_receipt:
+                last["timing_plasticity"] = asdict(self.timing_plasticity.last_receipt)
+            base["last_neuromorphic_cycle"] = last
+        else:
+            base["last_neuromorphic_cycle"] = None
         base["architecture_notes"] = {
             "hierarchical_recurrent_processing": True,
             "explicit_synaptic_graph": True,
@@ -91,10 +107,12 @@ class HIMBrain(BaseHIMBrain):
             "adaptive_spike_thresholds": True,
             "short_synaptic_traces": True,
             "bounded_local_and_edge_plasticity": True,
+            "timing_order_plasticity": True,
             "orienting_burst_path": ["SC", "THL_L", "THL_R", "LC", "V1"],
             "persistent_neuromorphic_state": self.neuromorphic_store is not None,
             "energy_homeostasis": "normalized CEU budget; hardware calibration pending",
             "biological_equivalence_claim": False,
+            "biological_stdp_equivalence_claim": False,
         }
         return base
 
