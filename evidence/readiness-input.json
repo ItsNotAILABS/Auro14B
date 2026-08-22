@@ -3,7 +3,7 @@
   "gates": {
     "checkpoint_integrity": {"score": 0.0, "note": "No exact release checkpoint selected for this promotion cycle."},
     "training_provenance": {"score": 0.0, "note": "Exact release checkpoint training receipt not selected for this promotion cycle."},
-    "tokenizer_integrity": {"score": 0.5, "note": "Current ByteTokenizer is byte-lossless with no unknown token, but required load-bearing controls MATHESIS, CAIN, and ORO are not yet present."},
+    "tokenizer_integrity": {"score": 0.75, "note": "Tokenizer v2 architecture now preserves all legacy control IDs and byte IDs while appending MATHESIS/CAIN/ORO, but no exact release checkpoint tokenizer audit is pinned yet."},
     "corpus_provenance": {"score": 0.0, "note": "No release corpus manifest/dedup/secret-scan/contamination receipt pinned for this cycle."},
     "official_benchmarks": {"score": 0.0, "note": "No exact-checkpoint official benchmark receipt pinned for this cycle."},
     "coding_execution": {"score": 0.0, "note": "No exact-checkpoint coding execution receipt pinned for this cycle."},
@@ -16,7 +16,7 @@
   },
   "unresolved_blockers": [
     "GitHub Actions repository workflows currently terminate before step 1 with no job logs.",
-    "Current ByteTokenizer control-token inventory lacks <mathesis>, <cain>, and <oro>.",
+    "No exact tokenizer-v2 release checkpoint and tokenizer audit receipt are pinned yet.",
     "No exact checkpoint has been selected and bound to a complete release evidence manifest."
   ]
 }
