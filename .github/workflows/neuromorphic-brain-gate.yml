@@ -26,21 +26,30 @@ jobs:
             auro_native_llm/brain/feline_neuromorphic.py \
             auro_native_llm/brain/neuromorphic_brain.py \
             auro_native_llm/brain/__init__.py \
+            auro_native_llm/production_fleet/neuromorphic_bridge.py \
+            auro_native_llm/production_fleet/persona_runtime.py \
             auro_native_llm/production_fleet/capabilities.py \
             auro_native_llm/production_fleet/runtime.py
       - name: Run neuromorphic contracts
-        run: PYTHONPATH=. pytest -q tests/test_feline_neuromorphic.py
+        run: |
+          PYTHONPATH=. pytest -q \
+            tests/test_feline_neuromorphic.py \
+            tests/test_neuromorphic_bridge.py
       - name: Verify production wiring
         run: |
           PYTHONPATH=. python - <<'PY'
           from auro_native_llm.brain import HIMBrain
-          from auro_native_llm.production_fleet.capabilities import NativeCapabilities
+          from auro_native_llm.production_fleet.neuromorphic_bridge import compact_neuromorphic_state
           brain = HIMBrain()
           result = brain.cycle('urgent visual browser signal verify', importance=.9)
           snapshot = brain.snapshot()
+          compact = compact_neuromorphic_state(brain)
           assert snapshot['schema'] == 'him.brain.v2.neuromorphic'
           assert snapshot['neuromorphic']['region_count'] == 44
+          assert snapshot['neuromorphic']['synapse_count'] > 0
           assert result.neuromorphic['energy_ceu'] > 0
+          assert compact['can_authorize_execution'] is False
+          assert compact['authority'] == 'telemetry_only'
           assert snapshot['neuromorphic']['energy_unit'] == 'normalized_compute_energy_unit_not_joule'
           assert snapshot['neuromorphic']['claim_boundary']['biological_cat_brain_simulation'] is False
           PY
@@ -53,12 +62,17 @@ jobs:
             'auro_native_llm/brain/feline_neuromorphic.py',
             'auro_native_llm/brain/neuromorphic_brain.py',
             'auro_native_llm/brain/__init__.py',
+            'auro_native_llm/production_fleet/neuromorphic_bridge.py',
+            'auro_native_llm/production_fleet/persona_runtime.py',
             'tests/test_feline_neuromorphic.py',
+            'tests/test_neuromorphic_bridge.py',
             'docs/FELINE_NEUROMORPHIC_ARCHITECTURE.md',
           ]
           body = {
-            'schema': 'auro.neuromorphic-brain-evidence.v1',
+            'schema': 'auro.neuromorphic-brain-evidence.v2',
             'canonical_him_wired': True,
+            'explicit_synaptic_graph': True,
+            'model_context_bridge_wired': True,
             'sparse_spiking_tested': True,
             'inhibitory_balance_tested': True,
             'refractory_threshold_tested': True,
