@@ -1,0 +1,22 @@
+{
+  "schema": "auro.release-readiness-input.v1",
+  "gates": {
+    "checkpoint_integrity": {"score": 0.0, "note": "No exact release checkpoint selected for this promotion cycle."},
+    "training_provenance": {"score": 0.0, "note": "Exact release checkpoint training receipt not selected for this promotion cycle."},
+    "tokenizer_integrity": {"score": 0.5, "note": "Current ByteTokenizer is byte-lossless with no unknown token, but required load-bearing controls MATHESIS, CAIN, and ORO are not yet present."},
+    "corpus_provenance": {"score": 0.0, "note": "No release corpus manifest/dedup/secret-scan/contamination receipt pinned for this cycle."},
+    "official_benchmarks": {"score": 0.0, "note": "No exact-checkpoint official benchmark receipt pinned for this cycle."},
+    "coding_execution": {"score": 0.0, "note": "No exact-checkpoint coding execution receipt pinned for this cycle."},
+    "governed_execution": {"score": 0.0, "note": "Hardening denial tests exist in source, but no executable release receipt is available while Actions runners terminate before step 1."},
+    "api_chat_smoke": {"score": 0.0, "note": "No exact-checkpoint API chat smoke receipt pinned for this cycle."},
+    "browser_chat_smoke": {"score": 0.0, "note": "No exact-checkpoint browser chat smoke receipt pinned for this cycle."},
+    "portability": {"score": 0.0, "note": "No clean portability receipt pinned for this cycle."},
+    "clean_install": {"score": 0.0, "note": "No clean-install/start receipt pinned for this cycle."},
+    "model_card_claims": {"score": 0.5, "note": "Claim boundaries are present across runtime/model code, but no exact release model card is pinned for this cycle."}
+  },
+  "unresolved_blockers": [
+    "GitHub Actions repository workflows currently terminate before step 1 with no job logs.",
+    "Current ByteTokenizer control-token inventory lacks <mathesis>, <cain>, and <oro>.",
+    "No exact checkpoint has been selected and bound to a complete release evidence manifest."
+  ]
+}
