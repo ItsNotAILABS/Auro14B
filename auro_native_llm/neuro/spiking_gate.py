@@ -68,10 +68,15 @@ class SpikingResidualGate:
 
         last = h[-1] if h.ndim == 2 else h[:, -1, :].mean(axis=0)
         magnitude = np.abs(last)
-        scale = float(np.sqrt(np.mean(magnitude * magnitude)) + self.config.eps)
+        raw_rms = float(np.sqrt(np.mean(magnitude * magnitude)))
+        scale = max(raw_rms, self.config.eps)
         normalized = magnitude / scale
-        threshold = float(np.quantile(normalized, self.config.threshold_quantile))
-        events = normalized >= threshold
+        if raw_rms <= self.config.eps:
+            threshold = 0.0
+            events = np.zeros_like(normalized, dtype=bool)
+        else:
+            threshold = float(np.quantile(normalized, self.config.threshold_quantile))
+            events = (normalized >= threshold) & (magnitude > self.config.eps)
         activity_rate = float(events.mean())
         sparsity = 1.0 - activity_rate
 
@@ -80,10 +85,8 @@ class SpikingResidualGate:
         active_gain = np.where(events, 1.0 - inhibitory_tone, self.config.minimum_gate)
         active_gain = np.clip(active_gain, self.config.minimum_gate, self.config.maximum_gate)
 
-        # Residual energy proxy is normalized to hidden RMS. This is a software
-        # regularizer only, deliberately not joules or accelerator power.
-        residual_rms = float(np.sqrt(np.mean(residual_vector * residual_vector)) + self.config.eps)
-        energy_proxy = residual_rms / scale
+        residual_rms = float(np.sqrt(np.mean(residual_vector * residual_vector)))
+        energy_proxy = residual_rms / scale if raw_rms > self.config.eps else 0.0
         activity_penalty = (activity_rate - self.config.target_activity) ** 2
         energy_penalty = energy_proxy * activity_rate
         regularizer = (
