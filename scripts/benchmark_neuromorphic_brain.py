@@ -70,9 +70,12 @@ def run_scenario(name: str, cycles: int) -> dict:
             orienting_cycles.append(index)
 
     cfg = engine.config
+    # Reference means every region integrates and spikes, every synapse transmits,
+    # and every region/edge performs a plasticity update in the same abstract CEU
+    # accounting model. It is a normalized control baseline, not hardware energy.
     dense_reference_per_cycle = (
-        len(regions) * (cfg.idle_energy_ceu + cfg.integration_energy_ceu + cfg.spike_energy_ceu)
-        + len(engine.synapses) * cfg.synaptic_event_energy_ceu
+        len(regions) * (cfg.idle_energy_ceu + cfg.integration_energy_ceu + cfg.spike_energy_ceu + cfg.plasticity_energy_ceu)
+        + len(engine.synapses) * (cfg.synaptic_event_energy_ceu + cfg.plasticity_energy_ceu)
     )
     observed_mean = statistics.mean(energy)
     return {
