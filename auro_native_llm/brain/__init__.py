@@ -14,6 +14,12 @@ from auro_native_llm.brain.feline_neuromorphic import (
     NeuromorphicConfig,
     NeuromorphicCycle,
     SpikeRegionState,
+    Synapse,
+)
+from auro_native_llm.brain.timing_plasticity import (
+    TimingPlasticityConfig,
+    TimingPlasticityController,
+    TimingPlasticityReceipt,
 )
 
 __all__ = [
@@ -28,5 +34,9 @@ __all__ = [
     "NeuromorphicCycle",
     "OrganismHeart",
     "SpikeRegionState",
+    "Synapse",
+    "TimingPlasticityConfig",
+    "TimingPlasticityController",
+    "TimingPlasticityReceipt",
     "build_brain_cluster",
 ]
