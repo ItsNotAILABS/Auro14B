@@ -43,9 +43,7 @@ class HIMBrain(BaseHIMBrain):
         self.neuromorphic_store = NeuromorphicStateStore.for_brain_state(self.state_path) if self.state_path else None
         self.neuromorphic_state_restored = False
         if self.neuromorphic_store:
-            self.neuromorphic_state_restored = self.neuromorphic_store.load(
-                self.neuromorphic, self.timing_plasticity
-            )
+            self.neuromorphic_state_restored = self.neuromorphic_store.load(self.neuromorphic, self.timing_plasticity)
 
     def cycle(self, observation: str, *, importance: float = 0.5, execute_requested: bool = False) -> BrainCycle:
         before = dict(self.activations)
@@ -54,11 +52,7 @@ class HIMBrain(BaseHIMBrain):
         mean_delta = sum(abs(self.activations[key] - before[key]) for key in self.activations) / max(1, len(self.activations))
         novelty = min(1.0, base.anomaly * 0.55 + mean_delta * 1.8)
         neuro = self.neuromorphic.cycle(drives, salience=base.salience, novelty=novelty)
-        timing = self.timing_plasticity.apply(
-            self.neuromorphic,
-            neuro.active_regions,
-            salience=base.salience,
-        )
+        timing = self.timing_plasticity.apply(self.neuromorphic, neuro.active_regions, salience=base.salience)
         self.last_neuromorphic = neuro
         if self.neuromorphic_store:
             self.neuromorphic_store.save(self.neuromorphic, self.timing_plasticity)
@@ -86,11 +80,17 @@ class HIMBrain(BaseHIMBrain):
         base["schema"] = self.schema
         base["neuromorphic"] = self.neuromorphic.snapshot()
         base["timing_plasticity"] = self.timing_plasticity.snapshot()
+        persistence_status = self.neuromorphic_store.status() if self.neuromorphic_store else {}
         base["neuromorphic_persistence"] = {
             "enabled": self.neuromorphic_store is not None,
             "restored_on_start": self.neuromorphic_state_restored,
             "path": str(self.neuromorphic_store.path) if self.neuromorphic_store else None,
             "timing_state_persisted": self.neuromorphic_store is not None,
+            "degraded": bool(persistence_status.get("last_error")),
+            "last_error": persistence_status.get("last_error"),
+            "quarantined_path": persistence_status.get("quarantined_path"),
+            "durable_atomic_write": persistence_status.get("durable_atomic_write", False),
+            "transactional_load": persistence_status.get("transactional_load", False),
         }
         if self.last_neuromorphic:
             last = asdict(self.last_neuromorphic)

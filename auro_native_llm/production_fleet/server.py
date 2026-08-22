@@ -13,13 +13,41 @@ from urllib.parse import urlsplit
 
 from .console import ASSETS
 
-API_VERSION = "2026-07-24"
+API_VERSION = "2026-08-21"
 MAX_REQUEST_BYTES = 1_048_576
 MAX_MESSAGE_CHARS = 12_000
+MIN_PRODUCTION_SECRET_CHARS = 32
 
 
 def token_authorized(header: str, expected: str) -> bool:
     return bool(expected and header.startswith("Bearer ") and hmac.compare_digest(header[7:], expected))
+
+
+def production_mode() -> bool:
+    return os.getenv("AURO_ENV", "").strip().lower() == "production" or os.getenv("AURO_PRODUCTION", "").strip().lower() in {"1", "true", "yes"}
+
+
+def production_security_status(host: str | None = None) -> dict[str, Any]:
+    required = {
+        "AURO_API_TOKEN": os.getenv("AURO_API_TOKEN", ""),
+        "AURO_EXECUTION_TOKEN": os.getenv("AURO_EXECUTION_TOKEN", ""),
+        "AURO_APPROVAL_HMAC_KEY": os.getenv("AURO_APPROVAL_HMAC_KEY", ""),
+    }
+    checks = {name: len(value) >= MIN_PRODUCTION_SECRET_CHARS for name, value in required.items()}
+    distinct = len({value for value in required.values() if value}) == len(required)
+    production = production_mode()
+    ready = (not production) or (all(checks.values()) and distinct)
+    return {
+        "mode": "production" if production else "development",
+        "ready": ready,
+        "required_secret_min_chars": MIN_PRODUCTION_SECRET_CHARS,
+        "secret_checks": checks,
+        "secrets_distinct": distinct if production else None,
+        "bind_host": host,
+        "caller_boolean_approval": False,
+        "signed_action_approval": True,
+        "replay_protection": "one-time-per-action",
+    }
 
 
 def extract_user_message(messages: Any) -> str:
@@ -55,7 +83,7 @@ def openai_completion(response: dict[str, Any], request_id: str) -> dict[str, An
 
 class Handler(BaseHTTPRequestHandler):
     runtime: Any = None
-    server_version = "AuroHIM/2.0"
+    server_version = "AuroHIM/2.1"
 
     @classmethod
     def get_runtime(cls):
@@ -87,7 +115,20 @@ class Handler(BaseHTTPRequestHandler):
         self._require_api_auth()
         runtime = self.get_runtime()
         if path == "/v1/health/ready":
-            return self._json(200, {"ok": True, "status": "ready", "service": "auro-him-api", "receipt_chain": runtime.capabilities.ledger.verify(), "model_fleet": runtime.model_orchestrator.manifest()})
+            security = production_security_status()
+            receipt_chain = runtime.capabilities.ledger.verify()
+            neuro = runtime.capabilities.brain.snapshot().get("neuromorphic_persistence", {})
+            ready = bool(security["ready"] and receipt_chain.get("valid", False))
+            payload = {
+                "ok": ready,
+                "status": "ready" if ready else "not_ready",
+                "service": "auro-him-api",
+                "security": security,
+                "receipt_chain": receipt_chain,
+                "neuromorphic_persistence": neuro,
+                "model_fleet": runtime.model_orchestrator.manifest(),
+            }
+            return self._json(200 if ready else 503, payload)
         if path == "/v1": return self._json(200, self._discovery())
         if path == "/v1/models": return self._json(200, {"object": "list", "data": self._models()})
         if path.startswith("/v1/models/"):
@@ -113,9 +154,20 @@ class Handler(BaseHTTPRequestHandler):
         runtime = self.get_runtime()
         body = self._body()
         if path == "/v1/capabilities/call":
-            approved = bool(body.get("approved", False))
-            if approved: self._require_execution_auth()
-            return self._json(200, runtime.capabilities.call(str(body.get("name", "")), dict(body.get("arguments") or {}), approved=approved))
+            name = str(body.get("name", ""))
+            arguments = dict(body.get("arguments") or {})
+            approval_grant = None
+            if runtime.capabilities.requires_approval(name):
+                self._require_execution_auth()
+                from .capabilities import capability_action
+                from .organ_sdk import build_server_approval
+                action = capability_action(name, arguments)
+                approval_grant = build_server_approval(
+                    [action],
+                    subject=f"http-api:{self.request_id}",
+                    approval_id="cap_" + uuid.uuid4().hex,
+                )
+            return self._json(200, runtime.capabilities.call(name, arguments, approval_grant=approval_grant))
         if path == "/v1/context/query":
             pack = runtime.context.retrieve(self._message(body.get("query")), token_budget=int(body.get("token_budget") or runtime.context.default_budget), top_k=int(body.get("top_k") or 24))
             return self._json(200, pack.public())
@@ -124,14 +176,16 @@ class Handler(BaseHTTPRequestHandler):
             text = self._message(body.get("text"))
             return self._json(200, runtime.context.ingest(text, source=str(body.get("source") or "api"), kind=str(body.get("kind") or "document"), importance=float(body.get("importance", .5)), metadata=dict(body.get("metadata") or {}), chunk_tokens=int(body.get("chunk_tokens") or 900), allow_sensitive=bool(body.get("allow_sensitive", False))))
         if path == "/v1/browser/tasks/claim":
+            self._require_execution_auth()
             return self._json(200, {"task": runtime.capabilities.browser.claim(str(body.get("worker_id") or "chrome"))})
         if path.startswith("/v1/browser/tasks/") and path.endswith("/complete"):
+            self._require_execution_auth()
             task_id = path.split("/")[4]
             return self._json(200, runtime.capabilities.browser.complete(task_id, body.get("result"), body.get("error")))
         if path in {"/v1/respond", "/v1/him/respond"}:
             execute = bool(body.get("execute", False))
             if execute: self._require_execution_auth()
-            result = runtime.respond(self._message(body.get("message")), execute=execute)
+            result = runtime.respond(self._message(body.get("message")), execute=execute, approval_grant=body.get("approval_grant"))
             result["request_id"] = self.request_id
             return self._json(200, result)
         if path == "/v1/chat/completions":
@@ -141,7 +195,7 @@ class Handler(BaseHTTPRequestHandler):
             requested = str(body.get("model") or runtime.endpoint.model)
             allowed = {value for model in self._models() for value in (model["id"], model.get("auro_endpoint_id")) if value} | {"auro-him"}
             if requested not in allowed: raise ApiError(404, "model_not_found", "The requested model is not configured.")
-            result = runtime.respond(self._message(extract_user_message(body.get("messages"))), execute=execute)
+            result = runtime.respond(self._message(extract_user_message(body.get("messages"))), execute=execute, approval_grant=body.get("auro_approval_grant"))
             return self._json(200, openai_completion(result, self.request_id))
         raise ApiError(404, "not_found", "The requested route does not exist.")
 
@@ -179,7 +233,7 @@ class Handler(BaseHTTPRequestHandler):
         runtime = self.get_runtime()
         return [{"id": m["model"], "object": "model", "owned_by": "ItsNotAILABS" if m["provider"] == "repository-native-open-weights" else m["provider"], "auro_endpoint_id": m["id"], "role": m["role"], "provider": m["provider"], "capabilities": m["capabilities"], "local": m["local"], "parameter_count": m["parameter_count"], "parameter_count_verified": m["parameter_count_verified"], "identity_verified": m["identity_verified"], "agent_count_is_not_parameter_count": True} for m in runtime.model_orchestrator.manifest()["models"]]
     def _discovery(self) -> dict[str, Any]: return {"service": "Auro14B · HIM", "api_version": API_VERSION, "native_response": "/v1/him/respond", "openai_compatible": "/v1/chat/completions", "models": "/v1/models", "capabilities": "/v1/capabilities", "receipts": "/v1/receipts", "openapi": "/openapi.json"}
-    def _openapi(self) -> dict[str, Any]: return {"openapi": "3.1.0", "info": {"title": "Auro14B · HIM API", "version": API_VERSION}, "paths": {"/v1/health/live": {"get": {}}, "/v1/chat/completions": {"post": {}}, "/v1/capabilities/call": {"post": {}}}}
+    def _openapi(self) -> dict[str, Any]: return {"openapi": "3.1.0", "info": {"title": "Auro14B · HIM API", "version": API_VERSION}, "paths": {"/v1/health/live": {"get": {}}, "/v1/health/ready": {"get": {}}, "/v1/chat/completions": {"post": {}}, "/v1/capabilities/call": {"post": {}}}}
     def _error(self, status: int, code: str, message: str):
         if getattr(self, "wfile", None) is not None and not self.wfile.closed: self._json(status, {"error": {"code": code, "message": message, "request_id": getattr(self, "request_id", None)}})
     def _json(self, status: int, payload: Any): return self._bytes(status, "application/json; charset=utf-8", json.dumps(payload, ensure_ascii=False).encode())
@@ -202,6 +256,11 @@ def main():
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8090)
     args = parser.parse_args()
+    security = production_security_status(args.host)
+    if production_mode() and not security["ready"]:
+        missing = [name for name, ok in security["secret_checks"].items() if not ok]
+        detail = ", ".join(missing) if missing else "production secrets must be distinct"
+        raise SystemExit(f"AURO production security configuration invalid: {detail}")
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
 
 

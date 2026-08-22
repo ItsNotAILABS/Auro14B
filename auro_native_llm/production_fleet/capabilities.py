@@ -24,6 +24,11 @@ def _obj(properties: dict[str, Any], required: tuple[str, ...] = ()) -> dict[str
     return {"type": "object", "properties": properties, "required": list(required), "additionalProperties": False}
 
 
+def capability_action(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    """Canonical action signed by the server for one capability invocation."""
+    return {"tool": "capability", "arguments": {"name": name, "arguments": arguments}}
+
+
 BUILTINS = (
     Capability("brain.state", "Read live BRAIN AI cognitive state.", "brain", "tool", _obj({})),
     Capability("brain.operator_snapshot", "Read BRAIN AI operator snapshot.", "brain", "tool", _obj({"path": {"type": "string"}})),
@@ -79,24 +84,54 @@ class NativeCapabilities:
         self.downloads: dict[str, Path] = {}
 
     def manifest(self) -> dict[str, Any]:
-        return {"schema": "auro.native_capabilities.v2", "protocol": "tool-contract-compatible", "capabilities": [asdict(x) for x in self._items.values()]}
+        return {
+            "schema": "auro.native_capabilities.v3",
+            "protocol": "tool-contract-compatible",
+            "approval_authority": "signed-server-grant",
+            "approval_replay_protection": "one-time-per-action",
+            "capabilities": [asdict(x) for x in self._items.values()],
+        }
 
     def skills_prompt(self) -> str:
         return "\n".join(f"{x.name}: {' -> '.join(x.playbook)}" for x in self._items.values() if x.mode == "skill")
 
-    def call(self, name: str, arguments: dict[str, Any], approved: bool = False) -> dict[str, Any]:
+    def requires_approval(self, name: str) -> bool:
+        if name not in self._items:
+            raise ValueError(f"Unknown capability: {name}")
+        return bool(self._items[name].approval_required)
+
+    def call(self, name: str, arguments: dict[str, Any], *, approval_grant: dict[str, Any] | None = None) -> dict[str, Any]:
         if name not in self._items:
             raise ValueError(f"Unknown capability: {name}")
         spec = self._items[name]
         _validate(spec.input_schema, arguments)
-        if spec.approval_required and not approved:
-            result = {"ok": False, "denied": True, "reason": "explicit approval required", "capability": name}
-            result["receipt"] = asdict(self.ledger.record("capability", name, False, result, {"denied": True}))
-            return result
+        approval_id = None
+        if spec.approval_required:
+            action = capability_action(name, arguments)
+            consumer = getattr(self.sdk, "consume_server_approval", None)
+            approved = bool(approval_grant and callable(consumer) and consumer(dict(approval_grant), action))
+            if not approved:
+                result = {
+                    "ok": False,
+                    "denied": True,
+                    "reason": "valid unused server-authoritative approval required",
+                    "capability": name,
+                }
+                result["receipt"] = asdict(self.ledger.record("capability", name, False, result, {"denied": True, "approval_authority": "server"}))
+                return result
+            approval_id = str(approval_grant.get("approval_id", ""))
         started = time.perf_counter()
         output = self._dispatch(name, arguments)
-        result = {"ok": True, "capability": name, "organ": spec.organ, "output": output, "latency_ms": round((time.perf_counter() - started) * 1000, 3)}
-        result["receipt"] = asdict(self.ledger.record("capability", name, True, result))
+        result = {
+            "ok": True,
+            "capability": name,
+            "organ": spec.organ,
+            "output": output,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+        }
+        if approval_id:
+            result["approval_id"] = approval_id
+        result["receipt"] = asdict(self.ledger.record("capability", name, True, result, {"approval_id": approval_id} if approval_id else None))
         return result
 
     def resolve_download(self, digest: str) -> Path | None:
