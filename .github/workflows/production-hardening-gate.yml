@@ -1,0 +1,60 @@
+name: Production Authority and Persistence Gate
+
+on:
+  pull_request:
+    paths:
+      - "auro_native_llm/production_fleet/**"
+      - "auro_native_llm/brain/**"
+      - "tests/test_production_authority_hardening.py"
+      - "tests/test_neuromorphic_persistence_hardening.py"
+      - ".github/workflows/production-hardening-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hardening:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AURO_APPROVAL_HMAC_KEY: ci-production-hardening-key
+      AURO_APPROVAL_REPLAY_DIR: ${{ runner.temp }}/approval-replay
+      AURO_BRAIN_STATE: ${{ runner.temp }}/him-brain.json
+      AURO_RECEIPT_LEDGER: ${{ runner.temp }}/receipts.jsonl
+      AURO_WALLET_LEDGER: ${{ runner.temp }}/wallet.jsonl
+      AURO_VAULT_ROOT: ${{ runner.temp }}/vault
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip pytest
+      - name: Compile production package
+        run: python -m compileall -q auro_native_llm tests/test_production_authority_hardening.py tests/test_neuromorphic_persistence_hardening.py
+      - name: Enforce authority API invariant
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          path = Path("auro_native_llm/production_fleet/capabilities.py")
+          tree = ast.parse(path.read_text(encoding="utf-8"))
+          methods = [n for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == "call"]
+          assert methods, "NativeCapabilities.call not found"
+          names = [arg.arg for arg in methods[0].args.args + methods[0].args.kwonlyargs]
+          assert "approved" not in names, "caller-supplied approved boolean returned"
+          assert "approval_grant" in names, "signed approval_grant boundary missing"
+          server = Path("auro_native_llm/production_fleet/server.py").read_text(encoding="utf-8")
+          assert "build_server_approval" in server
+          assert "approval_grant=body.get(\"approval_grant\")" in server
+          assert "approval_grant=body.get(\"auro_approval_grant\")" in server
+          PY
+      - name: Run production hardening regressions
+        run: |
+          pytest -q \
+            tests/test_production_authority_hardening.py \
+            tests/test_neuromorphic_persistence_hardening.py \
+            tests/test_feline_neuromorphic.py \
+            tests/test_timing_plasticity.py \
+            tests/test_neuromorphic_bridge.py
