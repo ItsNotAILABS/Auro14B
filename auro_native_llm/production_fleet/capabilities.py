@@ -28,6 +28,7 @@ BUILTINS = (
     Capability("brain.state", "Read live BRAIN AI cognitive state.", "brain", "tool", _obj({})),
     Capability("brain.operator_snapshot", "Read BRAIN AI operator snapshot.", "brain", "tool", _obj({"path": {"type": "string"}})),
     Capability("brain.fused_snapshot", "Read HIM fused brain state.", "brain", "tool", _obj({})),
+    Capability("brain.neuromorphic_snapshot", "Read HIM spiking, synaptic, and CEU telemetry without granting execution authority.", "brain", "tool", _obj({})),
     Capability("brain.cycle", "Run one bounded cognitive cycle.", "brain", "tool", _obj({"observation": {"type": "string"}, "importance": {"type": "number"}, "execute_requested": {"type": "boolean"}}, ("observation",))),
     Capability("brain.migration_status", "Check optional topology parity.", "brain", "tool", _obj({})),
     Capability("memory.rank_text", "Rank memories or documents.", "matdaemon", "tool", _obj({"query": {"type": "string"}, "candidates": {"type": "array", "items": {"type": "string"}}, "k": {"type": "integer"}}, ("query", "candidates"))),
@@ -105,6 +106,16 @@ class NativeCapabilities:
         if name == "brain.state": return self.sdk.brain.state()
         if name == "brain.operator_snapshot": return self.sdk.brain.query(a.get("path", "/v1/brain/operator-snapshot"))
         if name == "brain.fused_snapshot": return self.brain.snapshot()
+        if name == "brain.neuromorphic_snapshot":
+            snapshot = self.brain.snapshot()
+            return {
+                "schema": "auro.brain.neuromorphic-capability.v1",
+                "telemetry": snapshot.get("neuromorphic", {}),
+                "last_cycle": snapshot.get("last_neuromorphic_cycle"),
+                "persistence": snapshot.get("neuromorphic_persistence", {}),
+                "authority": "telemetry_only",
+                "can_authorize_execution": False,
+            }
         if name == "brain.cycle": return asdict(self.brain.cycle(a["observation"], importance=a.get("importance", .5), execute_requested=a.get("execute_requested", False)))
         if name == "brain.migration_status": return self.brain.legacy_parity()
         if name == "memory.rank_text": return self.sdk.matdaemon.rank_text(a["query"], a["candidates"], int(a.get("k", 5)))
