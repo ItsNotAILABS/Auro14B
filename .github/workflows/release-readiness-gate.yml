@@ -3,9 +3,11 @@ name: Exact Checkpoint Release Readiness
 on:
   pull_request:
     paths:
+      - "auro_native_llm/open_weights.py"
       - "scripts/readiness_score.py"
       - "scripts/checkpoint_promotion_gate.py"
       - "scripts/tokenizer_audit.py"
+      - "tests/test_open_weights.py"
       - "tests/test_release_readiness.py"
       - "evidence/readiness-input.json"
       - ".github/workflows/release-readiness-gate.yml"
@@ -25,10 +27,23 @@ jobs:
           python-version: "3.11"
       - name: Install test dependencies
         run: python -m pip install --upgrade pip pytest numpy
-      - name: Compile release authority scripts
-        run: python -m py_compile scripts/readiness_score.py scripts/checkpoint_promotion_gate.py scripts/tokenizer_audit.py
-      - name: Run release policy regressions
-        run: pytest -q tests/test_release_readiness.py
+      - name: Compile release authority and checkpoint code
+        run: python -m py_compile auro_native_llm/open_weights.py scripts/readiness_score.py scripts/checkpoint_promotion_gate.py scripts/tokenizer_audit.py
+      - name: Run release and tokenizer compatibility regressions
+        run: pytest -q tests/test_release_readiness.py tests/test_open_weights.py
+      - name: Assert tokenizer v2 immutable ID layout
+        run: |
+          python - <<'PY'
+          from auro_native_llm.open_weights import ByteTokenizer
+          from scripts.tokenizer_audit import audit_manifest
+          release = ByteTokenizer("v2")
+          assert release.encode("stable bytes") == ByteTokenizer("v1").encode("stable bytes")
+          result = audit_manifest(release.manifest())
+          assert result["ready"] is True
+          assert result["control_token_ids"]["<mathesis>"] == 272
+          assert result["control_token_ids"]["<cain>"] == 273
+          assert result["control_token_ids"]["<oro>"] == 274
+          PY
       - name: Emit conservative readiness baseline
         run: |
           set +e
