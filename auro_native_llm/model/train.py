@@ -1,18 +1,17 @@
-"""Train Auro language models on MESIE compute (local NumPy engine)."""
+"""Train AURO language models on MESIE compute (local NumPy engine)."""
 
 from __future__ import annotations
 
-import json
-import time
 from dataclasses import asdict, dataclass, field
+import json
 from pathlib import Path
+import time
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 
 from auro_native_llm.model.auro_lm import AuroLanguageModel
 from auro_native_llm.model.checkpoint import save_checkpoint
-from auro_native_llm.model.config import family_config
 from auro_native_llm.model.corpus import (
     collect_corpus_texts,
     collect_corpus_texts_single_repo,
@@ -35,11 +34,41 @@ class TrainConfig:
     output_dir: str = "checkpoints/auro"
     corpus_root: Optional[str] = None
     report_every: int = 5
-    # multi-repo harvest can block on GitHub clones; default local single-repo
     multi_repo: bool = False
     max_corpus_files: int = 80
     max_corpus_chars: int = 400_000
+    neuromorphic_lr_control: bool = True
+    neuromorphic_max_lr_reduction: float = 0.25
+    neuromorphic_penalty_gain: float = 5.0
     extra: Dict[str, Any] = field(default_factory=dict)
+
+
+def _neuromorphic_training_control(model: AuroLanguageModel, cfg: TrainConfig) -> tuple[dict[str, float], float]:
+    """Read latest residual-gate receipt and derive next-step LR multiplier.
+
+    The current NumPy trainer has a manual CE gradient path, so we do not pretend
+    that adding the neuromorphic scalar to reported loss creates a differentiable
+    auxiliary objective. The residual gate already changes forward logits; this
+    control additionally makes activity/energy pressure affect the next update's
+    learning-rate envelope.
+    """
+    bridge = getattr(model, "_neuro", None)
+    gate = getattr(bridge, "spiking_gate", None)
+    receipt = getattr(gate, "last_receipt", None)
+    if receipt is None:
+        return {}, 1.0
+    regularizer = max(0.0, float(receipt.regularizer))
+    reduction = min(max(0.0, cfg.neuromorphic_max_lr_reduction), regularizer * max(0.0, cfg.neuromorphic_penalty_gain))
+    multiplier = 1.0 - reduction if cfg.neuromorphic_lr_control else 1.0
+    metrics = {
+        "neuro_activity_rate": float(receipt.activity_rate),
+        "neuro_sparsity": float(receipt.sparsity),
+        "neuro_inhibitory_tone": float(receipt.inhibitory_tone),
+        "neuro_energy_proxy": float(receipt.energy_proxy),
+        "neuro_control_regularizer": regularizer,
+        "neuro_lr_multiplier": float(multiplier),
+    }
+    return metrics, float(multiplier)
 
 
 def train_language_model(cfg: Optional[TrainConfig] = None) -> Dict[str, Any]:
@@ -62,7 +91,6 @@ def train_language_model(cfg: Optional[TrainConfig] = None) -> Dict[str, Any]:
             max_chars=cfg.max_corpus_chars,
         )
     tokenizer = AuroTokenizer(vocab_size=cfg.vocab_size)
-    # train tokenizer on a sample for speed
     sample = texts[: min(40, len(texts))]
     tokenizer.train(sample, vocab_size=cfg.vocab_size)
 
@@ -85,37 +113,50 @@ def train_language_model(cfg: Optional[TrainConfig] = None) -> Dict[str, Any]:
         batch_ids = []
         for _ in range(cfg.batch_size):
             seq = sequences[np.random.randint(0, len(sequences))]
-            # pad
             if len(seq) < cfg.seq_len:
                 seq = seq + [tokenizer.pad_id] * (cfg.seq_len - len(seq))
             else:
                 seq = seq[: cfg.seq_len]
             batch_ids.append(seq)
         arr = np.array(batch_ids, dtype=np.int64)
-        # meaning text from first sequence decode
         meaning_text = tokenizer.decode(batch_ids[0])[:400]
         metrics = model.train_step(arr, arr, lr=lr, text_for_meaning=meaning_text)
-        lr *= cfg.lr_decay
+        neuro_metrics, neuro_lr_multiplier = _neuromorphic_training_control(model, cfg)
+        metrics.update(neuro_metrics)
+        lr *= cfg.lr_decay * neuro_lr_multiplier
         if step % cfg.report_every == 0 or step == 1 or step == cfg.steps:
-            history.append({k: float(v) for k, v in metrics.items()})
+            history.append({k: float(v) for k, v in metrics.items() if isinstance(v, (int, float, bool))})
+            neuro_text = ""
+            if neuro_metrics:
+                neuro_text = (
+                    f" neuro_act={neuro_metrics['neuro_activity_rate']:.3f}"
+                    f" neuro_E={neuro_metrics['neuro_energy_proxy']:.3f}"
+                    f" neuro_lr={neuro_metrics['neuro_lr_multiplier']:.3f}"
+                )
             print(
                 f"[{cfg.model_id} step {step}/{cfg.steps}] "
                 f"loss={metrics['loss']:.4f} ce={metrics['ce']:.4f} "
-                f"ppl={metrics['ppl']:.2f} moe={metrics['moe']:.4f}"
+                f"ppl={metrics['ppl']:.2f} moe={metrics['moe']:.4f}{neuro_text}"
             )
 
     out_dir = Path(cfg.output_dir) / cfg.model_id.replace("/", "_")
     meta = save_checkpoint(model, out_dir)
 
-    # smoke generate after train
     gen = model.generate(
         "Auro MESIE spectral meaning ratio rta teotl",
         max_new_tokens=32,
         temperature=0.8,
     )
 
+    neuro_info = None
+    if getattr(model, "_neuro", None) is not None:
+        try:
+            neuro_info = model._neuro.info()
+        except Exception:
+            neuro_info = None
+
     report = {
-        "schema": "auro.lm.train_report.v1",
+        "schema": "auro.lm.train_report.v2",
         "ok": True,
         "model_id": cfg.model_id,
         "mode": cfg.mode,
@@ -131,6 +172,16 @@ def train_language_model(cfg: Optional[TrainConfig] = None) -> Dict[str, Any]:
         "checkpoint": str(out_dir),
         "checkpoint_meta": meta,
         "sample_generation": gen.to_dict(),
+        "neuromorphic_training": {
+            "enabled": bool(neuro_info and neuro_info.get("neuromorphic_residual_enabled")),
+            "lr_control_enabled": bool(cfg.neuromorphic_lr_control),
+            "gradient_auxiliary_loss_implemented": False,
+            "forward_residual_gate_affects_logits": bool(neuro_info and neuro_info.get("neuromorphic_residual_enabled")),
+            "control_regularizer_affects_next_step_lr": bool(cfg.neuromorphic_lr_control),
+            "checkpoint_quality_verified": False,
+            "physical_energy_efficiency_verified": False,
+            "bridge": neuro_info,
+        },
         "elapsed_s": time.time() - t0,
         "train_config": asdict(cfg),
     }
@@ -151,6 +202,7 @@ def main() -> None:
     p.add_argument("--vocab-size", type=int, default=4096)
     p.add_argument("--output-dir", default="checkpoints/auro")
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--disable-neuromorphic-lr-control", action="store_true")
     args = p.parse_args()
     cfg = TrainConfig(
         model_id=args.model,
@@ -162,9 +214,10 @@ def main() -> None:
         vocab_size=args.vocab_size,
         output_dir=args.output_dir,
         seed=args.seed,
+        neuromorphic_lr_control=not args.disable_neuromorphic_lr_control,
     )
     report = train_language_model(cfg)
-    print(json.dumps({k: report[k] for k in report if k != "history" and k != "sample_generation"}, indent=2))
+    print(json.dumps({k: report[k] for k in report if k not in {"history", "sample_generation"}}, indent=2))
     print("--- sample ---")
     print(report["sample_generation"]["text"][:500])
 
