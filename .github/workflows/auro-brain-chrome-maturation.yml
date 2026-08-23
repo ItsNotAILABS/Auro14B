@@ -1,0 +1,113 @@
+name: AURO BRAIN Chrome Maturation
+
+on:
+  pull_request:
+    paths:
+      - 'training/**'
+      - 'scripts/retrain_all_auro_dev.py'
+      - 'browser-runtime/**'
+      - '.github/workflows/auro-brain-chrome-maturation.yml'
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: 'Training steps per AURO dev model'
+        required: false
+        default: '3'
+      seq_len:
+        description: 'Training sequence length'
+        required: false
+        default: '32'
+
+permissions:
+  contents: read
+
+jobs:
+  chrome-showcase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: browser-runtime/package-lock.json
+      - name: Install Chrome LLM runtime
+        working-directory: browser-runtime
+        run: npm ci
+      - name: Build Chrome LLM showcase
+        working-directory: browser-runtime
+        run: npm run build
+      - name: Run browser worker smoke tests
+        working-directory: browser-runtime
+        run: npm run test:workers
+      - name: Verify local-only inference policy
+        run: |
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const worker = fs.readFileSync('browser-runtime/src/model-worker.js', 'utf8');
+          if (!worker.includes('env.allowRemoteModels = false')) throw new Error('remote model loading must remain disabled');
+          if (!worker.includes("device = globalThis.navigator?.gpu ? 'webgpu' : 'wasm'")) throw new Error('WebGPU/WASM selection missing');
+          if (!worker.includes("dtype: 'q8'")) throw new Error('q8 browser profile missing');
+          JS
+
+  retrain-family:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        model: [Auro-2B, Auro-4B, Auro-8B, Auro-14B, Auro-100B]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install native training dependencies
+        run: pip install numpy
+      - name: Train and restore ${{ matrix.model }} dev geometry
+        env:
+          MODEL: ${{ matrix.model }}
+          STEPS: ${{ github.event_name == 'workflow_dispatch' && inputs.steps || '1' }}
+          SEQ_LEN: ${{ github.event_name == 'workflow_dispatch' && inputs.seq_len || '16' }}
+        run: |
+          python scripts/retrain_all_auro_dev.py \
+            --models "$MODEL" \
+            --steps "$STEPS" \
+            --seq-len "$SEQ_LEN" \
+            --max-files 12 \
+            --max-chars 40000 \
+            --output "artifacts/retrain-$MODEL"
+      - name: Verify restoration receipt
+        env:
+          MODEL: ${{ matrix.model }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path(f"artifacts/retrain-{os.environ['MODEL']}/portfolio-retrain-receipt.json")
+          data = json.loads(path.read_text())
+          assert data['all_restored'] is True
+          assert data['models'][0]['claim_boundary']['dev_geometry_trained'] is True
+          assert data['models'][0]['claim_boundary']['full_parameter_target_trained'] is False
+          assert data['evidence_sha256']
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retrain-${{ matrix.model }}
+          path: artifacts/retrain-${{ matrix.model }}/portfolio-retrain-receipt.json
+
+  brain-report-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify BRAIN-AI training seed and security invariants
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('training/brain_ai_seed_report.md').read_text()
+          required = ['circuit breakers', 'optimistic locking', 'TTL leases', 'structured JSON telemetry', 'No hardcoded API keys', 'replay protection']
+          missing = [x for x in required if x.lower() not in text.lower()]
+          assert not missing, missing
+          PY
