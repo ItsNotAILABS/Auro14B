@@ -1,0 +1,251 @@
+"""Recurrent surprise-written memory for AURO sequence processing.
+
+This module adds a compact persistent state lane that sits inside the AURO
+language-model forward path. It writes only informative hidden-state changes,
+retrieves content against the current token representation, and returns a
+bounded residual for reinjection before downstream meaning/spectral/neuro
+planes.
+
+Batch semantics are explicit: batch-size-one inference preserves recurrent
+state across forward calls; multi-sample training batches use isolated ephemeral
+banks so unrelated samples can never leak hidden state into one another.
+"""
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Any
+
+import numpy as np
+
+
+@dataclass(frozen=True)
+class RecurrentMemoryConfig:
+    max_slots: int = 256
+    surprise_threshold: float = 0.10
+    write_strength: float = 0.35
+    read_strength: float = 0.10
+    decay: float = 0.995
+    top_k: int = 8
+    recency_bias: float = 0.04
+    retention_age_penalty: float = 0.002
+    retention_strength_weight: float = 1.0
+    norm_epsilon: float = 1e-8
+
+
+@dataclass
+class RecurrentMemoryReceipt:
+    tokens_seen: int = 0
+    writes: int = 0
+    skipped_writes: int = 0
+    reads: int = 0
+    evictions: int = 0
+    slots: int = 0
+    mean_surprise: float = 0.0
+    max_surprise: float = 0.0
+    mean_read_gate: float = 0.0
+    state_norm: float = 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            **asdict(self),
+            "schema": "auro.recurrent-surprise-memory.receipt.v2",
+            "persistent_runtime_state": True,
+            "changes_checkpoint_weights": False,
+        }
+
+
+class RecurrentSurpriseMemory:
+    """Bounded content-addressed recurrent memory over hidden states."""
+
+    schema = "auro.recurrent-surprise-memory.v2"
+
+    def __init__(self, hidden_dim: int, config: RecurrentMemoryConfig | None = None):
+        self.hidden_dim = int(hidden_dim)
+        if self.hidden_dim <= 0:
+            raise ValueError("hidden_dim must be positive")
+        self.config = config or RecurrentMemoryConfig()
+        if self.config.max_slots <= 0:
+            raise ValueError("max_slots must be positive")
+        if self.config.top_k <= 0:
+            raise ValueError("top_k must be positive")
+        self.reset()
+
+    def reset(self) -> None:
+        self._keys = np.empty((0, self.hidden_dim), dtype=np.float64)
+        self._values = np.empty((0, self.hidden_dim), dtype=np.float64)
+        self._strength = np.empty((0,), dtype=np.float64)
+        self._age = np.empty((0,), dtype=np.float64)
+        self._state = np.zeros((self.hidden_dim,), dtype=np.float64)
+        self._initialized = False
+        self.receipt = RecurrentMemoryReceipt()
+
+    @staticmethod
+    def _safe_norm(x: np.ndarray, eps: float) -> float:
+        return float(np.sqrt(np.sum(np.square(x))) + eps)
+
+    def _normalize(self, x: np.ndarray) -> np.ndarray:
+        return x / self._safe_norm(x, self.config.norm_epsilon)
+
+    def _retention_scores(self) -> np.ndarray:
+        if not len(self._strength):
+            return np.empty((0,), dtype=np.float64)
+        return (
+            self.config.retention_strength_weight * self._strength
+            - self.config.retention_age_penalty * self._age
+        )
+
+    def _store(self, key: np.ndarray, value_memory: np.ndarray, surprise: float) -> None:
+        strength = min(2.0, max(0.0, float(surprise)))
+        if len(self._age):
+            self._age += 1.0
+        if len(self._keys) < self.config.max_slots:
+            self._keys = np.concatenate([self._keys, key[None, :]], axis=0)
+            self._values = np.concatenate([self._values, value_memory[None, :]], axis=0)
+            self._strength = np.concatenate([self._strength, np.asarray([strength])])
+            self._age = np.concatenate([self._age, np.asarray([0.0])])
+            return
+        retention = self._retention_scores()
+        victim = int(np.argmin(retention))
+        incoming_score = self.config.retention_strength_weight * strength
+        if incoming_score <= retention[victim]:
+            self.receipt.skipped_writes += 1
+            return
+        self._keys[victim] = key
+        self._values[victim] = value_memory
+        self._strength[victim] = strength
+        self._age[victim] = 0.0
+        self.receipt.evictions += 1
+
+    def _observe_one(self, value: np.ndarray) -> float:
+        value = np.asarray(value, dtype=np.float64).reshape(self.hidden_dim)
+        if not self._initialized:
+            surprise = 1.0
+            prediction_error = value
+            self._state = value.copy()
+            self._initialized = True
+        else:
+            prediction_error = value - self._state
+            surprise = self._safe_norm(prediction_error, self.config.norm_epsilon) / max(
+                self._safe_norm(value, self.config.norm_epsilon), self.config.norm_epsilon
+            )
+            self._state = 0.90 * self._state + 0.10 * value
+        self.receipt.tokens_seen += 1
+        n = self.receipt.tokens_seen
+        self.receipt.mean_surprise += (float(surprise) - self.receipt.mean_surprise) / n
+        self.receipt.max_surprise = max(self.receipt.max_surprise, float(surprise))
+        self.receipt.state_norm = self._safe_norm(self._state, self.config.norm_epsilon)
+        if surprise >= self.config.surprise_threshold:
+            key = self._normalize(value)
+            error_unit = self._normalize(prediction_error)
+            value_memory = self._normalize(
+                (1.0 - self.config.write_strength) * key
+                + self.config.write_strength * error_unit
+            )
+            before = self.receipt.skipped_writes
+            self._store(key, value_memory, surprise)
+            if self.receipt.skipped_writes == before:
+                self.receipt.writes += 1
+        else:
+            if len(self._age):
+                self._age += 1.0
+            self.receipt.skipped_writes += 1
+        if len(self._strength):
+            self._strength *= self.config.decay
+        self.receipt.slots = int(len(self._keys))
+        return float(surprise)
+
+    def observe(self, hidden: np.ndarray) -> np.ndarray:
+        values = np.asarray(hidden, dtype=np.float64).reshape(-1, self.hidden_dim)
+        surprises = np.zeros((len(values),), dtype=np.float64)
+        for idx, value in enumerate(values):
+            surprises[idx] = self._observe_one(value)
+        return surprises
+
+    def read(self, query: np.ndarray) -> tuple[np.ndarray, float]:
+        q = np.asarray(query, dtype=np.float64).reshape(self.hidden_dim)
+        if not len(self._keys):
+            return np.zeros_like(q), 0.0
+        qn = self._normalize(q)
+        similarity = self._keys @ qn
+        recency = 1.0 / (1.0 + self._age)
+        retention = np.maximum(self._retention_scores(), 0.0)
+        scores = similarity + self.config.recency_bias * recency + 0.02 * retention
+        top_k = min(int(self.config.top_k), len(scores))
+        indices = np.argpartition(scores, -top_k)[-top_k:]
+        selected = scores[indices] - np.max(scores[indices])
+        weights = np.exp(np.clip(selected, -30.0, 0.0)) * np.maximum(self._strength[indices], 1e-6)
+        weights /= np.sum(weights) + self.config.norm_epsilon
+        memory = weights @ self._values[indices]
+        agreement = float(np.clip(np.dot(qn, self._normalize(memory)), -1.0, 1.0))
+        gate = self.config.read_strength * max(0.0, agreement)
+        self.receipt.reads += 1
+        n = self.receipt.reads
+        self.receipt.mean_read_gate += (gate - self.receipt.mean_read_gate) / n
+        return memory, float(gate)
+
+    def _fuse_single_stream(self, values: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+        fused = np.asarray(values).copy()
+        flat = fused.reshape(-1, self.hidden_dim)
+        surprises: list[float] = []
+        gates: list[float] = []
+        for idx in range(len(flat)):
+            memory, gate = self.read(flat[idx]) if len(self._keys) else (np.zeros(self.hidden_dim), 0.0)
+            if gate > 0.0:
+                flat[idx] = flat[idx] + gate * memory.astype(flat.dtype, copy=False)
+            gates.append(float(gate))
+            surprises.append(self._observe_one(flat[idx]))
+        receipt = self.receipt.to_dict()
+        receipt["last_surprise"] = surprises[-1] if surprises else 0.0
+        receipt["last_read_gate"] = gates[-1] if gates else 0.0
+        receipt["max_slots"] = self.config.max_slots
+        receipt["top_k"] = self.config.top_k
+        receipt["retention_policy"] = "surprise_strength_minus_age_penalty"
+        receipt["batch_isolation"] = False
+        return fused, receipt
+
+    def fuse(self, hidden: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+        values = np.asarray(hidden)
+        if values.shape[-1] != self.hidden_dim:
+            raise ValueError("hidden dimension mismatch")
+        if values.ndim >= 3 and values.shape[0] > 1:
+            outputs = []
+            sample_receipts = []
+            for sample in values:
+                bank = RecurrentSurpriseMemory(self.hidden_dim, self.config)
+                sample_output, sample_receipt = bank._fuse_single_stream(sample)
+                outputs.append(sample_output)
+                sample_receipts.append(sample_receipt)
+            return np.stack(outputs, axis=0), {
+                "schema": "auro.recurrent-surprise-memory.batch-isolated.v1",
+                "batch_isolation": True,
+                "batch_size": int(values.shape[0]),
+                "persistent_runtime_state_used": False,
+                "sample_receipts": sample_receipts,
+                "writes": int(sum(item.get("writes", 0) for item in sample_receipts)),
+                "reads": int(sum(item.get("reads", 0) for item in sample_receipts)),
+                "changes_checkpoint_weights": False,
+            }
+        return self._fuse_single_stream(values)
+
+    def snapshot(self) -> dict[str, Any]:
+        retention = self._retention_scores()
+        return {
+            "schema": self.schema,
+            "hidden_dim": self.hidden_dim,
+            "slots": int(len(self._keys)),
+            "max_slots": int(self.config.max_slots),
+            "state_norm": self._safe_norm(self._state, self.config.norm_epsilon),
+            "retention_min": float(np.min(retention)) if len(retention) else 0.0,
+            "retention_max": float(np.max(retention)) if len(retention) else 0.0,
+            "receipt": self.receipt.to_dict(),
+            "config": asdict(self.config),
+            "batch_policy": "persistent_for_batch_1_ephemeral_isolated_for_batch_gt_1",
+            "claim_boundary": {
+                "persistent_runtime_state": True,
+                "checkpoint_weights_changed": False,
+                "trained_memory_quality_verified": False,
+            },
+        }
+
+
+__all__ = ["RecurrentMemoryConfig", "RecurrentMemoryReceipt", "RecurrentSurpriseMemory"]
