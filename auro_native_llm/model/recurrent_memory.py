@@ -28,6 +28,8 @@ class RecurrentMemoryConfig:
     decay: float = 0.995
     top_k: int = 8
     recency_bias: float = 0.04
+    retention_age_penalty: float = 0.002
+    retention_strength_weight: float = 1.0
     norm_epsilon: float = 1e-8
 
 
@@ -37,6 +39,7 @@ class RecurrentMemoryReceipt:
     writes: int = 0
     skipped_writes: int = 0
     reads: int = 0
+    evictions: int = 0
     slots: int = 0
     mean_surprise: float = 0.0
     max_surprise: float = 0.0
@@ -46,7 +49,7 @@ class RecurrentMemoryReceipt:
     def to_dict(self) -> dict[str, Any]:
         return {
             **asdict(self),
-            "schema": "auro.recurrent-surprise-memory.receipt.v1",
+            "schema": "auro.recurrent-surprise-memory.receipt.v2",
             "persistent_runtime_state": True,
             "changes_checkpoint_weights": False,
         }
@@ -58,10 +61,12 @@ class RecurrentSurpriseMemory:
     Each token is compared to an exponentially-smoothed recurrent state. The
     normalized prediction error becomes a surprise score. High-surprise states
     are normalized and stored with a scalar strength. Reads use cosine
-    similarity plus a small recency prior and return a bounded residual.
+    similarity plus a small recency prior. When memory is full, retention is
+    salience-aware: low-strength, stale entries are evicted before rare strong
+    memories even when the latter are older.
     """
 
-    schema = "auro.recurrent-surprise-memory.v1"
+    schema = "auro.recurrent-surprise-memory.v2"
 
     def __init__(self, hidden_dim: int, config: RecurrentMemoryConfig | None = None):
         self.hidden_dim = int(hidden_dim)
@@ -90,6 +95,38 @@ class RecurrentSurpriseMemory:
     def _normalize(self, x: np.ndarray) -> np.ndarray:
         return x / self._safe_norm(x, self.config.norm_epsilon)
 
+    def _retention_scores(self) -> np.ndarray:
+        if not len(self._strength):
+            return np.empty((0,), dtype=np.float64)
+        return (
+            self.config.retention_strength_weight * self._strength
+            - self.config.retention_age_penalty * self._age
+        )
+
+    def _store(self, key: np.ndarray, value_memory: np.ndarray, surprise: float) -> None:
+        strength = min(2.0, max(0.0, float(surprise)))
+        if len(self._age):
+            self._age += 1.0
+
+        if len(self._keys) < self.config.max_slots:
+            self._keys = np.concatenate([self._keys, key[None, :]], axis=0)
+            self._values = np.concatenate([self._values, value_memory[None, :]], axis=0)
+            self._strength = np.concatenate([self._strength, np.asarray([strength])])
+            self._age = np.concatenate([self._age, np.asarray([0.0])])
+            return
+
+        retention = self._retention_scores()
+        victim = int(np.argmin(retention))
+        incoming_score = self.config.retention_strength_weight * strength
+        if incoming_score <= retention[victim]:
+            self.receipt.skipped_writes += 1
+            return
+        self._keys[victim] = key
+        self._values[victim] = value_memory
+        self._strength[victim] = strength
+        self._age[victim] = 0.0
+        self.receipt.evictions += 1
+
     def _observe_one(self, value: np.ndarray) -> float:
         value = np.asarray(value, dtype=np.float64).reshape(self.hidden_dim)
         if not self._initialized:
@@ -103,7 +140,6 @@ class RecurrentSurpriseMemory:
                 self._safe_norm(value, self.config.norm_epsilon),
                 self.config.norm_epsilon,
             )
-            # Slow recurrent state: stable enough to detect semantic transitions.
             self._state = 0.90 * self._state + 0.10 * value
 
         self.receipt.tokens_seen += 1
@@ -120,14 +156,10 @@ class RecurrentSurpriseMemory:
                 (1.0 - self.config.write_strength) * key
                 + self.config.write_strength * error_unit
             )
-            self._keys = np.concatenate([self._keys, key[None, :]], axis=0)[-self.config.max_slots :]
-            self._values = np.concatenate([self._values, value_memory[None, :]], axis=0)[-self.config.max_slots :]
-            self._strength = np.concatenate([
-                self._strength,
-                np.asarray([min(2.0, max(0.0, float(surprise)))], dtype=np.float64),
-            ])[-self.config.max_slots :]
-            self._age = np.concatenate([self._age + 1.0, np.asarray([0.0])])[-self.config.max_slots :]
-            self.receipt.writes += 1
+            before = self.receipt.skipped_writes
+            self._store(key, value_memory, surprise)
+            if self.receipt.skipped_writes == before:
+                self.receipt.writes += 1
         else:
             if len(self._age):
                 self._age += 1.0
@@ -152,7 +184,8 @@ class RecurrentSurpriseMemory:
         qn = self._normalize(q)
         similarity = self._keys @ qn
         recency = 1.0 / (1.0 + self._age)
-        scores = similarity + self.config.recency_bias * recency
+        retention = np.maximum(self._retention_scores(), 0.0)
+        scores = similarity + self.config.recency_bias * recency + 0.02 * retention
         top_k = min(int(self.config.top_k), len(scores))
         indices = np.argpartition(scores, -top_k)[-top_k:]
         selected = scores[indices]
@@ -160,7 +193,6 @@ class RecurrentSurpriseMemory:
         weights = np.exp(np.clip(selected, -30.0, 0.0)) * np.maximum(self._strength[indices], 1e-6)
         weights = weights / (np.sum(weights) + self.config.norm_epsilon)
         memory = weights @ self._values[indices]
-        # Read gate depends on query-to-memory agreement; never exceeds configured strength.
         agreement = float(np.clip(np.dot(qn, self._normalize(memory)), -1.0, 1.0))
         gate = self.config.read_strength * max(0.0, agreement)
         self.receipt.reads += 1
@@ -174,8 +206,6 @@ class RecurrentSurpriseMemory:
             raise ValueError("hidden dimension mismatch")
         fused = values.copy()
         flat = fused.reshape(-1, self.hidden_dim)
-        # Observe/read causally in token order: current token can retrieve earlier writes,
-        # then becomes eligible to affect future tokens.
         surprises: list[float] = []
         gates: list[float] = []
         for idx in range(len(flat)):
@@ -189,15 +219,19 @@ class RecurrentSurpriseMemory:
         receipt["last_read_gate"] = gates[-1] if gates else 0.0
         receipt["max_slots"] = self.config.max_slots
         receipt["top_k"] = self.config.top_k
+        receipt["retention_policy"] = "surprise_strength_minus_age_penalty"
         return fused, receipt
 
     def snapshot(self) -> dict[str, Any]:
+        retention = self._retention_scores()
         return {
             "schema": self.schema,
             "hidden_dim": self.hidden_dim,
             "slots": int(len(self._keys)),
             "max_slots": int(self.config.max_slots),
             "state_norm": self._safe_norm(self._state, self.config.norm_epsilon),
+            "retention_min": float(np.min(retention)) if len(retention) else 0.0,
+            "retention_max": float(np.max(retention)) if len(retention) else 0.0,
             "receipt": self.receipt.to_dict(),
             "config": asdict(self.config),
             "claim_boundary": {
