@@ -8,7 +8,9 @@ forward path. It combines two complementary mechanisms:
    states, and retrieves content against the current token representation.
 
 The hybrid result is reinjected before downstream meaning/spectral/physics/neuro
-planes. Runtime state persists across forward calls until explicitly reset.
+planes. Batch-size-one inference preserves recurrent state across forward calls;
+multi-sample batches use isolated ephemeral banks to prevent cross-sample state
+contamination.
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -113,25 +115,44 @@ class DeltaAttentionEngine:
         weights /= weights.sum(axis=1, keepdims=True) + 1e-9
         return weights @ self._slots
 
-    def fuse(self, hidden: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
-        """Fuse transition memory and recurrent surprise memory causally.
+    def _spawn_ephemeral(self) -> "DeltaAttentionEngine":
+        cfg = self.surprise_memory.config
+        return DeltaAttentionEngine(
+            self.hidden_dim,
+            max_slots=self.max_slots,
+            novelty_threshold=self.novelty_threshold,
+            blend=self.blend,
+            surprise_max_slots=cfg.max_slots,
+            surprise_threshold=cfg.surprise_threshold,
+            surprise_blend=cfg.read_strength,
+            surprise_top_k=cfg.top_k,
+        )
 
-        Delta memory contributes to the current final token using stored
-        transitions. Surprise memory then processes the whole sequence in token
-        order, allowing earlier informative states to influence later tokens in
-        the same forward call and future calls in the recurrent session.
-        """
+    def fuse(self, hidden: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+        """Fuse transition memory and recurrent surprise memory causally."""
         values = np.asarray(hidden)
+        if values.ndim >= 3 and values.shape[0] > 1:
+            outputs = []
+            sample_receipts = []
+            for sample in values:
+                bank = self._spawn_ephemeral()
+                sample_output, sample_receipt = bank.fuse(sample)
+                outputs.append(sample_output)
+                sample_receipts.append(sample_receipt)
+            return np.stack(outputs, axis=0), {
+                "schema": "auro.delta-attention.hybrid-memory.batch-isolated.v1",
+                "batch_isolation": True,
+                "batch_size": int(values.shape[0]),
+                "persistent_runtime_state_used": False,
+                "sample_receipts": sample_receipts,
+                "checkpoint_weights_changed": False,
+            }
+
         self.observe(values)
         fused = values.copy()
-
-        # Transition memory: preserve the established behavior.
         delta = self.residual(values[..., -1, :]).reshape(fused[..., -1, :].shape)
         fused[..., -1, :] += self.blend * delta.astype(fused.dtype, copy=False)
-
-        # Recurrent surprise memory: deeper causal state lane.
         fused, surprise_receipt = self.surprise_memory.fuse(fused)
-
         receipt = self.receipt.to_dict()
         receipt["schema"] = "auro.delta-attention.hybrid-memory.v2"
         receipt["delta_memory"] = {
@@ -141,6 +162,7 @@ class DeltaAttentionEngine:
         }
         receipt["surprise_memory"] = surprise_receipt
         receipt["persistent_across_forward_calls"] = True
+        receipt["batch_isolation"] = False
         receipt["reset_boundary_explicit"] = True
         receipt["checkpoint_weights_changed"] = False
         return fused, receipt
@@ -152,6 +174,7 @@ class DeltaAttentionEngine:
             "delta_slots": int(len(self._slots)),
             "surprise": self.surprise_memory.snapshot(),
             "persistent_across_forward_calls": True,
+            "batch_policy": "persistent_for_batch_1_ephemeral_isolated_for_batch_gt_1",
         }
 
 
