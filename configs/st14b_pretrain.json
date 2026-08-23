@@ -1,7 +1,9 @@
 {
-  "schema": "auro.st14b.train.v1",
+  "schema": "auro.st14b.train.v2",
   "model": {
     "model_id": "AURO-ST-14B",
+    "research_parameter_label": 14200000000,
+    "canonical_parameter_target": 14339691520,
     "vocab_size": 128000,
     "hidden_size": 5120,
     "num_layers": 40,
@@ -35,6 +37,14 @@
     "evaluation_interval_steps": 500,
     "seed": 1337
   },
+  "required_bindings": {
+    "immutable_corpus_manifest": true,
+    "immutable_tokenizer_manifest": true,
+    "distributed_training_runner": true,
+    "optimizer_state_checkpoint": true,
+    "checkpoint_restoration_test": true,
+    "exact_serving_runtime_receipts": true
+  },
   "promotion_gates": {
     "loss_curve_required": true,
     "checkpoint_hashes_required": true,
@@ -42,7 +52,8 @@
     "exact_parameter_count_required": true,
     "quality_evaluation_required": true,
     "runtime_benchmark_required": true,
-    "h100_fp8_receipt_required": true
+    "h100_fp8_receipt_required": true,
+    "native_gqa_backend_required": true
   },
-  "status": "READY_FOR_COMPUTE"
+  "status": "PROTOTYPE"
 }
