@@ -17,7 +17,11 @@ from auro_native_llm.model.config import AuroLMConfig
 @dataclass(frozen=True)
 class ST14BArchitecture:
     model_id: str = "AURO-ST-14B"
-    total_parameter_target: int = 14_200_000_000
+    # The source research called the envelope 14.2B, while the implemented tied-
+    # embedding geometry below deterministically counts to 14,339,691,520.
+    # The implementation count is the canonical checkpoint target.
+    research_parameter_label: int = 14_200_000_000
+    total_parameter_target: int = 14_339_691_520
     vocab_size: int = 128_000
     hidden_dim: int = 5_120
     num_layers: int = 40
@@ -47,6 +51,8 @@ class ST14BArchitecture:
             raise ValueError("ST-14B requires RMSNorm")
         if self.positional_encoding != "rotary":
             raise ValueError("ST-14B requires RoPE")
+        if self.dense_parameter_estimate() != self.total_parameter_target:
+            raise ValueError("canonical parameter target must match implemented geometry")
 
     @property
     def gqa_ratio(self) -> int:
@@ -57,13 +63,6 @@ class ST14BArchitecture:
         return self.num_kv_heads * self.head_dim
 
     def dense_parameter_estimate(self) -> int:
-        """Estimate parameters for the implemented tied-embedding dense decoder.
-
-        Attention: Q + K + V + O.
-        SwiGLU: gate + up + down.
-        Norms: two per layer plus final norm.
-        """
-        self.validate()
         d = self.hidden_dim
         kv = self.kv_dim
         embeddings = self.vocab_size * d
@@ -73,58 +72,31 @@ class ST14BArchitecture:
         norms = 2 * d
         return embeddings + output + self.num_layers * (attention + swiglu + norms) + d
 
-    def kv_cache_bytes(
-        self,
-        *,
-        batch_size: int = 1,
-        sequence_length: int | None = None,
-        bytes_per_element: int = 2,
-    ) -> int:
-        """K+V cache size when KV heads are stored before query-head expansion."""
+    def kv_cache_bytes(self, *, batch_size: int = 1, sequence_length: int | None = None, bytes_per_element: int = 2) -> int:
         self.validate()
         seq = self.max_seq_len if sequence_length is None else sequence_length
         if batch_size < 1 or seq < 1 or bytes_per_element < 1:
             raise ValueError("cache dimensions and precision must be positive")
-        return (
-            2
-            * batch_size
-            * self.num_layers
-            * self.num_kv_heads
-            * seq
-            * self.head_dim
-            * bytes_per_element
-        )
+        return 2 * batch_size * self.num_layers * self.num_kv_heads * seq * self.head_dim * bytes_per_element
 
-    def mha_equivalent_kv_cache_bytes(
-        self,
-        *,
-        batch_size: int = 1,
-        sequence_length: int | None = None,
-        bytes_per_element: int = 2,
-    ) -> int:
+    def mha_equivalent_kv_cache_bytes(self, *, batch_size: int = 1, sequence_length: int | None = None, bytes_per_element: int = 2) -> int:
         seq = self.max_seq_len if sequence_length is None else sequence_length
-        return (
-            2
-            * batch_size
-            * self.num_layers
-            * self.num_heads
-            * seq
-            * self.head_dim
-            * bytes_per_element
-        )
+        return 2 * batch_size * self.num_layers * self.num_heads * seq * self.head_dim * bytes_per_element
 
     def report(self) -> dict[str, Any]:
         gqa = self.kv_cache_bytes()
         mha = self.mha_equivalent_kv_cache_bytes()
         estimate = self.dense_parameter_estimate()
         return {
-            "schema": "auro.st14b.architecture-report.v1",
+            "schema": "auro.st14b.architecture-report.v2",
             "status": self.status,
             "architecture": asdict(self),
             "derived": {
                 "gqa_ratio": self.gqa_ratio,
                 "dense_parameter_estimate": estimate,
-                "parameter_target_delta": estimate - self.total_parameter_target,
+                "canonical_parameter_target": self.total_parameter_target,
+                "research_parameter_label": self.research_parameter_label,
+                "research_label_delta": estimate - self.research_parameter_label,
                 "kv_cache_bytes_b1_bf16_8192": gqa,
                 "kv_cache_mib_b1_bf16_8192": gqa / (1024 * 1024),
                 "mha_equivalent_kv_cache_bytes_b1_bf16_8192": mha,
@@ -144,13 +116,6 @@ class ST14BArchitecture:
 
 
 def build_st14b_config(*, mode: str = "full", **overrides: Any) -> AuroLMConfig:
-    """Build the dense AURO ST-14B serving lane as an AuroLMConfig.
-
-    The profile intentionally disables core MoE and cross-modal/spectral blocks
-    so the stated 14B-class dense parameter geometry remains meaningful. NOVA,
-    Chimeria, MedinaMemorySystems, and AURO's outer cognition/runtime organs can
-    still compose around this serving core through canonical interfaces.
-    """
     spec = ST14BArchitecture()
     spec.validate()
     config = AuroLMConfig(
@@ -191,19 +156,18 @@ def build_st14b_config(*, mode: str = "full", **overrides: Any) -> AuroLMConfig:
         multi_task=False,
         use_delta_attention=False,
     )
-    config.extra.update(
-        {
-            "architecture_profile": "auro.st14b.efficiency.v1",
-            "status": spec.status,
-            "gqa_ratio": spec.gqa_ratio,
-            "dense_parameter_estimate": spec.dense_parameter_estimate(),
-            "kv_cache_policy": "store-unexpanded-kv-heads",
-            "quantization_targets": ["bf16", "fp16", "fp8", "int8", "int4"],
-            "serving_targets": ["vllm", "tensorrt-llm", "transformers", "llama.cpp"],
-            "benchmark_required": True,
-            "research_claims_are_targets_not_results": True,
-        }
-    )
+    config.extra.update({
+        "architecture_profile": "auro.st14b.efficiency.v2",
+        "status": spec.status,
+        "gqa_ratio": spec.gqa_ratio,
+        "dense_parameter_estimate": spec.dense_parameter_estimate(),
+        "research_parameter_label": spec.research_parameter_label,
+        "kv_cache_policy": "store-unexpanded-kv-heads",
+        "quantization_targets": ["bf16", "fp16", "fp8", "int8", "int4"],
+        "serving_targets": ["vllm", "tensorrt-llm", "transformers", "llama.cpp"],
+        "benchmark_required": True,
+        "research_claims_are_targets_not_results": True,
+    })
     for key, value in overrides.items():
         if hasattr(config, key):
             setattr(config, key, value)
@@ -214,28 +178,8 @@ def build_st14b_config(*, mode: str = "full", **overrides: Any) -> AuroLMConfig:
 
 def st14b_quantization_matrix() -> list[dict[str, Any]]:
     return [
-        {
-            "precision": "bf16",
-            "status": "REFERENCE",
-            "purpose": "quality and numerical baseline",
-            "promotion_gate": "exact-checkpoint perplexity and task evaluation",
-        },
-        {
-            "precision": "fp8",
-            "status": "PLANNED",
-            "purpose": "H100-class throughput lane",
-            "promotion_gate": "TensorRT-LLM or vLLM benchmark with accuracy delta",
-        },
-        {
-            "precision": "int8",
-            "status": "PLANNED",
-            "purpose": "enterprise GPU and CPU compatibility",
-            "promotion_gate": "calibration receipt plus exact evaluation",
-        },
-        {
-            "precision": "int4",
-            "status": "RESEARCH",
-            "purpose": "single-workstation and edge deployment",
-            "promotion_gate": "AWQ/GPTQ/GGUF comparison with quality floor",
-        },
+        {"precision": "bf16", "status": "REFERENCE", "purpose": "quality and numerical baseline", "promotion_gate": "exact-checkpoint perplexity and task evaluation"},
+        {"precision": "fp8", "status": "PLANNED", "purpose": "H100-class throughput lane", "promotion_gate": "TensorRT-LLM or vLLM benchmark with accuracy delta"},
+        {"precision": "int8", "status": "PLANNED", "purpose": "enterprise GPU and CPU compatibility", "promotion_gate": "calibration receipt plus exact evaluation"},
+        {"precision": "int4", "status": "RESEARCH", "purpose": "single-workstation and edge deployment", "promotion_gate": "AWQ/GPTQ/GGUF comparison with quality floor"},
     ]
