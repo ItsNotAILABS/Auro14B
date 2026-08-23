@@ -36,11 +36,34 @@ Critical gates are checkpoint integrity, training provenance, tokenizer integrit
 
 The readiness score is not MMLU, HumanEval, general intelligence, consciousness, or a model-quality percentage.
 
+## Tokenizer v2 migration
+
+The release tokenizer is versioned rather than renumbered.
+
+Tokenizer v1 remains:
+
+- control IDs `0..15`;
+- byte IDs `16..271`.
+
+Tokenizer v2 preserves those IDs exactly and appends load-bearing architecture controls after the byte vocabulary:
+
+- `<mathesis>` = `272`;
+- `<cain>` = `273`;
+- `<oro>` = `274`.
+
+This placement is deliberate. Inserting controls before the byte range would shift every byte embedding/output row and make old checkpoints semantically incompatible. Appending the controls keeps old control IDs and byte IDs unchanged.
+
+New `OpenHIMConfig` checkpoints use tokenizer v2 by default. A legacy checkpoint whose `config.json` has no `tokenizer_version` is interpreted as v1 during load. The loader verifies tensor shapes after selecting the correct tokenizer vocabulary.
+
+New training receipts bind `tokenizer_version` and the SHA-256 of `tokenizer.json`. The checkpoint verifier checks the tokenizer manifest's byte-lossless/no-UNK invariant, immutable control-ID layout when present, receipt tokenizer version, and receipt tokenizer hash.
+
+Generation suppresses every control-token ID, including the v2 extension IDs, so these architecture tokens cannot appear as invisible sampled output through the byte decoder.
+
 ## Current baseline
 
 `evidence/readiness-input.json` is deliberately conservative. It records known missing release evidence rather than fabricating readiness from source-code presence.
 
-At the time this gate was introduced, the current repository ByteTokenizer already provided byte-level round trip and no unknown token, but its stable control-token set did not yet include `<mathesis>`, `<cain>`, or `<oro>`. The tokenizer audit therefore treats that inventory as incomplete for the next release family. Existing checkpoint control IDs must not be renumbered to fix this; migration must append new stable controls or introduce a versioned tokenizer while preserving old checkpoint loadability.
+Tokenizer v2 architecture is now present, but tokenizer readiness is still not promoted to passing until an exact release checkpoint is trained/saved with v2 and its tokenizer audit receipt is pinned in the release evidence manifest.
 
 ## Runner failure boundary
 
