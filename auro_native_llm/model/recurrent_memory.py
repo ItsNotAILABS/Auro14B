@@ -6,10 +6,9 @@ retrieves content against the current token representation, and returns a
 bounded residual for reinjection before downstream meaning/spectral/neuro
 planes.
 
-The design is intentionally checkpoint-compatible at the AuroLanguageModel
-surface: memory state is runtime state, not a replacement for transformer
-weights. It can be reset between independent sequences or preserved across
-turns for recurrent sessions.
+Batch semantics are explicit: batch-size-one inference preserves recurrent
+state across forward calls; multi-sample training batches use isolated ephemeral
+banks so unrelated samples can never leak hidden state into one another.
 """
 from __future__ import annotations
 
@@ -56,15 +55,7 @@ class RecurrentMemoryReceipt:
 
 
 class RecurrentSurpriseMemory:
-    """Bounded content-addressed recurrent memory over hidden states.
-
-    Each token is compared to an exponentially-smoothed recurrent state. The
-    normalized prediction error becomes a surprise score. High-surprise states
-    are normalized and stored with a scalar strength. Reads use cosine
-    similarity plus a small recency prior. When memory is full, retention is
-    salience-aware: low-strength, stale entries are evicted before rare strong
-    memories even when the latter are older.
-    """
+    """Bounded content-addressed recurrent memory over hidden states."""
 
     schema = "auro.recurrent-surprise-memory.v2"
 
@@ -107,14 +98,12 @@ class RecurrentSurpriseMemory:
         strength = min(2.0, max(0.0, float(surprise)))
         if len(self._age):
             self._age += 1.0
-
         if len(self._keys) < self.config.max_slots:
             self._keys = np.concatenate([self._keys, key[None, :]], axis=0)
             self._values = np.concatenate([self._values, value_memory[None, :]], axis=0)
             self._strength = np.concatenate([self._strength, np.asarray([strength])])
             self._age = np.concatenate([self._age, np.asarray([0.0])])
             return
-
         retention = self._retention_scores()
         victim = int(np.argmin(retention))
         incoming_score = self.config.retention_strength_weight * strength
@@ -137,18 +126,14 @@ class RecurrentSurpriseMemory:
         else:
             prediction_error = value - self._state
             surprise = self._safe_norm(prediction_error, self.config.norm_epsilon) / max(
-                self._safe_norm(value, self.config.norm_epsilon),
-                self.config.norm_epsilon,
+                self._safe_norm(value, self.config.norm_epsilon), self.config.norm_epsilon
             )
             self._state = 0.90 * self._state + 0.10 * value
-
         self.receipt.tokens_seen += 1
-        old_mean = self.receipt.mean_surprise
         n = self.receipt.tokens_seen
-        self.receipt.mean_surprise = old_mean + (float(surprise) - old_mean) / n
+        self.receipt.mean_surprise += (float(surprise) - self.receipt.mean_surprise) / n
         self.receipt.max_surprise = max(self.receipt.max_surprise, float(surprise))
         self.receipt.state_norm = self._safe_norm(self._state, self.config.norm_epsilon)
-
         if surprise >= self.config.surprise_threshold:
             key = self._normalize(value)
             error_unit = self._normalize(prediction_error)
@@ -164,7 +149,6 @@ class RecurrentSurpriseMemory:
             if len(self._age):
                 self._age += 1.0
             self.receipt.skipped_writes += 1
-
         if len(self._strength):
             self._strength *= self.config.decay
         self.receipt.slots = int(len(self._keys))
@@ -188,10 +172,9 @@ class RecurrentSurpriseMemory:
         scores = similarity + self.config.recency_bias * recency + 0.02 * retention
         top_k = min(int(self.config.top_k), len(scores))
         indices = np.argpartition(scores, -top_k)[-top_k:]
-        selected = scores[indices]
-        selected = selected - np.max(selected)
+        selected = scores[indices] - np.max(scores[indices])
         weights = np.exp(np.clip(selected, -30.0, 0.0)) * np.maximum(self._strength[indices], 1e-6)
-        weights = weights / (np.sum(weights) + self.config.norm_epsilon)
+        weights /= np.sum(weights) + self.config.norm_epsilon
         memory = weights @ self._values[indices]
         agreement = float(np.clip(np.dot(qn, self._normalize(memory)), -1.0, 1.0))
         gate = self.config.read_strength * max(0.0, agreement)
@@ -200,11 +183,8 @@ class RecurrentSurpriseMemory:
         self.receipt.mean_read_gate += (gate - self.receipt.mean_read_gate) / n
         return memory, float(gate)
 
-    def fuse(self, hidden: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
-        values = np.asarray(hidden)
-        if values.shape[-1] != self.hidden_dim:
-            raise ValueError("hidden dimension mismatch")
-        fused = values.copy()
+    def _fuse_single_stream(self, values: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+        fused = np.asarray(values).copy()
         flat = fused.reshape(-1, self.hidden_dim)
         surprises: list[float] = []
         gates: list[float] = []
@@ -220,7 +200,32 @@ class RecurrentSurpriseMemory:
         receipt["max_slots"] = self.config.max_slots
         receipt["top_k"] = self.config.top_k
         receipt["retention_policy"] = "surprise_strength_minus_age_penalty"
+        receipt["batch_isolation"] = False
         return fused, receipt
+
+    def fuse(self, hidden: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+        values = np.asarray(hidden)
+        if values.shape[-1] != self.hidden_dim:
+            raise ValueError("hidden dimension mismatch")
+        if values.ndim >= 3 and values.shape[0] > 1:
+            outputs = []
+            sample_receipts = []
+            for sample in values:
+                bank = RecurrentSurpriseMemory(self.hidden_dim, self.config)
+                sample_output, sample_receipt = bank._fuse_single_stream(sample)
+                outputs.append(sample_output)
+                sample_receipts.append(sample_receipt)
+            return np.stack(outputs, axis=0), {
+                "schema": "auro.recurrent-surprise-memory.batch-isolated.v1",
+                "batch_isolation": True,
+                "batch_size": int(values.shape[0]),
+                "persistent_runtime_state_used": False,
+                "sample_receipts": sample_receipts,
+                "writes": int(sum(item.get("writes", 0) for item in sample_receipts)),
+                "reads": int(sum(item.get("reads", 0) for item in sample_receipts)),
+                "changes_checkpoint_weights": False,
+            }
+        return self._fuse_single_stream(values)
 
     def snapshot(self) -> dict[str, Any]:
         retention = self._retention_scores()
@@ -234,6 +239,7 @@ class RecurrentSurpriseMemory:
             "retention_max": float(np.max(retention)) if len(retention) else 0.0,
             "receipt": self.receipt.to_dict(),
             "config": asdict(self.config),
+            "batch_policy": "persistent_for_batch_1_ephemeral_isolated_for_batch_gt_1",
             "claim_boundary": {
                 "persistent_runtime_state": True,
                 "checkpoint_weights_changed": False,
