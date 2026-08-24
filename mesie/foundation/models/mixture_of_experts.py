@@ -6,6 +6,12 @@ entropy and low router confidence, optionally blended with an external
 ``difficulty_signal`` supplied by a higher AURO recurrent/surprise controller.
 Unused expert slots are emitted as index ``-1`` with zero weight and are never
 executed, so adaptive routing changes real expert compute rather than telemetry.
+
+When callers do not pass an explicit difficulty signal, the MoE layer consumes
+AURO's context-local active-working-memory pressure. That closes the recurrent
+loop without changing SpectralGPT's public forward signature: hidden state from
+cycle N changes memory pressure, and pressure changes real expert execution on
+cycle N+1.
 """
 from __future__ import annotations
 
@@ -348,6 +354,22 @@ class MixtureOfExperts:
         )
         self.shared_weight = 0.1
 
+    def _working_memory_difficulty(self, x: np.ndarray) -> tuple[Optional[np.ndarray], str, float]:
+        """Read context-local recurrent pressure without introducing hard coupling."""
+        try:
+            from auro_native_llm.model.working_memory import (
+                current_compute_pressure,
+                current_compute_source,
+                current_difficulty_signal,
+            )
+
+            pressure = current_compute_pressure()
+            if pressure <= 0.0:
+                return None, current_compute_source(), 0.0
+            return current_difficulty_signal(x.shape[:-1]), current_compute_source(), pressure
+        except Exception:
+            return None, "unavailable", 0.0
+
     def forward(
         self,
         x: np.ndarray,
@@ -356,6 +378,14 @@ class MixtureOfExperts:
         difficulty_signal: Optional[np.ndarray] = None,
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         original_shape = x.shape
+        difficulty_source = "explicit" if difficulty_signal is not None else "router_intrinsic"
+        inherited_pressure = 0.0
+        if difficulty_signal is None:
+            inherited, source, inherited_pressure = self._working_memory_difficulty(x)
+            if inherited is not None:
+                difficulty_signal = inherited
+                difficulty_source = source or "active_working_memory"
+
         if self.modality_aware and modality_id is not None:
             expert_indices, expert_weights, routing_info = self.router.route_with_modality(
                 x, modality_id, training, difficulty_signal
@@ -396,6 +426,9 @@ class MixtureOfExperts:
             "adaptive_compute": routing_info.get("adaptive_compute", False),
             "specialist_compute_fraction": routing_info.get("specialist_compute_fraction", 1.0),
             "active_k_mean": routing_info.get("active_k_mean", float(self.top_k)),
+            "difficulty_source": difficulty_source,
+            "inherited_working_memory_pressure": float(inherited_pressure),
+            "working_memory_coupled": difficulty_source not in ("router_intrinsic", "explicit", "unavailable"),
         }
         return output, moe_info
 
