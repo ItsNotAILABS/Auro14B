@@ -9,6 +9,10 @@ planes.
 Batch semantics are explicit: batch-size-one inference preserves recurrent
 state across forward calls; multi-sample training batches use isolated ephemeral
 banks so unrelated samples can never leak hidden state into one another.
+
+Incremental semantics are also explicit: after a persistent stream is seeded,
+autoregressive calls can update only from the newest hidden token rather than
+re-learning the recomputed dense prefix.
 """
 from __future__ import annotations
 
@@ -48,7 +52,7 @@ class RecurrentMemoryReceipt:
     def to_dict(self) -> dict[str, Any]:
         return {
             **asdict(self),
-            "schema": "auro.recurrent-surprise-memory.receipt.v2",
+            "schema": "auro.recurrent-surprise-memory.receipt.v3",
             "persistent_runtime_state": True,
             "changes_checkpoint_weights": False,
         }
@@ -57,7 +61,7 @@ class RecurrentMemoryReceipt:
 class RecurrentSurpriseMemory:
     """Bounded content-addressed recurrent memory over hidden states."""
 
-    schema = "auro.recurrent-surprise-memory.v2"
+    schema = "auro.recurrent-surprise-memory.v3"
 
     def __init__(self, hidden_dim: int, config: RecurrentMemoryConfig | None = None):
         self.hidden_dim = int(hidden_dim)
@@ -183,12 +187,21 @@ class RecurrentSurpriseMemory:
         self.receipt.mean_read_gate += (gate - self.receipt.mean_read_gate) / n
         return memory, float(gate)
 
-    def _fuse_single_stream(self, values: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+    def _fuse_single_stream(
+        self,
+        values: np.ndarray,
+        *,
+        incremental: bool = False,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
         fused = np.asarray(values).copy()
         flat = fused.reshape(-1, self.hidden_dim)
         surprises: list[float] = []
         gates: list[float] = []
-        for idx in range(len(flat)):
+        if incremental and self._initialized and len(flat):
+            indices = [len(flat) - 1]
+        else:
+            indices = range(len(flat))
+        for idx in indices:
             memory, gate = self.read(flat[idx]) if len(self._keys) else (np.zeros(self.hidden_dim), 0.0)
             if gate > 0.0:
                 flat[idx] = flat[idx] + gate * memory.astype(flat.dtype, copy=False)
@@ -201,9 +214,16 @@ class RecurrentSurpriseMemory:
         receipt["top_k"] = self.config.top_k
         receipt["retention_policy"] = "surprise_strength_minus_age_penalty"
         receipt["batch_isolation"] = False
+        receipt["incremental"] = bool(incremental)
+        receipt["tokens_processed_this_call"] = len(list(indices)) if not isinstance(indices, range) else len(indices)
         return fused, receipt
 
-    def fuse(self, hidden: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+    def fuse(
+        self,
+        hidden: np.ndarray,
+        *,
+        incremental: bool = False,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
         values = np.asarray(hidden)
         if values.shape[-1] != self.hidden_dim:
             raise ValueError("hidden dimension mismatch")
@@ -212,11 +232,11 @@ class RecurrentSurpriseMemory:
             sample_receipts = []
             for sample in values:
                 bank = RecurrentSurpriseMemory(self.hidden_dim, self.config)
-                sample_output, sample_receipt = bank._fuse_single_stream(sample)
+                sample_output, sample_receipt = bank._fuse_single_stream(sample, incremental=False)
                 outputs.append(sample_output)
                 sample_receipts.append(sample_receipt)
             return np.stack(outputs, axis=0), {
-                "schema": "auro.recurrent-surprise-memory.batch-isolated.v1",
+                "schema": "auro.recurrent-surprise-memory.batch-isolated.v2",
                 "batch_isolation": True,
                 "batch_size": int(values.shape[0]),
                 "persistent_runtime_state_used": False,
@@ -225,7 +245,7 @@ class RecurrentSurpriseMemory:
                 "reads": int(sum(item.get("reads", 0) for item in sample_receipts)),
                 "changes_checkpoint_weights": False,
             }
-        return self._fuse_single_stream(values)
+        return self._fuse_single_stream(values, incremental=incremental)
 
     def snapshot(self) -> dict[str, Any]:
         retention = self._retention_scores()
@@ -240,6 +260,7 @@ class RecurrentSurpriseMemory:
             "receipt": self.receipt.to_dict(),
             "config": asdict(self.config),
             "batch_policy": "persistent_for_batch_1_ephemeral_isolated_for_batch_gt_1",
+            "incremental_decode_supported": True,
             "claim_boundary": {
                 "persistent_runtime_state": True,
                 "checkpoint_weights_changed": False,
