@@ -169,7 +169,6 @@ class DeltaAttentionEngine:
                 sample_output, sample_receipt = bank.fuse(sample)
                 outputs.append(sample_output)
                 sample_receipts.append(sample_receipt)
-            # Never inherit the final sample's pressure into another batch/call.
             clear_compute_pressure()
             return np.stack(outputs, axis=0), {
                 "schema": "auro.delta-attention.active-memory.batch-isolated.v1",
@@ -183,17 +182,13 @@ class DeltaAttentionEngine:
 
         self.observe(values)
         fused = values.copy()
-
-        # Transition memory preserves short structural deltas.
         delta = self.residual(values[..., -1, :]).reshape(fused[..., -1, :].shape)
         fused[..., -1, :] += self.blend * delta.astype(fused.dtype, copy=False)
 
-        # Surprise memory stores and retrieves high-information hidden states.
-        fused, surprise_receipt = self.surprise_memory.fuse(fused)
-
-        # Active working memory maintains fast/slow state. During autoregressive
-        # decoding the transformer recomputes the whole prefix, so after the
-        # initial seed only the final token updates the persistent controller.
+        fused, surprise_receipt = self.surprise_memory.fuse(
+            fused,
+            incremental=self.working_memory_incremental,
+        )
         fused, working_receipt = self.working_memory.fuse(
             fused,
             incremental=self.working_memory_incremental,
@@ -212,6 +207,7 @@ class DeltaAttentionEngine:
         receipt["hybrid_compute_pressure"] = hybrid_pressure
         receipt["compute_pressure_controls_next_moe_cycle"] = True
         receipt["persistent_across_forward_calls"] = True
+        receipt["incremental_decode"] = self.working_memory_incremental
         receipt["batch_isolation"] = False
         receipt["reset_boundary_explicit"] = True
         receipt["checkpoint_weights_changed"] = False
@@ -226,6 +222,7 @@ class DeltaAttentionEngine:
             "working_memory": self.working_memory.snapshot(),
             "persistent_across_forward_calls": True,
             "controls_next_moe_cycle": True,
+            "incremental_decode": self.working_memory_incremental,
             "batch_policy": "persistent_for_batch_1_ephemeral_isolated_for_batch_gt_1",
         }
 
