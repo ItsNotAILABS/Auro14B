@@ -9,13 +9,67 @@ consolidates persistent high-surprise structure.
 The controller also implements a bounded local predictive-plasticity update for
 its vector gates. This is not a claim of end-to-end checkpoint training; it is a
 real online self-supervised adaptation mechanism over working-memory parameters.
+
+A context-local compute-pressure channel lets MESIE MoE layers consume the prior
+cycle's memory pressure without forcing a new transformer API. This makes the
+loop recurrent: cycle N updates memory; cycle N+1 changes actual expert compute.
 """
 from __future__ import annotations
 
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from typing import Any
 
 import numpy as np
+
+
+# Context-local rather than process-global: concurrent requests do not share
+# recurrent pressure. A scalar is enough because each MoE router expands it over
+# its current token shape.
+_COMPUTE_PRESSURE: ContextVar[float] = ContextVar(
+    "auro_working_memory_compute_pressure", default=0.0
+)
+_COMPUTE_SOURCE: ContextVar[str] = ContextVar(
+    "auro_working_memory_compute_source", default="none"
+)
+
+
+def publish_compute_pressure(value: float, *, source: str = "working_memory") -> float:
+    pressure = float(np.clip(value, 0.0, 1.0))
+    _COMPUTE_PRESSURE.set(pressure)
+    _COMPUTE_SOURCE.set(str(source))
+    return pressure
+
+
+def clear_compute_pressure() -> None:
+    _COMPUTE_PRESSURE.set(0.0)
+    _COMPUTE_SOURCE.set("none")
+
+
+def current_compute_pressure() -> float:
+    return float(np.clip(_COMPUTE_PRESSURE.get(), 0.0, 1.0))
+
+
+def current_compute_source() -> str:
+    return str(_COMPUTE_SOURCE.get())
+
+
+def current_difficulty_signal(token_shape: tuple[int, ...] | list[int] | int) -> np.ndarray:
+    """Expand recurrent compute pressure over the active token geometry."""
+    pressure = current_compute_pressure()
+    if isinstance(token_shape, int):
+        shape = (int(token_shape),)
+    else:
+        shape = tuple(int(v) for v in token_shape)
+    if not shape:
+        return np.asarray(pressure, dtype=np.float64)
+    if any(v <= 0 for v in shape):
+        return np.zeros(shape, dtype=np.float64)
+    seq = shape[-1]
+    # Recent positions get the strongest inherited pressure. This matters during
+    # autoregressive decoding while remaining deterministic for training batches.
+    ramp = np.linspace(0.85, 1.0, seq, dtype=np.float64)
+    return np.clip(np.broadcast_to(ramp, shape) * pressure, 0.0, 1.0)
 
 
 @dataclass(frozen=True)
@@ -37,10 +91,11 @@ class ActiveWorkingMemory:
     """Persistent active working memory with fast/slow timescales.
 
     State is persistent for a single live sequence. Callers should use isolated
-    controllers for parallel samples; AuroLanguageModel handles that policy.
+    controllers for parallel samples; the recurrent memory plane enforces that
+    policy for multi-sample batches.
     """
 
-    schema = "auro.active-working-memory.v1"
+    schema = "auro.active-working-memory.v2"
 
     def __init__(self, hidden_dim: int, config: WorkingMemoryConfig | None = None):
         self.hidden_dim = int(hidden_dim)
@@ -54,7 +109,7 @@ class ActiveWorkingMemory:
         self.read_gate = np.ones(self.hidden_dim, dtype=np.float64)
         self.reset()
 
-    def reset(self) -> None:
+    def reset(self, *, clear_published_pressure: bool = True) -> None:
         self.fast = np.zeros(self.hidden_dim, dtype=np.float64)
         self.slow = np.zeros(self.hidden_dim, dtype=np.float64)
         self.last_hidden = np.zeros(self.hidden_dim, dtype=np.float64)
@@ -66,6 +121,8 @@ class ActiveWorkingMemory:
         self.mean_surprise = 0.0
         self.last_surprise = 0.0
         self.last_prediction_error = 0.0
+        if clear_published_pressure:
+            clear_compute_pressure()
 
     def _norm(self, x: np.ndarray) -> float:
         return float(np.linalg.norm(x) + self.config.epsilon)
@@ -82,7 +139,6 @@ class ActiveWorkingMemory:
         pressure = float(np.clip(self.compute_pressure, 0.0, 1.0))
         if not shape:
             return np.asarray(pressure, dtype=np.float64)
-        # Slightly prioritize later tokens while preserving the recurrent pressure.
         if len(shape) == 1:
             ramp = np.linspace(0.85, 1.0, max(1, shape[0]), dtype=np.float64)
             return np.clip(pressure * ramp, 0.0, 1.0)
@@ -98,7 +154,11 @@ class ActiveWorkingMemory:
         h = self._unit(hidden)
         e = self._unit(prediction_error)
         scale = lr * float(np.clip(surprise, 0.0, 2.0))
-        delta = np.clip(scale * h * e, -self.config.max_parameter_delta, self.config.max_parameter_delta)
+        delta = np.clip(
+            scale * h * e,
+            -self.config.max_parameter_delta,
+            self.config.max_parameter_delta,
+        )
         self.input_gate = np.clip(self.input_gate + delta, 0.5, 1.5)
         self.fast_gate = np.clip(self.fast_gate + 0.5 * delta, 0.5, 1.5)
         if surprise >= self.config.surprise_threshold:
@@ -146,15 +206,27 @@ class ActiveWorkingMemory:
         self.last_hidden = x.copy()
         self.initialized = True
         self._local_plasticity(x, error, surprise)
+        publish_compute_pressure(self.compute_pressure, source="active_working_memory")
         return read, surprise
 
-    def fuse(self, hidden: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+    def fuse(self, hidden: np.ndarray, *, incremental: bool = False) -> tuple[np.ndarray, dict[str, Any]]:
+        """Fuse working-memory readout into hidden states.
+
+        ``incremental=True`` updates only the final token after the controller is
+        initialized. This avoids repeatedly learning the same prefix during
+        autoregressive decoding where the dense transformer recomputes history.
+        The first call still consumes the full sequence to seed working memory.
+        """
         values = np.asarray(hidden)
         if values.shape[-1] != self.hidden_dim:
             raise ValueError("hidden dimension mismatch")
         fused = values.copy()
         flat = fused.reshape(-1, self.hidden_dim)
-        for idx in range(len(flat)):
+        if incremental and self.initialized and len(flat):
+            indices = [len(flat) - 1]
+        else:
+            indices = range(len(flat))
+        for idx in indices:
             read, _ = self.step(flat[idx])
             flat[idx] = flat[idx] + read.astype(flat.dtype, copy=False)
         return fused, self.snapshot()
@@ -182,6 +254,8 @@ class ActiveWorkingMemory:
             "last_surprise": float(self.last_surprise),
             "last_prediction_error": float(self.last_prediction_error),
             "compute_pressure": float(self.compute_pressure),
+            "published_compute_pressure": current_compute_pressure(),
+            "compute_source": current_compute_source(),
             "fast_norm": self._norm(self.fast),
             "slow_norm": self._norm(self.slow),
             "context_norm": self._norm(self.context_vector()),
@@ -189,7 +263,16 @@ class ActiveWorkingMemory:
             "active": True,
             "fast_slow_timescales": True,
             "online_local_plasticity": True,
+            "controls_next_cycle_compute": True,
         }
 
 
-__all__ = ["WorkingMemoryConfig", "ActiveWorkingMemory"]
+__all__ = [
+    "WorkingMemoryConfig",
+    "ActiveWorkingMemory",
+    "publish_compute_pressure",
+    "clear_compute_pressure",
+    "current_compute_pressure",
+    "current_compute_source",
+    "current_difficulty_signal",
+]
