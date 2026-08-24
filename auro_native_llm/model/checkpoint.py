@@ -1,6 +1,13 @@
-"""Save and load AURO language checkpoints with signed constitutional authorization."""
+"""Save and load AURO language checkpoints with signed constitutional authorization.
+
+Working-memory learning is checkpoint-owned. Fast/slow recurrent activations are
+session state and are intentionally not serialized into the model checkpoint;
+the locally plastic gate parameters and their configuration are durable model
+state and survive restart/resume.
+"""
 from __future__ import annotations
 
+from dataclasses import asdict
 import json
 import os
 import time
@@ -29,6 +36,70 @@ def _promotion_context() -> tuple[bool, Dict[str, Any], str | None, str | None]:
     return True, {**evidence_flags(receipt), "promotion_receipt": receipt}, signing_key, authorized_by
 
 
+def _working_memory(model: AuroLanguageModel):
+    delta = getattr(model, "delta_attention", None)
+    return getattr(delta, "working_memory", None) if delta is not None else None
+
+
+def _save_working_memory(model: AuroLanguageModel, directory: Path) -> list[str]:
+    memory = _working_memory(model)
+    if memory is None:
+        return []
+    arrays = memory.parameter_arrays()
+    payload = {name.split(".")[-1]: np.asarray(value) for name, value in arrays.items()}
+    np.savez_compressed(directory / "working_memory.npz", **payload)
+    config = {
+        "schema": "auro.working-memory.checkpoint.v1",
+        "hidden_dim": int(memory.hidden_dim),
+        "config": asdict(memory.config),
+        "parameter_names": sorted(payload),
+        "online_local_plasticity": True,
+        "transient_fast_slow_state_serialized": False,
+        "learning_survives_restart": True,
+    }
+    (directory / "working_memory.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
+    return ["working_memory.npz", "working_memory.json"]
+
+
+def _load_working_memory(model: AuroLanguageModel, directory: Path) -> None:
+    params_path = directory / "working_memory.npz"
+    config_path = directory / "working_memory.json"
+    memory = _working_memory(model)
+    if memory is None or not params_path.exists():
+        return
+
+    if config_path.exists():
+        from auro_native_llm.model.working_memory import WorkingMemoryConfig
+
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
+        cfg = payload.get("config", {})
+        if isinstance(cfg, dict):
+            memory.config = WorkingMemoryConfig(**{
+                key: value for key, value in cfg.items()
+                if key in WorkingMemoryConfig.__dataclass_fields__
+            })
+
+    blob = np.load(params_path)
+    expected = {
+        "input_gate": memory.input_gate,
+        "fast_gate": memory.fast_gate,
+        "slow_gate": memory.slow_gate,
+        "read_gate": memory.read_gate,
+    }
+    for name, current in expected.items():
+        if name not in blob.files:
+            raise RuntimeError(f"working-memory checkpoint missing {name}")
+        value = np.asarray(blob[name], dtype=np.float64)
+        if value.shape != current.shape:
+            raise RuntimeError(
+                f"working-memory parameter shape mismatch for {name}: "
+                f"checkpoint={value.shape} model={current.shape}"
+            )
+        setattr(memory, name, value.copy())
+    # Durable parameters resume; transient recurrent activations start clean.
+    memory.reset(clear_published_pressure=True)
+
+
 def save_checkpoint(model: AuroLanguageModel, directory: str | Path) -> Dict[str, Any]:
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
@@ -52,24 +123,34 @@ def save_checkpoint(model: AuroLanguageModel, directory: str | Path) -> Dict[str
     if layer_blob: np.savez_compressed(directory / "layers.npz", **layer_blob)
     model.tokenizer.save(directory / "tokenizer.json")
     (directory / "config.json").write_text(json.dumps(model.config.to_dict(), indent=2), encoding="utf-8")
+    working_memory_files = _save_working_memory(model, directory)
 
     checkpoint_id = os.environ.get("AURO_CHECKPOINT_ID", f"{model.model_id}-{model.train_steps}-{int(time.time())}")
     parent_id = os.environ.get("AURO_PARENT_CHECKPOINT_ID") or None
     promotion_requested, signed_evidence, signing_key, authorized_by = _promotion_context()
     safe_id = signed_evidence.get("rollback_target") or os.environ.get("AURO_SAFE_CHECKPOINT_ID") or parent_id
-    files = ["weights.npz", "tokenizer.json", "config.json"]
+    files = ["weights.npz", "tokenizer.json", "config.json", *working_memory_files]
     if (directory / "layers.npz").exists(): files.append("layers.npz")
     constitutional = build_constitutional_checkpoint(root=directory, checkpoint_id=checkpoint_id,
         checkpoint_class="weights", model_id=model.model_id, files=files,
         parent_checkpoint_id=parent_id,
-        optimization={"train_steps": model.train_steps, "parameter_target": model.config.parameter_target, "mode": model.config.mode},
+        optimization={
+            "train_steps": model.train_steps,
+            "parameter_target": model.config.parameter_target,
+            "mode": model.config.mode,
+            "working_memory_trainable": bool(working_memory_files),
+            "working_memory_local_plasticity": bool(working_memory_files),
+        },
         identity={"model_id": model.model_id, "compute_plane": "MESIE"},
         rollback={"safe_checkpoint_id": safe_id}, evidence={**signed_evidence, "rollback_target": safe_id},
         promotion_requested=promotion_requested, signing_key=signing_key, authorized_by=authorized_by)
     write_constitutional_manifest(directory, constitutional)
-    meta = {"schema": "auro.lm.checkpoint.v3", "model_id": model.model_id, "checkpoint_id": checkpoint_id,
+    meta = {"schema": "auro.lm.checkpoint.v4", "model_id": model.model_id, "checkpoint_id": checkpoint_id,
         "num_params": model.num_params, "train_steps": model.train_steps, "compute_plane": "MESIE", "native": True,
         "saved_at_unix": int(time.time()), "parameter_target": model.config.parameter_target, "mode": model.config.mode,
+        "working_memory_parameters": bool(working_memory_files),
+        "working_memory_files": working_memory_files,
+        "transient_working_memory_state_serialized": False,
         "constitutional_manifest": "constitutional_manifest.json", "promotion_status": constitutional.promotion_status,
         "constitutional_sha256": constitutional.manifest_sha256, "authorized_by": constitutional.authorized_by}
     (directory / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -109,6 +190,7 @@ def load_checkpoint(directory: str | Path, *, allow_quarantined: bool = False) -
                 for name in ("gate_proj", "up_proj", "down_proj"):
                     key = f"L{i}_ffn_{name}"
                     if key in blob.files: setattr(ffn, name, blob[key])
+    _load_working_memory(model, directory)
     meta_path = directory / "meta.json"
     if meta_path.exists(): model.train_steps = int(json.loads(meta_path.read_text(encoding="utf-8")).get("train_steps", 0))
     if constitutional is not None: model.constitutional_checkpoint = constitutional  # type: ignore[attr-defined]
