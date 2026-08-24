@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import hashlib
-from typing import Any, Iterable, Sequence
+from typing import Any, Sequence
 
 import numpy as np
 
@@ -94,6 +94,7 @@ class HierarchicalContextMemory:
         self.last_summary = np.zeros(int(model.config.hidden_dim), dtype=np.float64)
         self.last_receipt: HierarchicalContextReceipt | None = None
         self.last_chunks: list[HierarchicalChunk] = []
+        self.last_selected: list[HierarchicalChunk] = []
 
     @property
     def hidden_dim(self) -> int:
@@ -153,11 +154,11 @@ class HierarchicalContextMemory:
         query: np.ndarray,
         *,
         start: int,
-        total: int,
+        global_total: int,
     ) -> tuple[float, float, float, float, np.ndarray]:
         vector = self._vector(ids)
         similarity = float(np.dot(vector, query)) if np.any(vector) and np.any(query) else 0.0
-        recency = float(start + len(ids)) / float(max(1, total))
+        recency = float(start + len(ids)) / float(max(1, global_total))
         diversity = self._diversity(ids)
         score = 0.72 * similarity + 0.18 * recency + 0.10 * diversity
         return float(score), similarity, recency, diversity, vector
@@ -170,15 +171,16 @@ class HierarchicalContextMemory:
         size: int,
         level: str,
         base_start: int = 0,
+        global_total: int | None = None,
     ) -> list[tuple[HierarchicalChunk, np.ndarray, np.ndarray]]:
         rows: list[tuple[HierarchicalChunk, np.ndarray, np.ndarray]] = []
-        total = int(history.size) + int(base_start)
+        total = int(global_total or (history.size + base_start))
         for local_start in range(0, int(history.size), int(size)):
             arr = history[local_start : local_start + size]
             start = int(base_start + local_start)
             end = start + int(arr.size)
             score, similarity, recency, diversity, vector = self._score(
-                arr, query, start=start, total=total
+                arr, query, start=start, global_total=total
             )
             chunk = HierarchicalChunk(
                 id=f"{level}:{start}:{end}",
@@ -203,8 +205,15 @@ class HierarchicalContextMemory:
         self,
         history: np.ndarray,
         query: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray, list[HierarchicalChunk], dict[str, int]]:
-        macro_rows = self._chunk_rows(history, query, size=self.macro_size, level="macro")
+    ) -> tuple[np.ndarray, np.ndarray, list[HierarchicalChunk], list[HierarchicalChunk], dict[str, int]]:
+        global_total = int(history.size)
+        macro_rows = self._chunk_rows(
+            history,
+            query,
+            size=self.macro_size,
+            level="macro",
+            global_total=global_total,
+        )
         top_macro = self._top(macro_rows, self.macro_keep)
 
         meso_rows = []
@@ -216,6 +225,7 @@ class HierarchicalContextMemory:
                     size=self.meso_size,
                     level="meso",
                     base_start=macro.start,
+                    global_total=global_total,
                 )
             )
         top_meso = self._top(meso_rows, self.macro_keep * self.meso_per_macro)
@@ -229,26 +239,29 @@ class HierarchicalContextMemory:
                     size=self.micro_size,
                     level="micro",
                     base_start=meso.start,
+                    global_total=global_total,
                 )
             )
 
         micro_slots = max(1, self.envelope.retrieval_budget // self.micro_size)
-        selected = self._top(micro_rows, micro_slots)
-        # Retrieval order follows chronology, not score order.
-        selected = sorted(selected, key=lambda row: row[0].start)
+        selected_rows = self._top(micro_rows, micro_slots)
+        selected_rows = sorted(selected_rows, key=lambda row: row[0].start)
         retrieved = (
-            np.concatenate([row[1] for row in selected])
-            if selected
+            np.concatenate([row[1] for row in selected_rows])
+            if selected_rows
             else np.empty(0, dtype=np.int64)
         )
         if retrieved.size > self.envelope.retrieval_budget:
             retrieved = retrieved[-self.envelope.retrieval_budget :]
 
-        if selected:
-            weights = np.asarray([max(0.0, row[0].score) + 1e-4 for row in selected], dtype=np.float64)
+        if selected_rows:
+            weights = np.asarray(
+                [max(0.0, row[0].score) + 1e-4 for row in selected_rows],
+                dtype=np.float64,
+            )
             weights /= weights.sum()
             summary = np.sum(
-                np.stack([row[2] for row in selected], axis=0) * weights[:, None],
+                np.stack([row[2] for row in selected_rows], axis=0) * weights[:, None],
                 axis=0,
             )
             norm = float(np.linalg.norm(summary))
@@ -257,13 +270,18 @@ class HierarchicalContextMemory:
         else:
             summary = np.zeros(self.hidden_dim, dtype=np.float64)
 
-        all_chunks = [row[0] for row in macro_rows] + [row[0] for row in meso_rows] + [row[0] for row in micro_rows]
+        all_chunks = (
+            [row[0] for row in macro_rows]
+            + [row[0] for row in meso_rows]
+            + [row[0] for row in micro_rows]
+        )
+        selected_chunks = [row[0] for row in selected_rows]
         counts = {
             "macro": len(macro_rows),
             "meso": len(meso_rows),
             "micro": len(micro_rows),
         }
-        return retrieved, summary, all_chunks, counts
+        return retrieved, summary, all_chunks, selected_chunks, counts
 
     def ingest(
         self,
@@ -276,6 +294,7 @@ class HierarchicalContextMemory:
         if accepted.size <= self.envelope.dense_window:
             dense = accepted.copy()
             self.last_summary = self._vector(dense)
+            self.last_selected = []
             receipt = HierarchicalContextReceipt(
                 schema=self.schema,
                 accepted_tokens=int(accepted.size),
@@ -302,26 +321,11 @@ class HierarchicalContextMemory:
         recent = accepted[-recent_budget:]
         history = accepted[:-recent_budget]
         query, used_working_memory = self._query_vector(recent)
-        retrieved, summary, chunks, counts = self._retrieve_hierarchy(history, query)
+        retrieved, summary, chunks, selected, counts = self._retrieve_hierarchy(history, query)
         dense = np.concatenate([retrieved, recent])[-self.envelope.dense_window :]
-        selected_micro = [
-            chunk.id for chunk in chunks
-            if chunk.level == "micro" and any(
-                chunk.start <= pos < chunk.end
-                for pos in []
-            )
-        ]
-        # Recover selection IDs from chronological overlap with retrieved hashes.
-        selected_hashes: list[str] = []
-        if retrieved.size:
-            for start in range(0, int(retrieved.size), self.micro_size):
-                selected_hashes.append(_hash_ids(retrieved[start : start + self.micro_size]))
-        selected_micro = [
-            chunk.id for chunk in chunks
-            if chunk.level == "micro" and chunk.sha256 in selected_hashes
-        ]
 
         self.last_summary = summary
+        self.last_selected = selected
         receipt = HierarchicalContextReceipt(
             schema=self.schema,
             accepted_tokens=int(accepted.size),
@@ -332,7 +336,7 @@ class HierarchicalContextMemory:
             macro_candidates=counts["macro"],
             meso_candidates=counts["meso"],
             micro_candidates=counts["micro"],
-            selected_micro_ids=selected_micro,
+            selected_micro_ids=[chunk.id for chunk in selected],
             accepted_sha256=_hash_ids(accepted),
             dense_sha256=_hash_ids(dense),
             summary_norm=float(np.linalg.norm(summary)),
