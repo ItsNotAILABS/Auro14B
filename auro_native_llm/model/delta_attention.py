@@ -1,11 +1,14 @@
-"""Delta-state attention, recurrent surprise memory, and native multi-sense residuals.
+"""Delta-state attention, recurrent surprise memory, active working memory, and native multi-sense residuals.
 
 This module is AURO's bounded recurrent memory plane inside the language-model
-forward path. It combines two complementary mechanisms:
+forward path. It combines three complementary mechanisms:
 
 1. Delta memory: stores normalized hidden-state transitions selected by novelty.
 2. Surprise memory: maintains a recurrent state, writes high prediction-error
    states, and retrieves content against the current token representation.
+3. Active working memory: maintains fast and slow states, performs bounded local
+   predictive plasticity, and publishes recurrent compute pressure that changes
+   adaptive MoE expert execution on the next transformer cycle.
 
 The hybrid result is reinjected before downstream meaning/spectral/physics/neuro
 planes. Batch-size-one inference preserves recurrent state across forward calls;
@@ -19,6 +22,12 @@ import hashlib
 import numpy as np
 
 from .recurrent_memory import RecurrentMemoryConfig, RecurrentSurpriseMemory
+from .working_memory import (
+    ActiveWorkingMemory,
+    WorkingMemoryConfig,
+    clear_compute_pressure,
+    publish_compute_pressure,
+)
 
 
 @dataclass
@@ -41,7 +50,7 @@ class DeltaAttentionReceipt:
 
 
 class DeltaAttentionEngine:
-    """Hybrid recurrent memory over residual transitions and surprise states."""
+    """Hybrid recurrent memory over transitions, surprise, and active state."""
 
     def __init__(
         self,
@@ -54,11 +63,16 @@ class DeltaAttentionEngine:
         surprise_threshold: float = 0.10,
         surprise_blend: float = 0.10,
         surprise_top_k: int = 8,
+        working_memory_config: WorkingMemoryConfig | None = None,
+        working_memory_incremental: bool = True,
+        surprise_compute_weight: float = 0.45,
     ):
         self.hidden_dim = hidden_dim
         self.max_slots = max_slots
         self.novelty_threshold = novelty_threshold
         self.blend = blend
+        self.working_memory_incremental = bool(working_memory_incremental)
+        self.surprise_compute_weight = float(np.clip(surprise_compute_weight, 0.0, 1.0))
         self.surprise_memory = RecurrentSurpriseMemory(
             hidden_dim,
             RecurrentMemoryConfig(
@@ -68,6 +82,7 @@ class DeltaAttentionEngine:
                 top_k=int(surprise_top_k),
             ),
         )
+        self.working_memory = ActiveWorkingMemory(hidden_dim, working_memory_config)
         self.reset()
 
     def reset(self):
@@ -76,6 +91,10 @@ class DeltaAttentionEngine:
         self.receipt = DeltaAttentionReceipt()
         if hasattr(self, "surprise_memory"):
             self.surprise_memory.reset()
+        if hasattr(self, "working_memory"):
+            self.working_memory.reset(clear_published_pressure=True)
+        else:
+            clear_compute_pressure()
 
     def observe(self, hidden: np.ndarray) -> DeltaAttentionReceipt:
         values = np.asarray(hidden, dtype=np.float64).reshape(-1, self.hidden_dim)
@@ -126,10 +145,21 @@ class DeltaAttentionEngine:
             surprise_threshold=cfg.surprise_threshold,
             surprise_blend=cfg.read_strength,
             surprise_top_k=cfg.top_k,
+            working_memory_config=self.working_memory.config,
+            working_memory_incremental=False,
+            surprise_compute_weight=self.surprise_compute_weight,
         )
 
+    def _publish_hybrid_compute_pressure(self, surprise_receipt: dict[str, Any]) -> float:
+        surprise = float(np.clip(surprise_receipt.get("last_surprise", 0.0), 0.0, 1.0))
+        working = float(np.clip(self.working_memory.compute_pressure, 0.0, 1.0))
+        w = self.surprise_compute_weight
+        combined = float(np.clip(w * surprise + (1.0 - w) * working, 0.0, 1.0))
+        publish_compute_pressure(combined, source="hybrid_surprise_working_memory")
+        return combined
+
     def fuse(self, hidden: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
-        """Fuse transition memory and recurrent surprise memory causally."""
+        """Fuse transition, surprise, and active working memory causally."""
         values = np.asarray(hidden)
         if values.ndim >= 3 and values.shape[0] > 1:
             outputs = []
@@ -139,12 +169,14 @@ class DeltaAttentionEngine:
                 sample_output, sample_receipt = bank.fuse(sample)
                 outputs.append(sample_output)
                 sample_receipts.append(sample_receipt)
+            clear_compute_pressure()
             return np.stack(outputs, axis=0), {
-                "schema": "auro.delta-attention.hybrid-memory.batch-isolated.v1",
+                "schema": "auro.delta-attention.active-memory.batch-isolated.v1",
                 "batch_isolation": True,
                 "batch_size": int(values.shape[0]),
                 "persistent_runtime_state_used": False,
                 "sample_receipts": sample_receipts,
+                "working_memory_pressure_cleared": True,
                 "checkpoint_weights_changed": False,
             }
 
@@ -152,16 +184,30 @@ class DeltaAttentionEngine:
         fused = values.copy()
         delta = self.residual(values[..., -1, :]).reshape(fused[..., -1, :].shape)
         fused[..., -1, :] += self.blend * delta.astype(fused.dtype, copy=False)
-        fused, surprise_receipt = self.surprise_memory.fuse(fused)
+
+        fused, surprise_receipt = self.surprise_memory.fuse(
+            fused,
+            incremental=self.working_memory_incremental,
+        )
+        fused, working_receipt = self.working_memory.fuse(
+            fused,
+            incremental=self.working_memory_incremental,
+        )
+        hybrid_pressure = self._publish_hybrid_compute_pressure(surprise_receipt)
+
         receipt = self.receipt.to_dict()
-        receipt["schema"] = "auro.delta-attention.hybrid-memory.v2"
+        receipt["schema"] = "auro.delta-attention.active-working-memory.v3"
         receipt["delta_memory"] = {
             "slots": int(len(self._slots)),
             "max_slots": int(self.max_slots),
             "blend": float(self.blend),
         }
         receipt["surprise_memory"] = surprise_receipt
+        receipt["working_memory"] = working_receipt
+        receipt["hybrid_compute_pressure"] = hybrid_pressure
+        receipt["compute_pressure_controls_next_moe_cycle"] = True
         receipt["persistent_across_forward_calls"] = True
+        receipt["incremental_decode"] = self.working_memory_incremental
         receipt["batch_isolation"] = False
         receipt["reset_boundary_explicit"] = True
         receipt["checkpoint_weights_changed"] = False
@@ -169,11 +215,14 @@ class DeltaAttentionEngine:
 
     def snapshot(self) -> dict[str, Any]:
         return {
-            "schema": "auro.delta-attention.hybrid-memory.v2",
+            "schema": "auro.delta-attention.active-working-memory.v3",
             "delta": self.receipt.to_dict(),
             "delta_slots": int(len(self._slots)),
             "surprise": self.surprise_memory.snapshot(),
+            "working_memory": self.working_memory.snapshot(),
             "persistent_across_forward_calls": True,
+            "controls_next_moe_cycle": True,
+            "incremental_decode": self.working_memory_incremental,
             "batch_policy": "persistent_for_batch_1_ephemeral_isolated_for_batch_gt_1",
         }
 
