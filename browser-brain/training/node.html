@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>AURO WebGPU Training Node</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      color: #edf1ea;
+      background: #0c0f0c;
+    }
+    * { box-sizing: border-box; }
+    body { max-width: 1040px; margin: 0 auto; padding: 32px 20px 64px; }
+    h1 { margin: 8px 0 4px; font: 600 clamp(34px, 6vw, 58px)/1.05 Georgia, serif; }
+    h2 { margin: 0 0 14px; font-size: 18px; }
+    p { line-height: 1.55; }
+    code, pre, input { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .eyebrow { color: #d7aa4c; font-size: 12px; font-weight: 800; letter-spacing: .16em; }
+    .subtitle { color: #aeb7aa; max-width: 760px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+    .panel { border: 1px solid #343c32; border-radius: 14px; background: #141914; padding: 18px; margin-top: 14px; }
+    label { display: block; color: #bdc6b8; font-size: 13px; margin: 12px 0 6px; }
+    input { width: 100%; border: 1px solid #485245; border-radius: 8px; background: #0d110d; color: #f4f6f2; padding: 10px; }
+    button { border: 0; border-radius: 9px; padding: 10px 14px; margin: 8px 8px 0 0; font-weight: 800; cursor: pointer; }
+    button.primary { color: #191307; background: #d7aa4c; }
+    button.secondary { color: #edf1ea; background: #2d382b; }
+    button.danger { color: #ffe9e9; background: #6a2929; }
+    button:disabled { cursor: not-allowed; opacity: .45; }
+    .metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .metric { border: 1px solid #2e372c; border-radius: 10px; padding: 12px; background: #0e120e; }
+    .metric b { display: block; font-size: 20px; margin-top: 4px; overflow-wrap: anywhere; }
+    .muted { color: #9da797; }
+    .truth { border-left: 3px solid #d7aa4c; padding-left: 14px; color: #aeb7aa; }
+    pre { margin: 0; white-space: pre-wrap; max-height: 420px; overflow: auto; color: #cdd6c9; }
+    .state-ready { color: #8bd493; }
+    .state-working { color: #d7aa4c; }
+    .state-blocked { color: #f18f8f; }
+  </style>
+</head>
+<body>
+  <div class="eyebrow">AURO / MESIE TRAINING FABRIC</div>
+  <h1>Browser WebGPU Node</h1>
+  <p class="subtitle">Turn this browser tab into a governed matrix-compute worker for AURO training. The coordinator leases bounded jobs; this page executes them on WebGPU and returns receipted results.</p>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Connection</h2>
+      <label for="coordinator">Coordinator URL</label>
+      <input id="coordinator" value="http://127.0.0.1:8765" autocomplete="off" spellcheck="false">
+      <label for="token">Cluster token</label>
+      <input id="token" type="password" autocomplete="off" placeholder="Required when configured">
+      <label for="workerName">Worker name</label>
+      <input id="workerName" autocomplete="off" spellcheck="false">
+      <button id="save" class="secondary">Save for this tab</button>
+      <button id="start" class="primary">Start worker</button>
+      <button id="stop" class="danger" disabled>Stop</button>
+    </section>
+
+    <section class="panel">
+      <h2>Node status</h2>
+      <div class="metrics">
+        <div class="metric"><span class="muted">State</span><b id="state">initializing</b></div>
+        <div class="metric"><span class="muted">Completed</span><b id="jobs">0</b></div>
+        <div class="metric"><span class="muted">Worker</span><b id="worker">-</b></div>
+        <div class="metric"><span class="muted">Coordinator</span><b id="coordinatorState">unknown</b></div>
+      </div>
+      <p><strong>GPU:</strong> <code id="device">probing</code></p>
+      <p><strong>Last receipt:</strong> <code id="receipt">none</code></p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Local benchmark</h2>
+    <p class="muted">This benchmark stays in the browser and does not become a training receipt.</p>
+    <label for="size">Square matrix size</label>
+    <input id="size" type="number" min="16" max="2048" value="256">
+    <button id="bench" class="secondary">Run benchmark</button>
+    <p id="benchmark"></p>
+  </section>
+
+  <section class="panel">
+    <p class="truth">Opening this page is not evidence that a GPU job ran. A compute claim requires a completed coordinator receipt naming the worker, result hash, lease attempt, and reported <code>browser-webgpu</code> backend. Full model training additionally requires dataset, optimizer, loss, checkpoint, evaluation, and promotion evidence.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Activity</h2>
+    <pre id="log" aria-live="polite"></pre>
+  </section>
+
+  <script type="module" src="node.js"></script>
+</body>
+</html>
