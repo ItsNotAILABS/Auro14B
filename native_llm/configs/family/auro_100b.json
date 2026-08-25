@@ -1,10 +1,11 @@
 {
-  "schema": "auro.native_llm.model_config.v1",
+  "schema": "auro.native_llm.model_config.v2",
   "model_id": "Auro-100B",
   "family_id": "Auro",
   "status": "architecture-target-not-trained-checkpoint",
   "parameter_target": 100000000000,
   "tier": "frontier",
+  "model_class": "frontier",
   "architecture": {
     "family": "decoder-only-transformer",
     "objective": "causal-language-modeling",
@@ -17,12 +18,19 @@
     "activation": "silu",
     "normalization": "rmsnorm",
     "position_encoding": "rope",
+    "attention_type": "gqa",
     "context_window_tokens_target": 131072,
-    "vocab_size_target": 256000
+    "vocab_size_target": 256000,
+    "experts": 32,
+    "top_k": 4,
+    "moe_every": 2
   },
   "subagent_roles": ["frontier_research", "long_horizon", "safety_review", "deep_council"],
+  "capabilities": ["frontier_research", "long_horizon_reasoning", "safety_review", "deep_council_supervision"],
   "can_embed_subagents": true,
-  "embeddable_tiers": ["edge", "specialist", "general", "orchestrator"],
+  "embeddable_tiers": ["atomic", "edge", "specialist", "general", "orchestrator"],
+  "deploy_profiles": ["distributed-training", "distributed-inference"],
+  "checkpoint_evidence_required": true,
   "training_targets": {
     "pretraining_tokens_target": 4000000000000,
     "minimum_viable_tokens": 500000000000,
@@ -35,6 +43,6 @@
     "public_release": false,
     "required_gates": ["GATE_IDENTITY", "GATE_CAPABILITY", "GATE_PROOF", "GATE_CONTAINMENT", "GATE_MODEL_EVAL"]
   },
-  "purpose": "frontier native pretraining lane with full multi-embedded sub-agent council",
-  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving", "safety"]
+  "purpose": "frontier native pretraining lane with full atomic-to-orchestrator council",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "council_evaluation", "router_telemetry", "serving", "safety", "promotion"]
 }
