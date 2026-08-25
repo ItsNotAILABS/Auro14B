@@ -1,10 +1,11 @@
 {
-  "schema": "auro.native_llm.model_config.v1",
+  "schema": "auro.native_llm.model_config.v2",
   "model_id": "Auro-14B",
   "family_id": "Auro",
   "status": "development-target-not-trained-checkpoint",
   "parameter_target": 14000000000,
   "tier": "orchestrator",
+  "model_class": "orchestrator",
   "architecture": {
     "family": "decoder-only-transformer",
     "objective": "causal-language-modeling",
@@ -16,12 +17,20 @@
     "activation": "silu",
     "normalization": "rmsnorm",
     "position_encoding": "rope",
-    "context_window_tokens_target": 32768,
-    "vocab_size_target": 128000
+    "attention_type": "gqa",
+    "context_window_tokens_target": 65536,
+    "vocab_size_target": 128000,
+    "experts": 16,
+    "top_k": 4,
+    "moe_every": 2
   },
   "subagent_roles": ["orchestrator", "council_chair", "instruct_dev", "multi_agent_router"],
+  "capabilities": ["multi-model_orchestration", "council_chair", "development_instruction", "hierarchical_routing", "long_workflow_synthesis"],
   "can_embed_subagents": true,
-  "embeddable_tiers": ["edge", "specialist", "general"],
+  "embeddable_tiers": ["atomic", "edge", "specialist", "general"],
+  "deploy_profiles": ["gpu-server", "distributed-private-runtime"],
+  "checkpoint_evidence_required": true,
   "purpose": "primary development and multi-embedded sub-agent orchestrator lane",
-  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving"]
+  "claim_boundary": "14B remains a training and orchestration lane until exact promoted checkpoint evidence exists",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "council_evaluation", "router_telemetry", "serving", "promotion"]
 }

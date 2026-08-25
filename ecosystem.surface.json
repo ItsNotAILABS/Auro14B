@@ -1,13 +1,72 @@
 {
-  "schema":"nexus.capability.v1",
-  "component":"auro-model-family",
-  "repository":"ItsNotAILABS/Auro14B",
-  "role":"checkpoint-family-and-governed-model-orchestration-plane",
-  "actions":["model.family.describe","model.checkpoint.inventory","model.context.retrieve","model.infer","model.council.plan","model.release_evidence"],
-  "risk_tiers":{"model.family.describe":"read","model.checkpoint.inventory":"read-local","model.context.retrieve":"read-sensitive","model.infer":"compute","model.council.plan":"plan","model.release_evidence":"read"},
-  "produces":["nexus.capability.v1","nexus.context-pack.v1","nexus.telemetry.v1","nexus.release-evidence.v1","nexus.artifact.v1"],
-  "consumes":["nexus.task.v1","nexus.budget.v1","nexus.policy-decision.v1"],
-  "limits":{"finished_14b_checkpoint_claim":false,"checkpoint_claim_requires_manifest":true,"external_side_effects":false,"private_reasoning_export":false},
-  "proof":{"state":"source","checkpoint_specific_evidence_required":true},
-  "authority":"ItsNotAILABS/nexus"
+  "schema": "nexus.capability.v1",
+  "component": "auro-model-family",
+  "repository": "ItsNotAILABS/Auro14B",
+  "role": "checkpoint-family-atomic-swarm-continuity-and-governed-model-orchestration-plane",
+  "actions": [
+    "model.family.describe",
+    "model.atomic.route",
+    "model.council.plan",
+    "model.council.evaluate",
+    "model.checkpoint.inventory",
+    "model.context.retrieve",
+    "model.continuity.observe",
+    "model.infer",
+    "model.release_evidence"
+  ],
+  "risk_tiers": {
+    "model.family.describe": "read",
+    "model.atomic.route": "plan",
+    "model.council.plan": "plan",
+    "model.council.evaluate": "compute-bounded",
+    "model.checkpoint.inventory": "read-local",
+    "model.context.retrieve": "read-sensitive",
+    "model.continuity.observe": "read-sensitive",
+    "model.infer": "compute",
+    "model.release_evidence": "read"
+  },
+  "produces": [
+    "nexus.capability.v1",
+    "nexus.context-pack.v1",
+    "nexus.model-council.v1",
+    "nexus.continuity-snapshot.v1",
+    "nexus.evidence-classification.v1",
+    "nexus.telemetry.v1",
+    "nexus.release-evidence.v1",
+    "nexus.artifact.v1"
+  ],
+  "consumes": [
+    "nexus.task.v1",
+    "nexus.budget.v1",
+    "nexus.policy-decision.v1",
+    "nexus.approval.v1",
+    "nexus.memory-event.v1",
+    "nexus.retention-policy.v1"
+  ],
+  "family_contract": {
+    "schema": "auro.model-family.v2",
+    "version": "2.1.0",
+    "lanes": ["Auro-156K", "Auro-250M", "Auro-500M", "Auro-2B", "Auro-4B", "Auro-8B", "Auro-14B", "Auro-100B"],
+    "atomic_lanes": ["Auro-156K", "Auro-250M", "Auro-500M"],
+    "two_b_specialist_triad": ["Auro-500M-SENSUS", "Auro-500M-PRAXIS", "Auro-500M-VERBUM"],
+    "routing": "capability-first-then-smallest-capable-lane",
+    "mesie_offload": "every-turn and each council stage",
+    "final_renderer": "python-wasm-fluidizer"
+  },
+  "limits": {
+    "finished_checkpoint_claim_without_exact_evidence": false,
+    "accepted_context_claimed_as_dense_attention": false,
+    "named_specialist_claimed_as_separately_trained_model": false,
+    "checkpoint_claim_requires_manifest": true,
+    "routing_quality_requires_telemetry": true,
+    "durable_memory_requires_cross_session_evidence": true,
+    "external_side_effects": false,
+    "private_reasoning_export": false
+  },
+  "proof": {
+    "state": "source",
+    "checkpoint_specific_evidence_required": true,
+    "corpus_contract": "medina.corpus-architectura.v2@2.1.0"
+  },
+  "authority": "ItsNotAILABS/nexus"
 }

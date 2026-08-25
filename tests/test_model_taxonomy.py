@@ -1,4 +1,5 @@
 from auro_native_llm.model.taxonomy import (
+    CANONICAL_RELEASE_ORDER,
     MODEL_CLASSES,
     ModelClass,
     classify_parameter_count,
@@ -10,6 +11,8 @@ def test_taxonomy_boundaries_are_complete_and_non_overlapping():
     cases = [
         (1, ModelClass.ATOMIC),
         (156_000, ModelClass.ATOMIC),
+        (250_000_000, ModelClass.ATOMIC),
+        (500_000_000, ModelClass.ATOMIC),
         (999_999_999, ModelClass.ATOMIC),
         (1_000_000_000, ModelClass.MICRO),
         (2_000_000_000, ModelClass.MICRO),
@@ -36,14 +39,26 @@ def test_invalid_parameter_count_is_rejected():
             raise AssertionError(f"expected ValueError for {count}")
 
 
-def test_release_ladder_uses_canonical_classes_and_claim_boundaries():
+def test_release_ladder_uses_canonical_order_classes_and_claim_boundaries():
     ladder = release_ladder()
+    assert tuple(ladder) == CANONICAL_RELEASE_ORDER
+    assert tuple(ladder) == (
+        "Auro-156K", "Auro-250M", "Auro-500M", "Auro-2B",
+        "Auro-4B", "Auro-8B", "Auro-14B", "Auro-100B",
+    )
     assert ladder["Auro-156K"]["model_class"] == "atomic"
+    assert ladder["Auro-250M"]["model_class"] == "atomic"
+    assert ladder["Auro-500M"]["model_class"] == "atomic"
     assert ladder["Auro-2B"]["model_class"] == "micro"
     assert ladder["Auro-4B"]["model_class"] == "micro"
     assert ladder["Auro-8B"]["model_class"] == "core"
     assert ladder["Auro-14B"]["model_class"] == "orchestrator"
     assert ladder["Auro-100B"]["model_class"] == "frontier"
+    assert ladder["Auro-2B"]["composition"]["specialist_triad"] == [
+        "Auro-500M-SENSUS", "Auro-500M-PRAXIS", "Auro-500M-VERBUM"
+    ]
+    assert ladder["Auro-4B"]["active_parameters_per_token_estimate"] == 4_026_977_280
+    assert ladder["Auro-4B"]["stored_expert_capacity_estimate"] == 7_650_855_936
     assert "not a finished 14B checkpoint" in ladder["Auro-14B"]["release_policy"]
     assert "architecture target only" in ladder["Auro-100B"]["release_policy"]
 
