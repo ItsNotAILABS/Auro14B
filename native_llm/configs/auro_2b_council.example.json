@@ -1,0 +1,81 @@
+{
+  "schema": "auro.2b-council.config.v1",
+  "main": {
+    "model_id": "Auro-2B",
+    "parameter_target": 2000000000,
+    "base_url": "http://127.0.0.1:8088/v1",
+    "model": "auro-2b",
+    "api_key_env": "AURO_2B_API_KEY",
+    "checkpoint_id": "replace-with-exact-auro-2b-checkpoint-id",
+    "checkpoint_sha256": "replace-with-64-character-sha256",
+    "measured_parameters": null,
+    "timeout_seconds": 120
+  },
+  "specialists": [
+    {
+      "model_id": "Auro-500M-SENSUS",
+      "parameter_target": 500000000,
+      "base_url": "http://127.0.0.1:8088/v1",
+      "model": "auro-500m-sensus",
+      "api_key_env": "AURO_500M_API_KEY",
+      "checkpoint_id": "replace-with-exact-auro-500m-base-checkpoint-id",
+      "checkpoint_sha256": "replace-with-64-character-sha256",
+      "adapter_id": "replace-with-sensus-adapter-id",
+      "adapter_sha256": "replace-with-64-character-sha256",
+      "measured_parameters": null,
+      "timeout_seconds": 120
+    },
+    {
+      "model_id": "Auro-500M-PRAXIS",
+      "parameter_target": 500000000,
+      "base_url": "http://127.0.0.1:8088/v1",
+      "model": "auro-500m-praxis",
+      "api_key_env": "AURO_500M_API_KEY",
+      "checkpoint_id": "replace-with-exact-auro-500m-base-checkpoint-id",
+      "checkpoint_sha256": "replace-with-64-character-sha256",
+      "adapter_id": "replace-with-praxis-adapter-id",
+      "adapter_sha256": "replace-with-64-character-sha256",
+      "measured_parameters": null,
+      "timeout_seconds": 120
+    },
+    {
+      "model_id": "Auro-500M-VERBUM",
+      "parameter_target": 500000000,
+      "base_url": "http://127.0.0.1:8088/v1",
+      "model": "auro-500m-verbum",
+      "api_key_env": "AURO_500M_API_KEY",
+      "checkpoint_id": "replace-with-exact-auro-500m-base-checkpoint-id",
+      "checkpoint_sha256": "replace-with-64-character-sha256",
+      "adapter_id": "replace-with-verbum-adapter-id",
+      "adapter_sha256": "replace-with-64-character-sha256",
+      "measured_parameters": null,
+      "timeout_seconds": 120
+    }
+  ],
+  "atomic": [
+    {
+      "model_id": "Auro-156K",
+      "parameter_target": 156000,
+      "base_url": "http://127.0.0.1:8088/v1",
+      "model": "auro-156k",
+      "api_key_env": "AURO_ATOMIC_API_KEY",
+      "checkpoint_id": "replace-with-exact-auro-156k-checkpoint-id",
+      "checkpoint_sha256": "replace-with-64-character-sha256",
+      "measured_parameters": null,
+      "timeout_seconds": 60
+    },
+    {
+      "model_id": "Auro-250M",
+      "parameter_target": 250000000,
+      "base_url": "http://127.0.0.1:8088/v1",
+      "model": "auro-250m",
+      "api_key_env": "AURO_ATOMIC_API_KEY",
+      "checkpoint_id": "replace-with-exact-auro-250m-checkpoint-id",
+      "checkpoint_sha256": "replace-with-64-character-sha256",
+      "measured_parameters": null,
+      "timeout_seconds": 90
+    }
+  ],
+  "max_workers": 12,
+  "claim_boundary": "Endpoint configuration proves wiring only. Exact checkpoint hashes, tokenizer custody, evaluation, latency, serving, and promotion evidence remain separate."
+}
