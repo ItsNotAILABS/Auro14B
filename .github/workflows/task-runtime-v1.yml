@@ -1,0 +1,151 @@
+name: AURO Multi-Task Runtime Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  task-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check numpy pytest
+
+      - name: Compile task runtime and production API
+        run: |
+          python -m py_compile \
+            auro_native_llm/production_fleet/task_runtime.py \
+            auro_native_llm/production_fleet/server.py \
+            auro_native_llm/production_fleet/__init__.py
+
+      - name: Run multi-task runtime tests
+        run: |
+          mkdir -p artifacts/task-runtime
+          python -m pytest -q tests/test_task_runtime_v1.py \
+            | tee artifacts/task-runtime/pytest.txt
+
+      - name: Verify product contract markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          runtime = Path('auro_native_llm/production_fleet/task_runtime.py').read_text(encoding='utf-8')
+          server = Path('auro_native_llm/production_fleet/server.py').read_text(encoding='utf-8')
+          documentation = Path('docs/AURO_TASK_RUNTIME_V1.md').read_text(encoding='utf-8')
+
+          required_runtime = [
+              'class DurableTaskRuntime',
+              'class TaskRuntimeService',
+              'quality_mode',
+              'lease_token_sha256',
+              'ARTIFACT_MANIFEST.json',
+              'RUN_RECEIPT.json',
+              'private_chain_of_thought_exported',
+              'approval_verifier',
+              'verify_event_chain',
+              'build_bundle',
+          ]
+          required_server = [
+              '/v1/task-runtime',
+              '/v1/task-runs',
+              'x-auro-principal-id',
+              'bundle.zip',
+              '/heartbeat',
+              '/progress',
+              '/complete',
+              '/fail',
+          ]
+          required_docs = [
+              'Multiple dependent tasks',
+              'Long-running work',
+              'Artifact delivery',
+              'Approval boundary',
+              'Evidence boundary',
+          ]
+          missing = [item for item in required_runtime if item not in runtime]
+          missing += [item for item in required_server if item not in server]
+          missing += [item for item in required_docs if item not in documentation]
+          if missing:
+              raise SystemExit(f'missing task-runtime contract markers: {missing}')
+
+          forbidden = [
+              'private_chain_of_thought": true',
+              '"approved": true',
+              "'approved': True",
+          ]
+          found = [item for item in forbidden if item in runtime or item in server]
+          if found:
+              raise SystemExit(f'forbidden authority/reasoning markers found: {found}')
+          print('multi-task product contract: PASS')
+          PY
+
+      - name: Generate source evidence receipt
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          paths = [
+              'auro_native_llm/production_fleet/task_runtime.py',
+              'auro_native_llm/production_fleet/server.py',
+              'auro_native_llm/production_fleet/__init__.py',
+              'tests/test_task_runtime_v1.py',
+              'docs/AURO_TASK_RUNTIME_V1.md',
+              '.github/workflows/task-runtime-v1.yml',
+          ]
+          files = {
+              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+              for path in paths
+          }
+          payload = {
+              'schema': 'auro.task-runtime.source-evidence.v1',
+              'evidence_class': 'E3-validated-output',
+              'files': files,
+              'tested_capabilities': [
+                  'multiple dependent tasks',
+                  'deep and exhaustive review graphs',
+                  'durable SQLite/WAL state',
+                  'one-time worker leases',
+                  'lease-expiry recovery',
+                  'bounded retries',
+                  'pause/resume/cancel',
+                  'principal and organization scope',
+                  'artifact hashing and path containment',
+                  'tamper-evident event chains',
+                  'delivery ZIP generation',
+                  'fail-closed council planning',
+              ],
+              'claim_boundary': (
+                  'This artifact validates source and deterministic tests only. '
+                  'It does not prove external worker execution, model reasoning quality, '
+                  'artifact usefulness, production deployment, or external receipt custody.'
+              ),
+          }
+          payload['receipt_sha256'] = hashlib.sha256(
+              json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+          ).hexdigest()
+          destination = Path('artifacts/task-runtime/source-evidence.json')
+          destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(payload, indent=2, sort_keys=True))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-multi-task-runtime-evidence
+          path: artifacts/task-runtime
+          if-no-files-found: error
