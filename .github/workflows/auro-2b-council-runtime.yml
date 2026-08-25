@@ -57,8 +57,8 @@ jobs:
           from pathlib import Path
           text = Path('auro_native_llm/production_fleet/server.py').read_text(encoding='utf-8')
           required = [
-              'GET /v1/council',
-              '/v1/council/respond',
+              'if path == "/v1/council"',
+              'if path == "/v1/council/respond"',
               'auro-2b-council',
               'not_a_single_checkpoint',
               'AURO_COUNCIL_RECEIPT_HMAC_KEY',
