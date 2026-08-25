@@ -249,23 +249,18 @@ class ArtifactStore:
         *,
         records: Iterable[ArtifactRecord] | None = None,
         filename: str = "mission-artifacts.zip",
-    ) -> tuple[ArtifactRecord, ArtifactRecord, dict[str, Any]]:
-        """Write the final manifest and bundle, returning records for current bytes."""
+    ) -> ArtifactRecord:
+        """Build a retry-safe bundle without changing a caller-written manifest."""
         root = self.mission_root(mission_id)
-        manifest = self.manifest(mission_id, records)
         manifest_path = root / "ARTIFACT_MANIFEST.json"
-        temporary_manifest = manifest_path.with_suffix(".json.tmp")
-        temporary_manifest.write_text(
-            json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-        temporary_manifest.replace(manifest_path)
-        manifest_record = self._record_existing(
-            mission_id,
-            "ARTIFACT_MANIFEST.json",
-            media_type="application/json",
-            label="artifact manifest",
-        )
+        if not manifest_path.is_file():
+            manifest = self.manifest(mission_id, records)
+            temporary_manifest = manifest_path.with_suffix(".json.tmp")
+            temporary_manifest.write_text(
+                json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            temporary_manifest.replace(manifest_path)
 
         bundle_path, normalized = self._resolve(mission_id, filename)
         temporary = bundle_path.with_suffix(bundle_path.suffix + ".tmp")
@@ -275,10 +270,9 @@ class ArtifactStore:
                     continue
                 archive.write(path, path.relative_to(root).as_posix())
         temporary.replace(bundle_path)
-        bundle_record = self._record_existing(
+        return self._record_existing(
             mission_id,
             normalized,
             media_type="application/zip",
             label="mission artifact bundle",
         )
-        return manifest_record, bundle_record, manifest
