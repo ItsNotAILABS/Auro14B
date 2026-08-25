@@ -58,7 +58,10 @@ def _neuromorphic_training_control(model: AuroLanguageModel, cfg: TrainConfig) -
     if receipt is None:
         return {}, 1.0
     regularizer = max(0.0, float(receipt.regularizer))
-    reduction = min(max(0.0, cfg.neuromorphic_max_lr_reduction), regularizer * max(0.0, cfg.neuromorphic_penalty_gain))
+    reduction = min(
+        max(0.0, cfg.neuromorphic_max_lr_reduction),
+        regularizer * max(0.0, cfg.neuromorphic_penalty_gain),
+    )
     multiplier = 1.0 - reduction if cfg.neuromorphic_lr_control else 1.0
     metrics = {
         "neuro_activity_rate": float(receipt.activity_rate),
@@ -125,7 +128,13 @@ def train_language_model(cfg: Optional[TrainConfig] = None) -> Dict[str, Any]:
         metrics.update(neuro_metrics)
         lr *= cfg.lr_decay * neuro_lr_multiplier
         if step % cfg.report_every == 0 or step == 1 or step == cfg.steps:
-            history.append({k: float(v) for k, v in metrics.items() if isinstance(v, (int, float, bool))})
+            history.append(
+                {
+                    key: float(value)
+                    for key, value in metrics.items()
+                    if isinstance(value, (int, float, bool))
+                }
+            )
             neuro_text = ""
             if neuro_metrics:
                 neuro_text = (
@@ -176,7 +185,9 @@ def train_language_model(cfg: Optional[TrainConfig] = None) -> Dict[str, Any]:
             "enabled": bool(neuro_info and neuro_info.get("neuromorphic_residual_enabled")),
             "lr_control_enabled": bool(cfg.neuromorphic_lr_control),
             "gradient_auxiliary_loss_implemented": False,
-            "forward_residual_gate_affects_logits": bool(neuro_info and neuro_info.get("neuromorphic_residual_enabled")),
+            "forward_residual_gate_affects_logits": bool(
+                neuro_info and neuro_info.get("neuromorphic_residual_enabled")
+            ),
             "control_regularizer_affects_next_step_lr": bool(cfg.neuromorphic_lr_control),
             "checkpoint_quality_verified": False,
             "physical_energy_efficiency_verified": False,
@@ -184,26 +195,52 @@ def train_language_model(cfg: Optional[TrainConfig] = None) -> Dict[str, Any]:
         },
         "elapsed_s": time.time() - t0,
         "train_config": asdict(cfg),
+        "claim_boundary": {
+            "training_completed": True,
+            "checkpoint_promoted": False,
+            "benchmark_quality_proven": False,
+            "resume_or_distillation_lineage_proven": False,
+        },
     }
-    (out_dir / "train_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    (out_dir / "train_report.json").write_text(
+        json.dumps(report, indent=2),
+        encoding="utf-8",
+    )
     return report
 
 
 def main() -> None:
     import argparse
 
-    p = argparse.ArgumentParser(description="Train Auro LM on MESIE compute")
-    p.add_argument("--model", default="Auro-2B")
-    p.add_argument("--mode", default="dev", choices=["dev", "full"])
-    p.add_argument("--steps", type=int, default=40)
-    p.add_argument("--batch-size", type=int, default=2)
-    p.add_argument("--seq-len", type=int, default=96)
-    p.add_argument("--lr", type=float, default=3e-3)
-    p.add_argument("--vocab-size", type=int, default=4096)
-    p.add_argument("--output-dir", default="checkpoints/auro")
-    p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--disable-neuromorphic-lr-control", action="store_true")
-    args = p.parse_args()
+    parser = argparse.ArgumentParser(description="Train Auro LM on MESIE compute")
+    parser.add_argument("--model", default="Auro-2B")
+    parser.add_argument("--mode", default="dev", choices=["dev", "full"])
+    parser.add_argument("--steps", type=int, default=40)
+    parser.add_argument("--batch-size", type=int, default=2)
+    parser.add_argument("--seq-len", type=int, default=96)
+    parser.add_argument("--lr", type=float, default=3e-3)
+    parser.add_argument("--vocab-size", type=int, default=4096)
+    parser.add_argument("--output-dir", default="checkpoints/auro")
+    parser.add_argument("--corpus-root")
+    parser.add_argument("--multi-repo", action="store_true")
+    parser.add_argument("--max-corpus-files", type=int, default=80)
+    parser.add_argument("--max-corpus-chars", type=int, default=400_000)
+    parser.add_argument("--report-every", type=int, default=5)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--disable-neuromorphic-lr-control", action="store_true")
+    args = parser.parse_args()
+
+    if args.steps <= 0:
+        parser.error("--steps must be positive")
+    if args.batch_size <= 0:
+        parser.error("--batch-size must be positive")
+    if args.seq_len < 8:
+        parser.error("--seq-len must be at least 8")
+    if args.max_corpus_files <= 0 or args.max_corpus_chars <= 0:
+        parser.error("corpus limits must be positive")
+    if args.report_every <= 0:
+        parser.error("--report-every must be positive")
+
     cfg = TrainConfig(
         model_id=args.model,
         mode=args.mode,
@@ -213,11 +250,25 @@ def main() -> None:
         learning_rate=args.lr,
         vocab_size=args.vocab_size,
         output_dir=args.output_dir,
+        corpus_root=args.corpus_root,
+        multi_repo=args.multi_repo,
+        max_corpus_files=args.max_corpus_files,
+        max_corpus_chars=args.max_corpus_chars,
+        report_every=args.report_every,
         seed=args.seed,
         neuromorphic_lr_control=not args.disable_neuromorphic_lr_control,
     )
     report = train_language_model(cfg)
-    print(json.dumps({k: report[k] for k in report if k not in {"history", "sample_generation"}}, indent=2))
+    print(
+        json.dumps(
+            {
+                key: report[key]
+                for key in report
+                if key not in {"history", "sample_generation"}
+            },
+            indent=2,
+        )
+    )
     print("--- sample ---")
     print(report["sample_generation"]["text"][:500])
 
