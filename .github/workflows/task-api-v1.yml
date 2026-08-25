@@ -1,0 +1,78 @@
+name: AURO Task API Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  task-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check numpy pytest
+      - name: Compile production API
+        run: |
+          python -m py_compile \
+            auro_native_llm/production_fleet/server.py \
+            auro_native_llm/production_fleet/task_runtime.py \
+            auro_native_llm/production_fleet/task_worker.py
+      - name: Run task API lifecycle tests
+        run: |
+          mkdir -p artifacts/task-api
+          python -m pytest -q tests/test_task_api_v1.py \
+            | tee artifacts/task-api/pytest.txt
+      - name: Create API source receipt
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          paths = [
+              'auro_native_llm/production_fleet/server.py',
+              'auro_native_llm/production_fleet/task_runtime.py',
+              'tests/test_task_api_v1.py',
+          ]
+          payload = {
+              'schema': 'auro.task-api.source-evidence.v1',
+              'evidence_class': 'E3-validated-output',
+              'files': {
+                  path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                  for path in paths
+              },
+              'tested': [
+                  'API authentication',
+                  'principal and organization scope',
+                  'execution-token worker mutation',
+                  'create-claim-progress-complete lifecycle',
+                  'artifact manifest and signed local receipt',
+                  'ZIP delivery download',
+              ],
+              'claim_boundary': (
+                  'Loopback HTTP tests do not establish a public deployment, tenant-grade '
+                  'identity provider, external worker execution, or external receipt custody.'
+              ),
+          }
+          payload['receipt_sha256'] = hashlib.sha256(
+              json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+          ).hexdigest()
+          path = Path('artifacts/task-api/source-evidence.json')
+          path.write_text(json.dumps(payload, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(payload, indent=2, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-task-api-evidence
+          path: artifacts/task-api
+          if-no-files-found: error
