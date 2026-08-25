@@ -18,6 +18,7 @@ import zipfile
 
 
 _SAFE_SEGMENT = re.compile(r"[^A-Za-z0-9._-]+")
+_INTERNAL_PACKAGE_FILES = {"ARTIFACT_MANIFEST.json", "mission-artifacts.zip"}
 
 
 def _sha256_file(path: Path) -> str:
@@ -95,26 +96,21 @@ class ArtifactStore:
         path.parent.mkdir(parents=True, exist_ok=True)
         return path, normalized.as_posix()
 
-    def write_bytes(
+    def _record_existing(
         self,
         mission_id: str,
         relative_path: str,
-        data: bytes,
         *,
         task_id: str | None = None,
         media_type: str | None = None,
         label: str = "",
     ) -> ArtifactRecord:
-        payload = bytes(data)
-        if len(payload) > self.max_artifact_bytes:
-            raise ValueError(
-                f"artifact exceeds {self.max_artifact_bytes} byte limit"
-            )
         path, normalized = self._resolve(mission_id, relative_path)
-        temporary = path.with_suffix(path.suffix + ".tmp")
-        temporary.write_bytes(payload)
-        temporary.replace(path)
-        actual_media = media_type or mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+        if not path.is_file():
+            raise FileNotFoundError(relative_path)
+        size = path.stat().st_size
+        if size > self.max_artifact_bytes:
+            raise ValueError(f"artifact exceeds {self.max_artifact_bytes} byte limit")
         digest = _sha256_file(path)
         artifact_id = "artifact_" + hashlib.sha256(
             _canonical(
@@ -131,11 +127,36 @@ class ArtifactStore:
             mission_id=mission_id,
             task_id=task_id,
             relative_path=normalized,
-            media_type=actual_media,
-            bytes=len(payload),
+            media_type=media_type or mimetypes.guess_type(path.name)[0] or "application/octet-stream",
+            bytes=size,
             sha256=digest,
             created_at_unix=int(time.time()),
             label=str(label),
+        )
+
+    def write_bytes(
+        self,
+        mission_id: str,
+        relative_path: str,
+        data: bytes,
+        *,
+        task_id: str | None = None,
+        media_type: str | None = None,
+        label: str = "",
+    ) -> ArtifactRecord:
+        payload = bytes(data)
+        if len(payload) > self.max_artifact_bytes:
+            raise ValueError(f"artifact exceeds {self.max_artifact_bytes} byte limit")
+        path, _ = self._resolve(mission_id, relative_path)
+        temporary = path.with_suffix(path.suffix + ".tmp")
+        temporary.write_bytes(payload)
+        temporary.replace(path)
+        return self._record_existing(
+            mission_id,
+            relative_path,
+            task_id=task_id,
+            media_type=media_type,
+            label=label,
         )
 
     def write_text(
@@ -180,11 +201,12 @@ class ArtifactStore:
         root = self.mission_root(mission_id)
         rows: list[dict[str, Any]] = []
         for path in sorted(item for item in root.rglob("*") if item.is_file()):
+            relative = path.relative_to(root).as_posix()
             if path.name.endswith(".tmp"):
                 continue
             rows.append(
                 {
-                    "relative_path": path.relative_to(root).as_posix(),
+                    "relative_path": relative,
                     "bytes": path.stat().st_size,
                     "sha256": _sha256_file(path),
                     "media_type": mimetypes.guess_type(path.name)[0]
@@ -199,7 +221,14 @@ class ArtifactStore:
         records: Iterable[ArtifactRecord] | None = None,
     ) -> dict[str, Any]:
         supplied = list(records or [])
-        files = [record.to_dict() for record in supplied] if supplied else self.list_files(mission_id)
+        if supplied:
+            files = [record.to_dict() for record in supplied]
+        else:
+            files = [
+                item
+                for item in self.list_files(mission_id)
+                if item["relative_path"] not in _INTERNAL_PACKAGE_FILES
+            ]
         payload: dict[str, Any] = {
             "schema": "auro.mission.artifact-manifest.v1",
             "mission_id": mission_id,
@@ -220,14 +249,24 @@ class ArtifactStore:
         *,
         records: Iterable[ArtifactRecord] | None = None,
         filename: str = "mission-artifacts.zip",
-    ) -> ArtifactRecord:
+    ) -> tuple[ArtifactRecord, ArtifactRecord, dict[str, Any]]:
+        """Write the final manifest and bundle, returning records for current bytes."""
         root = self.mission_root(mission_id)
         manifest = self.manifest(mission_id, records)
         manifest_path = root / "ARTIFACT_MANIFEST.json"
-        manifest_path.write_text(
+        temporary_manifest = manifest_path.with_suffix(".json.tmp")
+        temporary_manifest.write_text(
             json.dumps(manifest, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+        temporary_manifest.replace(manifest_path)
+        manifest_record = self._record_existing(
+            mission_id,
+            "ARTIFACT_MANIFEST.json",
+            media_type="application/json",
+            label="artifact manifest",
+        )
+
         bundle_path, normalized = self._resolve(mission_id, filename)
         temporary = bundle_path.with_suffix(bundle_path.suffix + ".tmp")
         with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -236,15 +275,10 @@ class ArtifactStore:
                     continue
                 archive.write(path, path.relative_to(root).as_posix())
         temporary.replace(bundle_path)
-        digest = _sha256_file(bundle_path)
-        return ArtifactRecord(
-            artifact_id="artifact_" + digest[:24],
-            mission_id=mission_id,
-            task_id=None,
-            relative_path=normalized,
+        bundle_record = self._record_existing(
+            mission_id,
+            normalized,
             media_type="application/zip",
-            bytes=bundle_path.stat().st_size,
-            sha256=digest,
-            created_at_unix=int(time.time()),
             label="mission artifact bundle",
         )
+        return manifest_record, bundle_record, manifest
