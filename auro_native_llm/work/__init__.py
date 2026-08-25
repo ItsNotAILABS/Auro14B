@@ -1,4 +1,4 @@
-"""Auro work agents — native LLM that acts (Chrome, code, reason), not chat-only."""
+"""AURO work systems: acting agents plus durable independent harnesses."""
 
 from auro_native_llm.work.agent import WorkAgent, WorkResult
 from auro_native_llm.work.algorithms import (
@@ -8,10 +8,22 @@ from auro_native_llm.work.algorithms import (
     reason_steps,
     sample_logits,
 )
+from auro_native_llm.work.harness import (
+    HarnessLease,
+    HarnessState,
+    HarnessStore,
+    HarnessTask,
+    IndependentHarnessFabric,
+)
 
 __all__ = [
     "WorkAgent",
     "WorkResult",
+    "HarnessLease",
+    "HarnessState",
+    "HarnessStore",
+    "HarnessTask",
+    "IndependentHarnessFabric",
     "code_complete",
     "extract_code_blocks",
     "plan_from_text",
