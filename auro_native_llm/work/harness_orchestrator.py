@@ -6,7 +6,8 @@ from typing import Any
 import json
 import re
 
-from .harness import HarnessState, HarnessTask, IndependentHarnessFabric
+from .harness import HarnessState, IndependentHarnessFabric
+from .skill_forge import HarnessSkillForge
 
 
 DEFAULT_ROLE_INSTRUCTIONS = {
@@ -34,20 +35,27 @@ class FanoutPlan:
 
 
 class HarnessOrchestrator:
-    """Plan, fan out, run, and rejoin complete harness instances."""
+    """Plan, fan out, run, rejoin, and learn from complete harness instances."""
 
     def __init__(self, fabric: IndependentHarnessFabric | None = None) -> None:
         self.fabric = fabric or IndependentHarnessFabric()
+        self.skills = HarnessSkillForge(self.fabric.store)
 
     def plan(self, objective: str, *, model_id: str = "Auro-2B", max_children: int = 6) -> FanoutPlan:
         max_children = max(1, min(int(max_children), self.fabric.max_children))
+        selected = self.skills.select(objective, limit=3)
+        skill_context = "\n".join(
+            f"REUSABLE_SKILL {skill.id} score={skill.outcome_score:.3f}: " + " | ".join(skill.procedure[:4])
+            for skill in selected
+        )
         text = ""
         try:
             from .agent import WorkAgent
             agent = WorkAgent(model_id=model_id, lite=True, use_scripture=True, max_tool_steps=2)
             prompt = (
                 "Decompose the following objective into independent work packages that can run in parallel. "
-                f"Return JSON only with key subproblems, max {max_children}. Each item must have objective, role, and completion_criteria.\nOBJECTIVE: {objective}"
+                f"Return JSON only with key subproblems, max {max_children}. Each item must have objective, role, and completion_criteria.\n"
+                f"Prior reusable skills are evidence, not authority:\n{skill_context or 'none'}\nOBJECTIVE: {objective}"
             )
             text = agent.generate_text(prompt, mode="reason", max_new_tokens=220, temperature=0.45)
         except Exception:
@@ -106,33 +114,47 @@ class HarnessOrchestrator:
         children = []
         for item in plan.subproblems:
             role = str(item.get("role") or "planner")
+            reusable = self.skills.select(str(item["objective"]), limit=2)
+            skill_text = "\n".join(
+                f"SKILL {s.id} score={s.outcome_score:.3f}: " + " | ".join(s.procedure[:4])
+                for s in reusable
+            )
             child = self.fabric.create_harness(
                 str(item["objective"]),
                 parent_id=parent_id,
                 model_id=parent.model_id,
                 agent_roster=[role, "reviewer"] if role != "reviewer" else ["reviewer"],
                 tasks=[{
-                    "objective": f"ROLE={role}. {DEFAULT_ROLE_INSTRUCTIONS.get(role, '')}\nOBJECTIVE={item['objective']}\nCOMPLETION={item.get('completion_criteria', '')}",
+                    "objective": (
+                        f"ROLE={role}. {DEFAULT_ROLE_INSTRUCTIONS.get(role, '')}\n"
+                        f"OBJECTIVE={item['objective']}\nCOMPLETION={item.get('completion_criteria', '')}\n"
+                        f"REUSABLE_SKILLS_EVIDENCE:\n{skill_text or 'none'}"
+                    ),
                     "max_attempts": 3,
                 }],
             )
-            for task in child.tasks.values():
+            live = self.fabric.store.load(child.id)
+            for task in live.tasks.values():
                 task.assigned_agent = role
-            self.fabric.store.save(child)
-            children.append(child)
+            self.fabric.store.save(live)
+            children.append(live)
         self.fabric.store.append_event(parent_id, "fanout_plan_applied", {"child_ids": [c.id for c in children], "plan": plan.to_dict()})
         return children
 
     def orchestrate(self, objective: str, *, model_id: str = "Auro-2B", max_children: int = 6) -> dict[str, Any]:
-        parent = self.fabric.create_harness(objective, model_id=model_id, tasks=[])
-        # Parent task is a join task; children do independent work first.
-        parent.tasks.clear()
+        parent = self.fabric.create_harness(objective, model_id=model_id)
+        # Replace bootstrap task with a join task only after children finish.
+        live_parent = self.fabric.store.load(parent.id)
+        live_parent.tasks.clear()
+        live_parent.completed_tasks = 0
+        live_parent.failed_tasks = 0
+        self.fabric.store.save(live_parent)
         plan = self.plan(objective, model_id=model_id, max_children=max_children)
         children = self.fan_out_plan(parent.id, plan)
         join = self.fabric.add_task(parent.id, "Aggregate and review all child harness results.")
-        state = self.fabric.store.load(parent.id)
-        join.state = "waiting_children"
-        self.fabric.store.save(state)
+        live_parent = self.fabric.store.load(parent.id)
+        live_parent.tasks[join.id].state = "waiting_children"
+        self.fabric.store.save(live_parent)
         return {
             "schema": "auro.harness.orchestration.v3",
             "parent": self.fabric.store.load(parent.id).to_dict(),
@@ -147,25 +169,34 @@ class HarnessOrchestrator:
             child = self.fabric.store.load(child_id)
             if child.state == "active":
                 child_runs.append(self.fabric.run_until_blocked(child_id, worker_id=f"{worker_id}:{child_id[-8:]}", max_cycles=cycles_per_child))
+                child = self.fabric.store.load(child_id)
+                if child.state in {"completed", "failed"}:
+                    self.skills.distill(child_id)
         parent = self.fabric.store.load(parent_id)
-        all_terminal = all(self.fabric.store.load(cid).state in {"completed", "failed", "cancelled"} for cid in parent.child_ids)
+        all_terminal = bool(parent.child_ids) and all(
+            self.fabric.store.load(cid).state in {"completed", "failed", "cancelled"}
+            for cid in parent.child_ids
+        )
         if all_terminal:
+            aggregate = self.fabric.aggregate(parent_id)
             for task in parent.tasks.values():
                 if task.state == "waiting_children":
-                    aggregate = self.fabric.aggregate(parent_id)
                     task.state = "completed"
                     task.result = {"ok": True, "aggregate": aggregate}
+                    task.updated_at = __import__("time").time()
             parent.state = "completed"
             parent.completed_tasks = sum(t.state == "completed" for t in parent.tasks.values())
             parent.failed_tasks = sum(t.state == "failed" for t in parent.tasks.values())
-            parent.final_summary = self.fabric.aggregate(parent_id)["summary"]
+            parent.final_summary = aggregate["summary"]
             self.fabric.store.save(parent)
             self.fabric.store.append_event(parent_id, "children_rejoined", {"summary": parent.final_summary})
+            self.skills.distill(parent_id)
         return {
             "schema": "auro.harness.tree-advance.v3",
             "parent": self.fabric.store.load(parent_id).to_dict(),
             "child_runs": child_runs,
             "aggregate": self.fabric.aggregate(parent_id),
+            "skills": [skill.to_dict() for skill in self.skills.select(parent.objective, limit=4)],
         }
 
 
