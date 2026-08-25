@@ -134,18 +134,15 @@ def fluidize_report(
     else:
         transitions = (
             "",
-            "More specifically, ",
-            "At the same time, ",
-            "Operationally, ",
-            "The key boundary is that ",
+            "More specifically: ",
+            "At the same time: ",
+            "Operationally: ",
+            "The key boundary: ",
         )
         rendered = [unique[0]]
         for index, sentence in enumerate(unique[1:], 1):
             prefix = transitions[min(index, len(transitions) - 1)]
-            if prefix and sentence:
-                rendered.append(prefix + sentence[0].lower() + sentence[1:])
-            else:
-                rendered.append(sentence)
+            rendered.append(prefix + sentence if prefix else sentence)
         text = " ".join(rendered)
 
     citations = source.get("citations")
