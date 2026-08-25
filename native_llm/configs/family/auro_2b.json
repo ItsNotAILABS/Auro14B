@@ -1,10 +1,11 @@
 {
-  "schema": "auro.native_llm.model_config.v1",
+  "schema": "auro.native_llm.model_config.v2",
   "model_id": "Auro-2B",
   "family_id": "Auro",
   "status": "development-target-not-trained-checkpoint",
   "parameter_target": 2000000000,
   "tier": "edge",
+  "model_class": "micro",
   "architecture": {
     "family": "decoder-only-transformer",
     "objective": "causal-language-modeling",
@@ -16,11 +17,29 @@
     "activation": "silu",
     "normalization": "rmsnorm",
     "position_encoding": "rope",
+    "attention_type": "gqa",
     "context_window_tokens_target": 8192,
-    "vocab_size_target": 128000
+    "vocab_size_target": 128000,
+    "experts": 8,
+    "top_k": 2,
+    "moe_every": 2
   },
   "subagent_roles": ["router", "tool_call", "embed_fast", "spectral_triage"],
-  "can_embed_subagents": false,
-  "purpose": "edge and on-device sub-agent lane — fast routing, tool calls, spectral triage",
-  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "serving"]
+  "capabilities": ["parent_coordination", "atomic_routing", "tool_use", "spectral_triage", "structured_synthesis"],
+  "can_embed_subagents": true,
+  "embeddable_tiers": ["atomic"],
+  "deploy_profiles": ["phone-high-memory", "laptop", "private-edge-server"],
+  "specialist_triad": ["Auro-500M-SENSUS", "Auro-500M-PRAXIS", "Auro-500M-VERBUM"],
+  "atomic_lanes": ["Auro-156K", "Auro-250M", "Auro-500M"],
+  "routing_policy": "capability-first-then-smallest-capable-lane",
+  "task_capsules": {
+    "bounded": true,
+    "full_parent_context_broadcast": false
+  },
+  "mesie_offload": "every-turn ingress, specialist, worker, consensus and egress",
+  "conversational_renderer": "python-wasm-fluidizer",
+  "checkpoint_evidence_required": true,
+  "purpose": "micro parent coordinator for three 500M specialists and dynamically activated atomic swarms",
+  "claim_boundary": "the triad and atomic swarm are composition contracts until exact checkpoint or adapter evidence exists",
+  "required_receipts": ["tokenizer", "data_mixture", "pretrain_or_adaptation", "evaluation", "council_evaluation", "serving", "promotion"]
 }
