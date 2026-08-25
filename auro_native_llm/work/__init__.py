@@ -15,6 +15,8 @@ from auro_native_llm.work.harness import (
     HarnessTask,
     IndependentHarnessFabric,
 )
+from auro_native_llm.work.harness_orchestrator import FanoutPlan, HarnessOrchestrator
+from auro_native_llm.work.skill_forge import HarnessSkillForge, SkillArtifact
 
 __all__ = [
     "WorkAgent",
@@ -24,6 +26,10 @@ __all__ = [
     "HarnessStore",
     "HarnessTask",
     "IndependentHarnessFabric",
+    "FanoutPlan",
+    "HarnessOrchestrator",
+    "HarnessSkillForge",
+    "SkillArtifact",
     "code_complete",
     "extract_code_blocks",
     "plan_from_text",
