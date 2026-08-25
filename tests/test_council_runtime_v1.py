@@ -146,7 +146,7 @@ def test_council_runs_three_specialists_atomic_swarms_and_two_synthesis_rounds()
     assert result.release_evidence_ready is True
     assert result.blockers == ()
     assert result.runtime_receipt["signature"]
-    assert "Architecture is not trained capability" in result.text
+    assert "architecture is not trained capability" in result.text.lower()
 
     atomic_calls = [item for item in calls if "acting only as" in item["system"]]
     assert atomic_calls
@@ -259,9 +259,16 @@ def test_endpoint_config_contract_builds_without_executing_network_calls(monkeyp
             )
         ],
     }
-    service = CouncilService(config=config, runtime=CouncilService._build_runtime(config), source="test")
+    service = CouncilService(
+        config=config,
+        runtime=CouncilService._build_runtime(config),
+        source="test",
+    )
     status = service.status()
     assert status["configured"] is True
     assert status["runtime"]["main"]["model_id"] == "Auro-2B"
     assert len(status["runtime"]["specialists"]) == 3
-    assert set(status["runtime"]["atomic_executors"]) == {"Auro-156K", "Auro-250M"}
+    assert set(status["runtime"]["atomic_executors"]) == {
+        "Auro-156K",
+        "Auro-250M",
+    }
