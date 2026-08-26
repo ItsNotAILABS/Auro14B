@@ -1,0 +1,33 @@
+{
+  "schema": "auro.next_checkpoint.v1",
+  "status": "IMPLEMENTED_CONTRACTS_AWAITING_RUNTIME_EVIDENCE",
+  "priorities": {
+    "distributed_st14b_training": "training/st14b_distributed_contract.json",
+    "persistent_brain_state": "auro_native_llm/brain_state/runtime_state.py",
+    "portfolio_eval": "auro_native_llm/eval/auro_eval.py",
+    "model_registry": "auro_native_llm/registry/model_registry.py",
+    "chrome_agent_loop": "browser-runtime/src/agent-loop.js",
+    "speculative_decoding": "auro_native_llm/inference/speculative.py"
+  },
+  "serving_requirements": {
+    "native_gqa_required_for_promotion": true,
+    "paged_kv_cache_required_for_scale_promotion": true,
+    "prefix_cache_required": true,
+    "continuous_batching_required": true,
+    "export_targets": ["transformers", "vllm", "tensorrt-llm", "onnx", "gguf"],
+    "export_logits_equivalence_required": true
+  },
+  "model_family_roles": {
+    "AURO-Browser": "0.5B-2B local WebGPU/INT4 draft and tool-routing lane",
+    "AURO-Edge": "4B workstation and edge lane",
+    "AURO-ST-14B": "primary dense orchestrator and verifier",
+    "AURO-100B": "deep reasoning / MoE lane"
+  },
+  "training_data_classes": [
+    "reasoning", "code", "browser", "iot", "robotics", "memory", "security", "planning", "research", "tool_use", "doctrine"
+  ],
+  "evaluation_suites": [
+    "ChromeBench", "IoTBench", "RobotBench", "MemoryBench", "AgentContinuityBench", "ToolBench", "SecurityBoundaryBench", "LongContextBench", "CodeBuildBench", "ResearchBench"
+  ],
+  "promotion_invariant": "No model is production-promoted unless architecture, tokenizer, corpus, weights, training, restoration, evaluation, serving export, runtime and rollback evidence are digest-bound to the exact checkpoint."
+}
