@@ -1,0 +1,170 @@
+name: AURO Mission Orchestrator Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mission-orchestrator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check numpy pytest
+
+      - name: Compile mission runtime
+        run: |
+          python -m py_compile \
+            auro_native_llm/tasks/__init__.py \
+            auro_native_llm/tasks/artifacts.py \
+            auro_native_llm/tasks/store.py \
+            auro_native_llm/tasks/orchestrator.py \
+            auro_native_llm/tasks/worker.py \
+            auro_native_llm/production_fleet/task_service.py \
+            auro_native_llm/production_fleet/mission_server.py
+
+      - name: Run mission and council regression tests
+        run: |
+          mkdir -p artifacts/mission-orchestrator
+          python -m pytest -q \
+            tests/test_task_orchestrator_v1.py \
+            tests/test_council_runtime_v1.py \
+            | tee artifacts/mission-orchestrator/pytest.txt
+
+      - name: Verify product and security contract markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          files = {
+              'store': Path('auro_native_llm/tasks/store.py').read_text(encoding='utf-8'),
+              'orchestrator': Path('auro_native_llm/tasks/orchestrator.py').read_text(encoding='utf-8'),
+              'service': Path('auro_native_llm/production_fleet/task_service.py').read_text(encoding='utf-8'),
+              'server': Path('auro_native_llm/production_fleet/mission_server.py').read_text(encoding='utf-8'),
+              'artifacts': Path('auro_native_llm/tasks/artifacts.py').read_text(encoding='utf-8'),
+          }
+          required = {
+              'store': [
+                  'PRAGMA journal_mode=WAL',
+                  'CREATE TABLE IF NOT EXISTS dependencies',
+                  'lease_expires_at_unix',
+                  'mission_events',
+                  'organization_id',
+              ],
+              'orchestrator': [
+                  'ThreadPoolExecutor',
+                  'reasoning_rounds',
+                  'private_chain_of_thought_exported',
+                  'PackageTaskExecutor',
+                  'mission-artifacts.zip',
+              ],
+              'service': [
+                  'mission belongs to another organization',
+                  'mission belongs to another operator',
+                  'multi_user',
+              ],
+              'server': [
+                  '/v1/missions',
+                  'x-auro-operator-id',
+                  'x-auro-organization-id',
+                  '_require_execution_auth',
+              ],
+              'artifacts': [
+                  'cannot traverse parents',
+                  'ARTIFACT_MANIFEST.json',
+                  'sha256',
+              ],
+          }
+          missing = {
+              name: [marker for marker in markers if marker not in files[name]]
+              for name, markers in required.items()
+          }
+          missing = {name: values for name, values in missing.items() if values}
+          if missing:
+              raise SystemExit(f'missing mission contract markers: {missing}')
+
+          forbidden = [
+              'private_chain_of_thought_exported": True',
+              "private_chain_of_thought_exported': True",
+              'taskkill',
+              'Stop-Process',
+          ]
+          joined = '\n'.join(files.values())
+          found = [marker for marker in forbidden if marker in joined]
+          if found:
+              raise SystemExit(f'forbidden mission markers found: {found}')
+          print('mission product/security contract: PASS')
+          PY
+
+      - name: Generate source evidence receipt
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          paths = [
+              'auro_native_llm/tasks/__init__.py',
+              'auro_native_llm/tasks/artifacts.py',
+              'auro_native_llm/tasks/store.py',
+              'auro_native_llm/tasks/orchestrator.py',
+              'auro_native_llm/tasks/worker.py',
+              'auro_native_llm/production_fleet/task_service.py',
+              'auro_native_llm/production_fleet/mission_server.py',
+              'tests/test_task_orchestrator_v1.py',
+              'docs/AURO_MISSION_ORCHESTRATOR_V1.md',
+          ]
+          files = {
+              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+              for path in paths
+          }
+          payload = {
+              'schema': 'auro.mission-orchestrator.source-evidence.v1',
+              'evidence_class': 'E3-validated-output',
+              'files': files,
+              'validated_behaviors': [
+                  'dependency-aware mission DAG',
+                  'parallel independent ready tasks',
+                  'durable SQLite WAL state',
+                  'lease recovery and bounded retry',
+                  'pause resume cancel',
+                  'organization and operator isolation',
+                  'multi-pass council task execution',
+                  'bounded decision summaries',
+                  'path-safe content-addressed artifacts',
+                  'manifest and ZIP delivery',
+              ],
+              'claim_boundary': (
+                  'This receipt proves source identity and deterministic focused tests. '
+                  'It does not prove production deployment, external tool execution, '
+                  'semantic correctness of generated artifacts, or unattended execution '
+                  'without a running worker or scheduler.'
+              ),
+          }
+          payload['receipt_sha256'] = hashlib.sha256(
+              json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+          ).hexdigest()
+          destination = Path('artifacts/mission-orchestrator/source-evidence.json')
+          destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(payload, indent=2, sort_keys=True))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-mission-orchestrator-evidence
+          path: artifacts/mission-orchestrator
+          if-no-files-found: error

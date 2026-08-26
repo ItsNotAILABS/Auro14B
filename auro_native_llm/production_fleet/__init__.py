@@ -1,4 +1,4 @@
-"""NOVA-governed production inference and internal-agent runtime.
+"""NOVA-governed production inference, council, task, and agent runtime.
 
 Exports are loaded lazily so optional organs cannot prevent unrelated runtime
 modules from importing.
@@ -25,6 +25,8 @@ _EXPORTS = {
     "PaperWallet": (".wallet", "PaperWallet"),
     "NativeOffice": (".office", "NativeOffice"),
     "IntegrityVault": (".vault", "IntegrityVault"),
+    "CouncilService": (".council_service", "CouncilService"),
+    "TaskService": (".task_service", "TaskService"),
 }
 
 __all__ = sorted(_EXPORTS)
