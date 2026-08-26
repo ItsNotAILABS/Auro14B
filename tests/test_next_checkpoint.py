@@ -2,6 +2,7 @@ from pathlib import Path
 
 from auro_native_llm.brain_state.runtime_state import PersistentBrainState
 from auro_native_llm.eval.auro_eval import AuroEval, default_portfolio_contracts
+from auro_native_llm.inference.speculative import AuroSpeculativeCoordinator
 from auro_native_llm.registry.model_registry import ModelRecord, ModelRegistry
 
 
@@ -39,3 +40,18 @@ def test_auro_eval_receipt_and_suite_contracts():
     assert len(receipt["evidence_sha256"]) == 64
     suites = {item["suite"] for item in default_portfolio_contracts()}
     assert {"ChromeBench", "IoTBench", "RobotBench", "MemoryBench", "SecurityBoundaryBench"} <= suites
+
+
+def test_speculative_coordinator_accepts_then_corrects():
+    def draft(prefix, count):
+        return [2, 3, 99, 5][:count]
+
+    truth = {1: 2, 2: 3, 3: 4, 4: 5}
+
+    def verifier(prefix):
+        return truth[prefix[-1]]
+
+    receipt = AuroSpeculativeCoordinator(draft, verifier).step([1], draft_tokens=4)
+    assert receipt.accepted == [2, 3, 4]
+    assert receipt.rejected_at == 2
+    assert receipt.verifier_calls == 3
