@@ -1,17 +1,13 @@
-"""AURO sub-2B atomic family and hierarchical expert-offload runtime.
+"""Canonical AURO sub-2B family and bounded expert-offload contracts.
 
-This module extends, rather than replaces, the existing AURO family. 250M and
-500M are dual-purpose lanes: independently deployable edge models and embedded
-experts used by 2B+ parents. The runtime moves bounded task capsules instead of
-repeating the full parent context to every expert.
-
-Architecture contracts are not trained-checkpoint claims. A release still
-requires exact weights, tokenizer, provenance, evaluations, hashes, launch
-proof, promotion authorization, and rollback evidence.
+The 156K, 250M, and 500M lanes are independently deployable atomic models and
+embeddable experts under Auro-2B and larger parents. Named specialist variants
+are routing identities until exact checkpoint or adapter evidence proves that
+they are separately trained.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 import hashlib
 import json
 import math
@@ -19,7 +15,33 @@ import time
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
 
-SUB2B_CONTRACT_VERSION = "auro.sub2b.atomic.v1"
+SUB2B_CONTRACT_VERSION = "auro.sub2b.atomic.v2.1"
+
+
+def _canonical(value: Any) -> bytes:
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        default=str,
+    ).encode("utf-8")
+
+
+def _sha(value: Any) -> str:
+    return hashlib.sha256(_canonical(value)).hexdigest()
+
+
+def estimate_tokens(text: str) -> int:
+    """Stable transport estimate, not an exact tokenizer measurement."""
+    if not text:
+        return 0
+    return max(1, math.ceil(len(text.encode("utf-8")) / 4))
+
+
+def _bounded(text: str, limit: int) -> str:
+    clean = " ".join(str(text).split())
+    return clean if len(clean) <= limit else clean[: max(0, limit - 1)] + "..."
 
 
 @dataclass(frozen=True)
@@ -36,6 +58,7 @@ class AtomicArchitecture:
     experts: int = 8
     top_k: int = 2
     moe_every: int = 2
+    head_dim: int = 0
     status: str = "architecture-target-not-trained-checkpoint"
     roles: tuple[str, ...] = ()
     deploy_profiles: tuple[str, ...] = ()
@@ -44,13 +67,50 @@ class AtomicArchitecture:
     def model_class(self) -> str:
         return "atomic"
 
+    @property
+    def resolved_head_dim(self) -> int:
+        return int(self.head_dim or max(1, self.hidden_size // self.attention_heads))
+
+    @property
+    def moe_layers(self) -> int:
+        return len(range(1, self.layers, max(1, self.moe_every)))
+
+    def parameter_accounting(self) -> dict[str, int]:
+        """Estimate active-per-token and stored weights from declared geometry.
+
+        Tied input/output embeddings are counted once. A SwiGLU expert is
+        approximated as three d_model x d_ff matrices. This is architecture
+        arithmetic and never substitutes for serialized-checkpoint inspection.
+        """
+        d = int(self.hidden_size)
+        kv_width = int(self.kv_heads * self.resolved_head_dim)
+        attention = 2 * d * d + 2 * d * kv_width
+        ffn_expert = 3 * d * int(self.intermediate_size)
+        moe_layers = self.moe_layers
+        dense_layers = int(self.layers) - moe_layers
+        embeddings = int(self.vocab_size_target) * d
+        norms = (2 * int(self.layers) + 1) * d
+        routers = moe_layers * d * int(self.experts)
+        shared = embeddings + int(self.layers) * attention + dense_layers * ffn_expert + norms + routers
+        active = shared + moe_layers * int(self.top_k) * ffn_expert
+        stored = shared + moe_layers * int(self.experts) * ffn_expert
+        return {
+            "active_parameters_per_token_estimate": int(active),
+            "stored_parameters_estimate": int(stored),
+            "shared_parameters_estimate": int(shared),
+            "moe_layers": int(moe_layers),
+            "parameter_target_delta": int(active - self.parameter_target),
+        }
+
     def to_dict(self) -> dict[str, Any]:
         row = asdict(self)
+        row["head_dim"] = self.resolved_head_dim
+        row.update(self.parameter_accounting())
         row["model_class"] = self.model_class
         row["contract_version"] = SUB2B_CONTRACT_VERSION
         row["claim_boundary"] = (
-            "architecture and training lane only; no trained checkpoint or "
-            "quality result is implied"
+            "architecture arithmetic only; exact weights, tokenizer custody, "
+            "training provenance, evaluation, serving, and promotion evidence are required"
         )
         return row
 
@@ -63,10 +123,11 @@ ATOMIC_LADDER: dict[str, AtomicArchitecture] = {
         layers=2,
         attention_heads=4,
         kv_heads=2,
+        head_dim=16,
         intermediate_size=64,
         context_window_tokens_target=1_024,
         vocab_size_target=1_024,
-        roles=("routing_seed", "classifier", "json_repair", "tool_selection"),
+        roles=("routing_seed", "classifier", "json_repair", "tool_selection", "style_guard"),
         deploy_profiles=("wasm", "embedded", "high-multiplicity-swarm"),
     ),
     "Auro-250M": AtomicArchitecture(
@@ -76,6 +137,7 @@ ATOMIC_LADDER: dict[str, AtomicArchitecture] = {
         layers=16,
         attention_heads=12,
         kv_heads=4,
+        head_dim=64,
         intermediate_size=2_048,
         context_window_tokens_target=4_096,
         vocab_size_target=64_000,
@@ -85,6 +147,7 @@ ATOMIC_LADDER: dict[str, AtomicArchitecture] = {
             "structured_transform",
             "code_triage",
             "memory_consolidation",
+            "semantic_outline",
         ),
         deploy_profiles=("phone", "browser-wasm", "cpu", "embedded-expert"),
     ),
@@ -95,6 +158,7 @@ ATOMIC_LADDER: dict[str, AtomicArchitecture] = {
         layers=24,
         attention_heads=16,
         kv_heads=4,
+        head_dim=64,
         intermediate_size=4_096,
         context_window_tokens_target=8_192,
         vocab_size_target=64_000,
@@ -105,10 +169,77 @@ ATOMIC_LADDER: dict[str, AtomicArchitecture] = {
             "local_worker",
             "expert_consensus",
             "text_expansion",
+            "creative_branch",
         ),
         deploy_profiles=("phone-high-memory", "laptop", "edge-gpu", "embedded-expert"),
     ),
 }
+
+
+@dataclass(frozen=True)
+class AtomicVariant:
+    variant_id: str
+    base_model_id: str
+    role: str
+    capabilities: tuple[str, ...]
+    adapter_required_for_distinct_checkpoint_claim: bool = True
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+AURO_500M_TRIAD: tuple[AtomicVariant, ...] = (
+    AtomicVariant(
+        variant_id="Auro-500M-SENSUS",
+        base_model_id="Auro-500M",
+        role="evidence_and_perception",
+        capabilities=("research", "retrieval", "fact_check", "context", "risk"),
+    ),
+    AtomicVariant(
+        variant_id="Auro-500M-PRAXIS",
+        base_model_id="Auro-500M",
+        role="code_and_execution",
+        capabilities=("code", "tool", "build", "debug", "workflow"),
+    ),
+    AtomicVariant(
+        variant_id="Auro-500M-VERBUM",
+        base_model_id="Auro-500M",
+        role="language_and_expression",
+        capabilities=("writing", "creative", "explanation", "synthesis", "conversation"),
+    ),
+)
+
+
+def architecture_for(model_id: str) -> AtomicArchitecture:
+    base = next(
+        (item.base_model_id for item in AURO_500M_TRIAD if item.variant_id == model_id),
+        model_id,
+    )
+    try:
+        return ATOMIC_LADDER[base]
+    except KeyError as exc:
+        raise ValueError(f"unknown AURO atomic model: {model_id}") from exc
+
+
+def atomic_config_overrides(model_id: str) -> dict[str, Any]:
+    arch = architecture_for(model_id)
+    return {
+        "model_id": model_id,
+        "tier": "atomic",
+        "parameter_target": arch.parameter_target,
+        "hidden_dim": arch.hidden_size,
+        "num_layers": arch.layers,
+        "num_heads": arch.attention_heads,
+        "num_kv_heads": arch.kv_heads,
+        "head_dim": arch.resolved_head_dim,
+        "ffn_dim": arch.intermediate_size,
+        "vocab_size": arch.vocab_size_target,
+        "max_seq_len": arch.context_window_tokens_target,
+        "use_moe": True,
+        "num_experts": arch.experts,
+        "top_k_experts": arch.top_k,
+        "moe_every": arch.moe_every,
+    }
 
 
 @dataclass(frozen=True)
@@ -165,43 +296,16 @@ class CouncilResult:
 ExpertCallable = Callable[[TaskCapsule], ExpertObservation | Mapping[str, Any] | str]
 
 
-def _canonical(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str).encode()
-
-
-def _sha(value: Any) -> str:
-    return hashlib.sha256(_canonical(value)).hexdigest()
-
-
-def estimate_tokens(text: str) -> int:
-    """Deterministic architecture metric, not a tokenizer benchmark."""
-    if not text:
-        return 0
-    return max(1, math.ceil(len(text.encode("utf-8")) / 4))
-
-
-def _bounded(text: str, limit: int) -> str:
-    clean = " ".join(str(text).split())
-    return clean if len(clean) <= limit else clean[: max(0, limit - 1)] + "…"
-
-
 class HierarchicalAtomicCouncil:
-    """Dispatch compressed capsules to 250M/500M experts and reconcile results.
-
-    The parent retains the complete conversation/context. Children receive only
-    the role-specific objective, explicit constraints, and content-addressed
-    evidence references. This avoids broadcasting the entire prompt to every
-    expert while preserving auditable delegation.
-    """
+    """Dispatch bounded capsules to atomic experts and reconcile observations."""
 
     def __init__(self, parent_model_id: str = "Auro-2B"):
         self.parent_model_id = parent_model_id
         self._experts: dict[tuple[str, str], ExpertCallable] = {}
 
     def register(self, model_id: str, role: str, expert: ExpertCallable) -> None:
-        if model_id not in ATOMIC_LADDER:
-            raise ValueError(f"unknown atomic model: {model_id}")
-        if role not in ATOMIC_LADDER[model_id].roles:
+        architecture_for(model_id)
+        if role not in architecture_for(model_id).roles:
             raise ValueError(f"{model_id} does not declare role {role}")
         self._experts[(model_id, role)] = expert
 
@@ -216,9 +320,8 @@ class HierarchicalAtomicCouncil:
         evidence_refs: Sequence[str] = (),
         max_output_tokens: int = 256,
     ) -> TaskCapsule:
-        if model_id not in ATOMIC_LADDER:
-            raise ValueError(f"unknown atomic model: {model_id}")
-        if role not in ATOMIC_LADDER[model_id].roles:
+        architecture = architecture_for(model_id)
+        if role not in architecture.roles:
             raise ValueError(f"role {role} is not declared by {model_id}")
         material = {
             "task_id": task_id,
@@ -264,11 +367,13 @@ class HierarchicalAtomicCouncil:
             observations.append(self._normalize(raw, capsule, latency_ms))
 
         consensus, disagreements, confidence = self._consensus(observations)
-        dispatch_tokens = sum(estimate_tokens(json.dumps(item.to_dict(), sort_keys=True)) for item in capsules)
+        dispatch_tokens = sum(
+            estimate_tokens(json.dumps(item.to_dict(), sort_keys=True)) for item in capsules
+        )
         naive_tokens = estimate_tokens(full_parent_context) * max(1, len(capsules))
         reduction = 0.0 if naive_tokens <= 0 else max(0.0, 1.0 - dispatch_tokens / naive_tokens)
         receipt_material = {
-            "schema": "auro.atomic.council.receipt.v1",
+            "schema": "auro.atomic.council.receipt.v2",
             "task_id": task_id,
             "parent_model_id": self.parent_model_id,
             "capsules": [item.capsule_hash for item in capsules],
@@ -293,51 +398,50 @@ class HierarchicalAtomicCouncil:
         )
 
     @staticmethod
-    def _normalize(raw: ExpertObservation | Mapping[str, Any] | str, capsule: TaskCapsule, latency_ms: float) -> ExpertObservation:
+    def _normalize(
+        raw: ExpertObservation | Mapping[str, Any] | str,
+        capsule: TaskCapsule,
+        latency_ms: float,
+    ) -> ExpertObservation:
         if isinstance(raw, ExpertObservation):
-            return ExpertObservation(
-                task_id=raw.task_id,
-                expert_model_id=raw.expert_model_id,
-                role=raw.role,
-                answer=raw.answer,
-                confidence=max(0.0, min(1.0, float(raw.confidence))),
-                evidence=tuple(raw.evidence),
-                proposed_tokens=raw.proposed_tokens or estimate_tokens(raw.answer),
-                latency_ms=latency_ms,
-            )
-        if isinstance(raw, Mapping):
+            answer = raw.answer
+            confidence = raw.confidence
+            evidence = tuple(raw.evidence)
+        elif isinstance(raw, Mapping):
             answer = str(raw.get("answer", ""))
-            return ExpertObservation(
-                task_id=capsule.task_id,
-                expert_model_id=capsule.expert_model_id,
-                role=capsule.role,
-                answer=answer,
-                confidence=max(0.0, min(1.0, float(raw.get("confidence", 0.5)))),
-                evidence=tuple(str(item) for item in raw.get("evidence", ())),
-                proposed_tokens=estimate_tokens(answer),
-                latency_ms=latency_ms,
-            )
-        answer = str(raw)
+            confidence = float(raw.get("confidence", 0.5))
+            evidence = tuple(str(item) for item in raw.get("evidence", ()))
+        else:
+            answer = str(raw)
+            confidence = 0.5
+            evidence = ()
         return ExpertObservation(
             task_id=capsule.task_id,
             expert_model_id=capsule.expert_model_id,
             role=capsule.role,
             answer=answer,
-            confidence=0.5,
+            confidence=max(0.0, min(1.0, float(confidence))),
+            evidence=evidence,
             proposed_tokens=estimate_tokens(answer),
             latency_ms=latency_ms,
         )
 
     @staticmethod
-    def _consensus(observations: Sequence[ExpertObservation]) -> tuple[str, list[str], float]:
+    def _consensus(
+        observations: Sequence[ExpertObservation],
+    ) -> tuple[str, list[str], float]:
         if not observations:
             return "", ["no expert observations"], 0.0
-        ranked = sorted(observations, key=lambda item: (-item.confidence, item.expert_model_id, item.role))
+        ranked = sorted(
+            observations,
+            key=lambda item: (-item.confidence, item.expert_model_id, item.role),
+        )
         selected = ranked[0]
-        normalized = {" ".join(item.answer.lower().split()) for item in observations if item.answer.strip()}
-        disagreements = [] if len(normalized) <= 1 else [
-            f"{item.expert_model_id}:{item.role} produced a distinct candidate" for item in ranked[1:]
-            if " ".join(item.answer.lower().split()) != " ".join(selected.answer.lower().split())
+        selected_normal = " ".join(selected.answer.lower().split())
+        disagreements = [
+            f"{item.expert_model_id}:{item.role} produced a distinct candidate"
+            for item in ranked[1:]
+            if " ".join(item.answer.lower().split()) != selected_normal
         ]
         confidence = sum(item.confidence for item in observations) / len(observations)
         if disagreements:
@@ -345,12 +449,21 @@ class HierarchicalAtomicCouncil:
         return selected.answer, disagreements, round(max(0.0, min(1.0, confidence)), 6)
 
 
-def sub2b_manifest() -> dict[str, Any]:
+def sub2b_manifest(extra_variants: Iterable[AtomicVariant] = ()) -> dict[str, Any]:
+    variants = (*AURO_500M_TRIAD, *tuple(extra_variants))
     return {
-        "schema": "auro.sub2b.family.v1",
+        "schema": "auro.sub2b.family.v2",
         "contract_version": SUB2B_CONTRACT_VERSION,
         "parent_lane": "Auro-2B",
         "lanes": [ATOMIC_LADDER[key].to_dict() for key in ("Auro-156K", "Auro-250M", "Auro-500M")],
-        "execution_model": "bounded task capsules -> atomic experts -> parent consensus",
+        "triad": [item.to_dict() for item in variants],
+        "execution_model": (
+            "2B parent -> three 500M specialists -> topic-scoped 250M/156K swarms "
+            "-> triad consensus -> 2B synthesis"
+        ),
         "checkpoint_release_required": True,
+        "parameter_accounting": (
+            "report each loaded checkpoint independently; do not add agent instances "
+            "to one model's parameter count"
+        ),
     }

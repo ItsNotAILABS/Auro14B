@@ -1,0 +1,129 @@
+name: AURO-2B Council Runtime Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  council-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install focused test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check numpy pytest
+
+      - name: Compile council runtime and production routes
+        run: |
+          python -m py_compile \
+            auro_native_llm/model/atomic_family.py \
+            auro_native_llm/model/council_runtime.py \
+            auro_native_llm/model/fluidizer.py \
+            auro_native_llm/production_fleet/council_service.py \
+            auro_native_llm/production_fleet/server.py \
+            scripts/validate_auro2b_council_config.py
+
+      - name: Validate non-secret council topology template
+        run: |
+          mkdir -p artifacts/council-runtime
+          python scripts/validate_auro2b_council_config.py \
+            native_llm/configs/auro_2b_council.example.json \
+            --output artifacts/council-runtime/config-validation.json
+
+      - name: Run council and family regression tests
+        run: |
+          python -m pytest -q \
+            tests/test_council_runtime_v1.py \
+            tests/test_corpus_family_alignment.py \
+            tests/test_family_moe_context_policy.py \
+            tests/test_model_taxonomy.py \
+            | tee artifacts/council-runtime/pytest.txt
+
+      - name: Verify production API source contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('auro_native_llm/production_fleet/server.py').read_text(encoding='utf-8')
+          required = [
+              'if path == "/v1/council"',
+              'if path == "/v1/council/respond"',
+              'auro-2b-council',
+              'not_a_single_checkpoint',
+              'AURO_COUNCIL_RECEIPT_HMAC_KEY',
+          ]
+          missing = [item for item in required if item not in text]
+          if missing:
+              raise SystemExit(f'missing production council contract markers: {missing}')
+          forbidden = ['approved": true', "'approved': True"]
+          found = [item for item in forbidden if item in text]
+          if found:
+              raise SystemExit(f'caller-controlled approval markers found: {found}')
+          print('production council route contract: PASS')
+          PY
+
+      - name: Generate source evidence receipt
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          paths = [
+              'auro_native_llm/model/atomic_family.py',
+              'auro_native_llm/model/council_runtime.py',
+              'auro_native_llm/model/fluidizer.py',
+              'auro_native_llm/production_fleet/council_service.py',
+              'auro_native_llm/production_fleet/server.py',
+              'native_llm/configs/auro_2b_council.example.json',
+              'scripts/validate_auro2b_council_config.py',
+              'tests/test_council_runtime_v1.py',
+              'docs/AURO_2B_COUNCIL_RUNTIME_V1.md',
+          ]
+          files = {
+              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+              for path in paths
+          }
+          payload = {
+              'schema': 'auro.2b-council.source-evidence.v1',
+              'evidence_class': 'E3-validated-output',
+              'files': files,
+              'tests': [
+                  'council hierarchy',
+                  'bounded atomic context',
+                  'visible missing-model blockers',
+                  'specialist identity uniqueness',
+                  'deterministic fluidizer',
+                  'fail-closed service configuration',
+                  'family and taxonomy regression',
+              ],
+              'claim_boundary': (
+                  'This artifact validates source and deterministic test behavior only. '
+                  'It does not prove trained checkpoints, endpoint deployment, model quality, '
+                  'hardware latency, or external receipt custody.'
+              ),
+          }
+          payload['receipt_sha256'] = hashlib.sha256(
+              json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+          ).hexdigest()
+          destination = Path('artifacts/council-runtime/source-evidence.json')
+          destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(payload, indent=2, sort_keys=True))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auro-2b-council-runtime-evidence
+          path: artifacts/council-runtime
+          if-no-files-found: error
