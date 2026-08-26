@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
 
 import torch
 import torch.nn as nn
@@ -109,15 +108,6 @@ class RotaryEmbedding(nn.Module):
         return self._apply(query, cos, sin), self._apply(key, cos, sin)
 
 
-def repeat_kv(value: torch.Tensor, repeats: int) -> torch.Tensor:
-    if repeats == 1:
-        return value
-    batch, heads, sequence, dimension = value.shape
-    return value[:, :, None, :, :].expand(batch, heads, repeats, sequence, dimension).reshape(
-        batch, heads * repeats, sequence, dimension
-    )
-
-
 class CacheAwareGroupedQueryAttention(nn.Module):
     def __init__(self, config: ST14BRuntimeConfig) -> None:
         super().__init__()
@@ -128,6 +118,7 @@ class CacheAwareGroupedQueryAttention(nn.Module):
         self.value = nn.Linear(config.hidden_size, config.num_kv_heads * config.head_dim, bias=config.bias)
         self.output = nn.Linear(config.hidden_size, config.hidden_size, bias=config.bias)
         self.rope = RotaryEmbedding(config.head_dim, config.max_seq_len, config.rope_theta)
+        self.last_attention_backend = "uninitialized"
 
     def forward(self, hidden: torch.Tensor, cache: LayerKVCache | None = None) -> torch.Tensor:
         batch, sequence, _ = hidden.shape
@@ -138,16 +129,32 @@ class CacheAwareGroupedQueryAttention(nn.Module):
         query, key = self.rope(query, key, offset)
         if cache is not None:
             key, value = cache.append(key, value, self.config.max_seq_len)
-        expanded_key = repeat_kv(key, self.config.kv_group_size)
-        expanded_value = repeat_kv(value, self.config.kv_group_size)
         is_prefill = cache is None or sequence > 1
-        attended = F.scaled_dot_product_attention(
-            query,
-            expanded_key,
-            expanded_value,
-            is_causal=is_prefill,
-            dropout_p=0.0,
-        )
+
+        try:
+            attended = F.scaled_dot_product_attention(
+                query,
+                key,
+                value,
+                is_causal=is_prefill,
+                dropout_p=0.0,
+                enable_gqa=True,
+            )
+            self.last_attention_backend = "torch-sdpa-native-gqa"
+        except TypeError:
+            # Compatibility only for older PyTorch versions. Production promotion
+            # requires the native-GQA path so KV heads are not materialized to Hq.
+            repeats = self.config.kv_group_size
+            expanded_key = key.repeat_interleave(repeats, dim=1)
+            expanded_value = value.repeat_interleave(repeats, dim=1)
+            attended = F.scaled_dot_product_attention(
+                query,
+                expanded_key,
+                expanded_value,
+                is_causal=is_prefill,
+                dropout_p=0.0,
+            )
+            self.last_attention_backend = "compat-expanded-kv"
         return self.output(attended.transpose(1, 2).contiguous().view(batch, sequence, -1))
 
 
@@ -176,12 +183,7 @@ class ST14BBlock(nn.Module):
 
 
 class AuroST14BForCausalLM(nn.Module):
-    """Dense AURO ST-14B decoder with native GQA KV caching.
-
-    The class is fully executable for reduced test geometries and represents the
-    exact full 14B geometry when constructed with the default config. Checkpoint
-    creation remains a separate training operation.
-    """
+    """Dense AURO ST-14B decoder with native GQA KV caching."""
 
     def __init__(self, config: ST14BRuntimeConfig | None = None) -> None:
         super().__init__()
@@ -229,6 +231,9 @@ class AuroST14BForCausalLM(nn.Module):
             logits = self.decode_step(next_token, cache)
         return output
 
+    def attention_backends(self) -> list[str]:
+        return [layer.attention.last_attention_backend for layer in self.layers]
+
 
 def parameter_count(model: nn.Module) -> int:
     return sum(parameter.numel() for parameter in model.parameters())
@@ -238,7 +243,5 @@ def kv_cache_bytes(config: ST14BRuntimeConfig, batch_size: int, sequence_length:
     return 2 * batch_size * config.num_layers * config.num_kv_heads * config.head_dim * sequence_length * bytes_per_element
 
 
-def mha_equivalent_kv_cache_bytes(
-    config: ST14BRuntimeConfig, batch_size: int, sequence_length: int, bytes_per_element: int
-) -> int:
+def mha_equivalent_kv_cache_bytes(config: ST14BRuntimeConfig, batch_size: int, sequence_length: int, bytes_per_element: int) -> int:
     return 2 * batch_size * config.num_layers * config.num_heads * config.head_dim * sequence_length * bytes_per_element
