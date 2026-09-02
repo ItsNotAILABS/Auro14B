@@ -1,0 +1,76 @@
+name: AURO Next Checkpoint Full Stack
+
+on:
+  pull_request:
+    paths:
+      - 'auro_native_llm/brain_state/**'
+      - 'next_checkpoint/**'
+      - 'browser-runtime/src/agent-loop.js'
+      - 'browser-runtime/node/agent-loop-smoke.mjs'
+      - 'tests/test_next_checkpoint_full_stack.py'
+      - '.github/workflows/auro-next-checkpoint-full-stack.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: pip install pytest
+      - name: Compile contracts
+        run: python -m compileall -q auro_native_llm/brain_state next_checkpoint tests/test_next_checkpoint_full_stack.py
+      - name: Run next checkpoint tests
+        run: pytest -q tests/test_next_checkpoint_full_stack.py
+      - name: Emit dry-run ST-14B launch receipt
+        run: |
+          python next_checkpoint/distributed_st14b_train.py \
+            --root . \
+            --receipt artifacts/st14b/train-launch-receipt.json \
+            --dry-run
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('artifacts/st14b/train-launch-receipt.json')
+          data = json.loads(p.read_text())
+          assert data['contract']['parameter_count'] == 14339691520
+          assert data['corpus_manifest']['sha256']
+          assert data['promotion_boundary']['production_promoted'] is False
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: st14b-train-launch-receipt
+          path: artifacts/st14b/train-launch-receipt.json
+
+  chrome-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify governed Chrome agent loop
+        run: node browser-runtime/node/agent-loop-smoke.mjs
+
+  promotion-boundary:
+    runs-on: ubuntu-latest
+    needs: [python-contracts, chrome-agent]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm prototype boundary remains explicit
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('next_checkpoint/distributed_st14b_train.py').read_text()
+          assert 'maturity: str = "PROTOTYPE"' in text
+          assert 'full_parameter_checkpoint_produced' in text
+          assert 'h100_runtime_verified' in text
+          PY

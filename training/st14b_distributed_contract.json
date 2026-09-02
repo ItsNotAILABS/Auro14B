@@ -1,0 +1,45 @@
+{
+  "schema": "auro.st14b.distributed_training.v1",
+  "status": "PROTOTYPE_REQUIRES_ACCELERATOR_EXECUTION",
+  "model_id": "AURO-ST-14B",
+  "architecture": {
+    "parameter_count": 14339691520,
+    "layers": 40,
+    "hidden_size": 5120,
+    "query_heads": 40,
+    "kv_heads": 5,
+    "intermediate_size": 18432,
+    "vocab_size": 128000,
+    "max_seq_len": 8192
+  },
+  "data_invariants": {
+    "immutable_corpus_manifest": true,
+    "immutable_tokenizer_manifest": true,
+    "train_eval_isolation": true,
+    "deduplication_required": true,
+    "provenance_hashes_required": true,
+    "contamination_scan_required": true
+  },
+  "runtime": {
+    "precision": ["bf16", "fp8_optional"],
+    "distributed": ["torch_fsdp2", "deepspeed_zero3"],
+    "activation_checkpointing": true,
+    "sharded_safetensors": true,
+    "resumable_optimizer_state": true,
+    "gradient_clipping": 1.0,
+    "checkpoint_every_steps": 500,
+    "restore_verification_required": true
+  },
+  "promotion_gates": [
+    "checkpoint_hash_valid",
+    "tokenizer_hash_valid",
+    "corpus_hash_valid",
+    "optimizer_restore_valid",
+    "heldout_loss_valid",
+    "auro_eval_passes",
+    "native_gqa_runtime_only",
+    "serving_export_equivalence_valid",
+    "h100_runtime_receipt_valid"
+  ],
+  "truth_boundary": "This file is an executable training contract, not evidence that full-parameter training has completed."
+}
