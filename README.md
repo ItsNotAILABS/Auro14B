@@ -25,6 +25,14 @@ Orchestrator  10B – <30B
 Frontier      30B+
 ```
 
+**Endure mode** (experiment variants, keep going, receipts — does not die after one shot):
+
+```bash
+python -m auro_native_llm.organism.endure --goal "Keep a useful experiment alive" --experiments 4 --cycles 6
+```
+
+Pocket: `POST /v1/agents/invoke {"name":"auro-endure","prompt":"…"}` or say “experiment and endure”.
+
 ## Checkpoint inventory
 
 Model architecture, local/private checkpoints and promoted release artifacts are tracked separately. Inventory local checkpoint evidence before selecting a runtime artifact:

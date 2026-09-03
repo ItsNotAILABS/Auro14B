@@ -16,6 +16,11 @@ from auro_native_llm.organism.checkpoint import save_mind, load_mind
 # value_train is heavy; import via auro_native_llm.organism.value_train or CLI
 # (avoid circular import warning when running python -m ...value_train)
 
+try:
+    from auro_native_llm.organism.endure import run_endure
+except Exception:  # pragma: no cover
+    run_endure = None  # type: ignore
+
 __all__ = [
     "AuroMind",
     "MindResult",
@@ -26,4 +31,5 @@ __all__ = [
     "build_mind",
     "load_mind",
     "save_mind",
+    "run_endure",
 ]
