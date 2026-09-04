@@ -134,13 +134,17 @@ TIER_TO_MODEL_ID: Dict[ModelTier, str] = {
     ModelTier.FRONTIER: "Auro-100B",
 }
 
-ATOMIC_MODEL_IDS = ("Auro-156K", "Auro-250M", "Auro-500M")
+ATOMIC_MODEL_IDS = ("Auro-156K", "Auro-250M", "Auro-320M", "Auro-500M", "Auro-640M")
 
 MODEL_ID_TO_TIER: Dict[str, ModelTier] = {
     "Auro-156K": ModelTier.ATOMIC,
     "Auro-250M": ModelTier.ATOMIC,
+    "Auro-320M": ModelTier.ATOMIC,
+    "Auro-640M": ModelTier.ATOMIC,
+    "Auro-1B": ModelTier.EDGE,
     "Auro-500M": ModelTier.ATOMIC,
     "Auro-2B": ModelTier.EDGE,
+    "Auro-3B": ModelTier.EDGE,
     "Auro-4B": ModelTier.SPECIALIST,
     "Auro-8B": ModelTier.GENERAL,
     "Auro-14B": ModelTier.ORCHESTRATOR,
@@ -150,8 +154,12 @@ MODEL_ID_TO_TIER: Dict[str, ModelTier] = {
 FAMILY_PARAMETER_TARGETS: Dict[str, int] = {
     "Auro-156K": 156_000,
     "Auro-250M": 250_000_000,
+    "Auro-320M": 320_000_000,
+    "Auro-640M": 640_000_000,
+    "Auro-1B": 1_000_000_000,
     "Auro-500M": 500_000_000,
     "Auro-2B": 2_000_000_000,
+    "Auro-3B": 3_000_000_000,
     "Auro-4B": 4_000_000_000,
     "Auro-8B": 8_000_000_000,
     "Auro-14B": 14_000_000_000,
@@ -163,18 +171,18 @@ ROLE_DEFAULT_MODEL_ID: Dict[SubAgentRole, str] = {
     SubAgentRole.CLASSIFIER: "Auro-156K",
     SubAgentRole.JSON_REPAIR: "Auro-156K",
     SubAgentRole.TOOL_SELECTION: "Auro-156K",
-    SubAgentRole.INTENT_EXTRACT: "Auro-250M",
-    SubAgentRole.RETRIEVAL_FILTER: "Auro-250M",
-    SubAgentRole.STRUCTURED_TRANSFORM: "Auro-250M",
-    SubAgentRole.CODE_TRIAGE: "Auro-250M",
-    SubAgentRole.MEMORY_CONSOLIDATION: "Auro-250M",
-    SubAgentRole.SEMANTIC_OUTLINE: "Auro-250M",
-    SubAgentRole.TOOL_EXECUTION_PLAN: "Auro-500M",
-    SubAgentRole.CODE_PATCH: "Auro-500M",
-    SubAgentRole.EVIDENCE_REVIEW: "Auro-500M",
-    SubAgentRole.LOCAL_WORKER: "Auro-500M",
-    SubAgentRole.EXPERT_CONSENSUS: "Auro-500M",
-    SubAgentRole.TEXT_EXPANSION: "Auro-500M",
+    SubAgentRole.INTENT_EXTRACT: "Auro-320M",
+    SubAgentRole.RETRIEVAL_FILTER: "Auro-320M",
+    SubAgentRole.STRUCTURED_TRANSFORM: "Auro-320M",
+    SubAgentRole.CODE_TRIAGE: "Auro-640M",
+    SubAgentRole.MEMORY_CONSOLIDATION: "Auro-320M",
+    SubAgentRole.SEMANTIC_OUTLINE: "Auro-320M",
+    SubAgentRole.TOOL_EXECUTION_PLAN: "Auro-1B",
+    SubAgentRole.CODE_PATCH: "Auro-640M",
+    SubAgentRole.EVIDENCE_REVIEW: "Auro-640M",
+    SubAgentRole.LOCAL_WORKER: "Auro-640M",
+    SubAgentRole.EXPERT_CONSENSUS: "Auro-1B",
+    SubAgentRole.TEXT_EXPANSION: "Auro-1B",
     **{
         role: TIER_TO_MODEL_ID[tier]
         for role, tier in ROLE_DEFAULT_TIER.items()
