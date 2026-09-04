@@ -21,7 +21,17 @@
       "class": "atomic",
       "role": "specialization seed",
       "status": "architecture",
-      "weights_verified": false
+      "weights_verified": false,
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_status": "not-verified",
+      "local_profiles": [
+        "mini-cpu",
+        "mini-webgpu",
+        "sml-quantized",
+        "organism-cell"
+      ],
+      "adapter_contract": "load/generate/score/snapshot/receipt",
+      "organism_trial_required": true
     },
     {
       "id": "auro-320m",
@@ -29,7 +39,17 @@
       "class": "atomic",
       "role": "classifier and safety triage",
       "status": "planned",
-      "weights_verified": false
+      "weights_verified": false,
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_status": "not-verified",
+      "local_profiles": [
+        "mini-cpu",
+        "mini-webgpu",
+        "sml-quantized",
+        "organism-cell"
+      ],
+      "adapter_contract": "load/generate/score/snapshot/receipt",
+      "organism_trial_required": true
     },
     {
       "id": "auro-640m",
@@ -37,7 +57,17 @@
       "class": "atomic",
       "role": "code and repository analysis",
       "status": "planned",
-      "weights_verified": false
+      "weights_verified": false,
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_status": "not-verified",
+      "local_profiles": [
+        "mini-cpu",
+        "mini-webgpu",
+        "sml-quantized",
+        "organism-cell"
+      ],
+      "adapter_contract": "load/generate/score/snapshot/receipt",
+      "organism_trial_required": true
     },
     {
       "id": "auro-1b",
@@ -45,7 +75,17 @@
       "class": "micro",
       "role": "private assistant and tool use",
       "status": "planned",
-      "weights_verified": false
+      "weights_verified": false,
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_status": "not-verified",
+      "local_profiles": [
+        "mini-cpu",
+        "mini-webgpu",
+        "sml-quantized",
+        "organism-cell"
+      ],
+      "adapter_contract": "load/generate/score/snapshot/receipt",
+      "organism_trial_required": true
     },
     {
       "id": "auro-2b",
@@ -53,7 +93,17 @@
       "class": "micro",
       "role": "routing, retrieval, spectral triage",
       "status": "architecture",
-      "weights_verified": false
+      "weights_verified": false,
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_status": "not-verified",
+      "local_profiles": [
+        "mini-cpu",
+        "mini-webgpu",
+        "sml-quantized",
+        "organism-cell"
+      ],
+      "adapter_contract": "load/generate/score/snapshot/receipt",
+      "organism_trial_required": true
     },
     {
       "id": "auro-3b",
@@ -61,7 +111,17 @@
       "class": "micro",
       "role": "structured coding and planning",
       "status": "planned",
-      "weights_verified": false
+      "weights_verified": false,
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_status": "not-verified",
+      "local_profiles": [
+        "mini-cpu",
+        "mini-webgpu",
+        "sml-quantized",
+        "organism-cell"
+      ],
+      "adapter_contract": "load/generate/score/snapshot/receipt",
+      "organism_trial_required": true
     },
     {
       "id": "auro-4b",
@@ -154,5 +214,18 @@
       "id": "organism",
       "description": "multiple models plus MESIE, memory, routing, homeostasis, and Sovereign governance"
     }
-  ]
+  ],
+  "first_six_contract": {
+    "lane_ids": [
+      "auro-156k",
+      "auro-320m",
+      "auro-640m",
+      "auro-1b",
+      "auro-2b",
+      "auro-3b"
+    ],
+    "claim": "runtime usability and checkpoint promotion are separate evidence states",
+    "benchmark": "benchmarks/sovereign_organism_trial.py",
+    "readiness_doc": "docs/production/FIRST_SIX_LOCAL_RELEASE_READINESS_V1.md"
+  }
 }
