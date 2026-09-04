@@ -1,0 +1,133 @@
+{
+  "schema": "auro12.release-manifest.v1",
+  "generated_at": "2026-09-04",
+  "family": "AURO",
+  "sovereign_source": "https://github.com/FreddyCreates/sovereign",
+  "policy": {
+    "base_checkpoint_weights": "immutable-per-version",
+    "runtime_hebbian_state": "append-only-checkpointed",
+    "dynamic_routing_state": "receipt-logged",
+    "status_values": [
+      "planned",
+      "architecture",
+      "candidate",
+      "promoted"
+    ]
+  },
+  "lanes": [
+    {
+      "id": "auro-156k",
+      "name": "Auro-156K",
+      "class": "atomic",
+      "role": "specialization seed",
+      "status": "architecture",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-320m",
+      "name": "Auro-320M",
+      "class": "atomic",
+      "role": "classifier and safety triage",
+      "status": "planned",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-640m",
+      "name": "Auro-640M",
+      "class": "atomic",
+      "role": "code and repository analysis",
+      "status": "planned",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-1b",
+      "name": "Auro-1B",
+      "class": "micro",
+      "role": "private assistant and tool use",
+      "status": "planned",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-2b",
+      "name": "Auro-2B",
+      "class": "micro",
+      "role": "routing, retrieval, spectral triage",
+      "status": "architecture",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-3b",
+      "name": "Auro-3B",
+      "class": "micro",
+      "role": "structured coding and planning",
+      "status": "planned",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-4b",
+      "name": "Auro-4B",
+      "class": "micro",
+      "role": "specialist council supervision",
+      "status": "architecture",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-6b",
+      "name": "Auro-6B",
+      "class": "core",
+      "role": "general reasoning and synthesis",
+      "status": "planned",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-8b",
+      "name": "Auro-8B",
+      "class": "core",
+      "role": "general mission and agent reasoning",
+      "status": "architecture",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-10b",
+      "name": "Auro-10B",
+      "class": "orchestrator",
+      "role": "planning and evidence fusion",
+      "status": "planned",
+      "weights_verified": false
+    },
+    {
+      "id": "auro-14b",
+      "name": "Auro-14B",
+      "class": "orchestrator",
+      "role": "HIM/Auro coordination target",
+      "status": "architecture",
+      "weights_verified": false
+    },
+    {
+      "id": "sovereign",
+      "name": "Sovereign",
+      "class": "orchestrator-organism",
+      "role": "governed council and adaptive intelligence",
+      "status": "architecture",
+      "weights_verified": false,
+      "repo": "https://github.com/FreddyCreates/sovereign"
+    }
+  ],
+  "promotion_required": [
+    "exact checkpoint files",
+    "sha256 manifest",
+    "tokenizer and byte round-trip test",
+    "architecture and runtime config",
+    "training provenance and loss history",
+    "benchmark and failure results",
+    "clean local load proof",
+    "model card and limitation boundary",
+    "adaptive-state replay when enabled",
+    "license and attribution review"
+  ],
+  "references": [
+    "https://github.com/ItsNotAILABS/Auro14B/blob/main/docs/MODEL_FAMILY.md",
+    "https://github.com/ItsNotAILABS/Auro14B/blob/main/PRODUCT.md",
+    "https://github.com/FreddyCreates/sovereign/blob/main/ADAPTIVE_INTELLIGENCE_IMPLEMENTATION.md"
+  ]
+}
