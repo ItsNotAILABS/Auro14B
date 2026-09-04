@@ -1,5 +1,5 @@
 {
-  "schema": "auro12.release-manifest.v1",
+  "schema": "auro12.release-manifest.v2",
   "generated_at": "2026-09-04",
   "family": "AURO",
   "sovereign_source": "https://github.com/FreddyCreates/sovereign",
@@ -123,11 +123,36 @@
     "clean local load proof",
     "model card and limitation boundary",
     "adaptive-state replay when enabled",
-    "license and attribution review"
+    "license and attribution review",
+    "artifact-kind manifest for base, synaptic, routing, memory, and organism state",
+    "frozen/adaptive/organism ablation results",
+    "cross-language adaptive-state replay equivalence",
+    "rollback and corruption-recovery proof"
   ],
   "references": [
     "https://github.com/ItsNotAILABS/Auro14B/blob/main/docs/MODEL_FAMILY.md",
     "https://github.com/ItsNotAILABS/Auro14B/blob/main/PRODUCT.md",
     "https://github.com/FreddyCreates/sovereign/blob/main/ADAPTIVE_INTELLIGENCE_IMPLEMENTATION.md"
+  ],
+  "artifact_model": {
+    "base_checkpoint_weights": "immutable tensor artifact; only this supports parameter-count claims",
+    "synaptic_state": "replayable bounded Hebbian/LTP-LTD state; versioned separately",
+    "dynamic_routing_state": "per-request model/tool/memory selection; receipt-logged",
+    "memory_state": "working episodic semantic and policy-scoped memory; exportable and deletable",
+    "organism_bundle": "Sovereign runtime, council, authority, homeostasis, rollback, and protocol manifests"
+  },
+  "runtime_modes": [
+    {
+      "id": "frozen",
+      "description": "base checkpoint only; adaptive state disabled"
+    },
+    {
+      "id": "adaptive",
+      "description": "base checkpoint plus replayable local synaptic and memory state"
+    },
+    {
+      "id": "organism",
+      "description": "multiple models plus MESIE, memory, routing, homeostasis, and Sovereign governance"
+    }
   ]
 }
