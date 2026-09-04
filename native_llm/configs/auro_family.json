@@ -29,7 +29,11 @@
     "mesie.spectral_fft_fallback",
     "browser-webgpu-cluster"
   ],
-  "polyglot_types": ["python", "julia", "haskell"],
+  "polyglot_types": [
+    "python",
+    "julia",
+    "haskell"
+  ],
   "lanes": [
     {
       "model_id": "Auro-156K",
@@ -37,10 +41,115 @@
       "tier": "atomic",
       "model_class": "atomic",
       "config": "native_llm/configs/family/auro_156k.json",
-      "default_roles": ["routing_seed", "classifier", "json_repair", "tool_selection"],
+      "default_roles": [
+        "routing_seed",
+        "classifier",
+        "json_repair",
+        "tool_selection"
+      ],
       "can_embed_subagents": false,
-      "deploy_profiles": ["wasm", "embedded", "high-multiplicity-swarm"],
+      "deploy_profiles": [
+        "wasm",
+        "embedded",
+        "high-multiplicity-swarm"
+      ],
       "deploy_profile": "high-multiplicity-atomic-cell"
+    },
+    {
+      "model_id": "Auro-3B",
+      "parameter_target": 3000000000,
+      "tier": "edge",
+      "model_class": "micro",
+      "config": null,
+      "default_roles": [
+        "code_edit",
+        "json_struct",
+        "tool_plan"
+      ],
+      "can_embed_subagents": true,
+      "embeddable_tiers": [
+        "atomic"
+      ],
+      "deploy_profiles": [
+        "mini-cpu",
+        "sml-quantized"
+      ],
+      "deploy_profile": "first-six-local-profile",
+      "status": "runnable-dev-target-not-trained-checkpoint",
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_evidence_required": true
+    },
+    {
+      "model_id": "Auro-1B",
+      "parameter_target": 1000000000,
+      "tier": "edge",
+      "model_class": "micro",
+      "config": null,
+      "default_roles": [
+        "tool_execution_plan",
+        "expert_consensus",
+        "text_expansion"
+      ],
+      "can_embed_subagents": true,
+      "embeddable_tiers": [
+        "atomic"
+      ],
+      "deploy_profiles": [
+        "mini-cpu",
+        "sml-quantized"
+      ],
+      "deploy_profile": "first-six-local-profile",
+      "status": "runnable-dev-target-not-trained-checkpoint",
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_evidence_required": true
+    },
+    {
+      "model_id": "Auro-640M",
+      "parameter_target": 640000000,
+      "tier": "atomic",
+      "model_class": "atomic",
+      "config": null,
+      "default_roles": [
+        "code_triage",
+        "code_patch",
+        "evidence_review",
+        "local_worker"
+      ],
+      "can_embed_subagents": false,
+      "embeddable_tiers": [],
+      "deploy_profiles": [
+        "mini-cpu",
+        "sml-quantized",
+        "organism-cell"
+      ],
+      "deploy_profile": "first-six-local-profile",
+      "status": "runnable-dev-target-not-trained-checkpoint",
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_evidence_required": true
+    },
+    {
+      "model_id": "Auro-320M",
+      "parameter_target": 320000000,
+      "tier": "atomic",
+      "model_class": "atomic",
+      "config": null,
+      "default_roles": [
+        "intent_extract",
+        "retrieval_filter",
+        "structured_transform",
+        "semantic_outline"
+      ],
+      "can_embed_subagents": false,
+      "embeddable_tiers": [],
+      "deploy_profiles": [
+        "mini-cpu",
+        "mini-webgpu",
+        "sml-quantized"
+      ],
+      "deploy_profile": "first-six-local-profile",
+      "status": "runnable-dev-target-not-trained-checkpoint",
+      "runtime_status": "runnable-dev-target",
+      "checkpoint_evidence_required": true
     },
     {
       "model_id": "Auro-250M",
@@ -48,9 +157,21 @@
       "tier": "atomic",
       "model_class": "atomic",
       "config": "native_llm/configs/family/auro_250m.json",
-      "default_roles": ["intent_extract", "retrieval_filter", "structured_transform", "code_triage", "memory_consolidation", "semantic_outline"],
+      "default_roles": [
+        "intent_extract",
+        "retrieval_filter",
+        "structured_transform",
+        "code_triage",
+        "memory_consolidation",
+        "semantic_outline"
+      ],
       "can_embed_subagents": false,
-      "deploy_profiles": ["phone", "browser-wasm", "cpu", "embedded-expert"],
+      "deploy_profiles": [
+        "phone",
+        "browser-wasm",
+        "cpu",
+        "embedded-expert"
+      ],
       "deploy_profile": "phone-browser-atomic-expert"
     },
     {
@@ -59,9 +180,21 @@
       "tier": "atomic",
       "model_class": "atomic",
       "config": "native_llm/configs/family/auro_500m.json",
-      "default_roles": ["tool_execution_plan", "code_patch", "evidence_review", "local_worker", "expert_consensus", "text_expansion"],
+      "default_roles": [
+        "tool_execution_plan",
+        "code_patch",
+        "evidence_review",
+        "local_worker",
+        "expert_consensus",
+        "text_expansion"
+      ],
       "can_embed_subagents": false,
-      "deploy_profiles": ["phone-high-memory", "laptop", "edge-gpu", "embedded-expert"],
+      "deploy_profiles": [
+        "phone-high-memory",
+        "laptop",
+        "edge-gpu",
+        "embedded-expert"
+      ],
       "deploy_profile": "edge-worker-and-specialist"
     },
     {
@@ -70,10 +203,21 @@
       "tier": "edge",
       "model_class": "micro",
       "config": "native_llm/configs/family/auro_2b.json",
-      "default_roles": ["router", "tool_call", "embed_fast", "spectral_triage"],
+      "default_roles": [
+        "router",
+        "tool_call",
+        "embed_fast",
+        "spectral_triage"
+      ],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["atomic"],
-      "deploy_profiles": ["phone-high-memory", "laptop", "private-edge-server"],
+      "embeddable_tiers": [
+        "atomic"
+      ],
+      "deploy_profiles": [
+        "phone-high-memory",
+        "laptop",
+        "private-edge-server"
+      ],
       "deploy_profile": "atomic-swarm-parent"
     },
     {
@@ -82,10 +226,22 @@
       "tier": "specialist",
       "model_class": "micro",
       "config": "native_llm/configs/family/auro_4b.json",
-      "default_roles": ["code_edit", "spectral_match", "json_struct", "tool_plan"],
+      "default_roles": [
+        "code_edit",
+        "spectral_match",
+        "json_struct",
+        "tool_plan"
+      ],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["atomic", "edge"],
-      "deploy_profiles": ["laptop", "workstation", "private-api"],
+      "embeddable_tiers": [
+        "atomic",
+        "edge"
+      ],
+      "deploy_profiles": [
+        "laptop",
+        "workstation",
+        "private-api"
+      ],
       "deploy_profile": "sparse-specialist"
     },
     {
@@ -94,10 +250,22 @@
       "tier": "general",
       "model_class": "core",
       "config": "native_llm/configs/family/auro_8b.json",
-      "default_roles": ["reason", "plan", "critique", "spectral_explain"],
+      "default_roles": [
+        "reason",
+        "plan",
+        "critique",
+        "spectral_explain"
+      ],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["atomic", "edge", "specialist"],
-      "deploy_profiles": ["workstation", "server"],
+      "embeddable_tiers": [
+        "atomic",
+        "edge",
+        "specialist"
+      ],
+      "deploy_profiles": [
+        "workstation",
+        "server"
+      ],
       "deploy_profile": "workstation-general"
     },
     {
@@ -106,10 +274,23 @@
       "tier": "orchestrator",
       "model_class": "orchestrator",
       "config": "native_llm/configs/family/auro_14b.json",
-      "default_roles": ["orchestrator", "council_chair", "instruct_dev", "multi_agent_router"],
+      "default_roles": [
+        "orchestrator",
+        "council_chair",
+        "instruct_dev",
+        "multi_agent_router"
+      ],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["atomic", "edge", "specialist", "general"],
-      "deploy_profiles": ["gpu-server", "distributed-private-runtime"],
+      "embeddable_tiers": [
+        "atomic",
+        "edge",
+        "specialist",
+        "general"
+      ],
+      "deploy_profiles": [
+        "gpu-server",
+        "distributed-private-runtime"
+      ],
       "deploy_profile": "dev-integration-primary"
     },
     {
@@ -118,23 +299,55 @@
       "tier": "frontier",
       "model_class": "frontier",
       "config": "native_llm/configs/family/auro_100b.json",
-      "default_roles": ["frontier_research", "long_horizon", "safety_review", "deep_council"],
+      "default_roles": [
+        "frontier_research",
+        "long_horizon",
+        "safety_review",
+        "deep_council"
+      ],
       "can_embed_subagents": true,
-      "embeddable_tiers": ["atomic", "edge", "specialist", "general", "orchestrator"],
-      "deploy_profiles": ["distributed-training", "distributed-inference"],
+      "embeddable_tiers": [
+        "atomic",
+        "edge",
+        "specialist",
+        "general",
+        "orchestrator"
+      ],
+      "deploy_profiles": [
+        "distributed-training",
+        "distributed-inference"
+      ],
       "deploy_profile": "cluster-frontier"
     }
   ],
   "composition": {
     "schema": "nexus.model-council.v1",
     "routing_policy": "capability-first-then-smallest-capable-lane",
-    "atomic_lanes": ["Auro-156K", "Auro-250M", "Auro-500M"],
+    "atomic_lanes": [
+      "Auro-156K",
+      "Auro-250M",
+      "Auro-500M"
+    ],
     "parent_model": "Auro-2B",
-    "specialist_triad": ["Auro-500M-SENSUS", "Auro-500M-PRAXIS", "Auro-500M-VERBUM"],
+    "specialist_triad": [
+      "Auro-500M-SENSUS",
+      "Auro-500M-PRAXIS",
+      "Auro-500M-VERBUM"
+    ],
     "task_capsules": {
       "bounded": true,
       "full_parent_context_broadcast": false,
-      "required": ["task_id", "parent_model_id", "expert_model_id", "role", "objective", "constraints", "evidence_refs", "max_output_tokens", "capsule_hash"]
+      "required": [
+        "task_id",
+        "parent_model_id",
+        "expert_model_id",
+        "role",
+        "objective",
+        "constraints",
+        "evidence_refs",
+        "max_output_tokens",
+        "capsule_hash"
+      ]
     },
     "mesie_offload": "ingress, specialist, atomic-worker, consensus, and egress stages",
     "conversational_renderer": "python-wasm-fluidizer",
@@ -150,5 +363,15 @@
       "model_id": "Auro-200B-Base",
       "note": "retained as optional ultra-frontier architecture target; primary family cap is 100B"
     }
-  ]
+  ],
+  "first_six_runtime_contract": {
+    "adapter": "load/generate/score/snapshot/receipt",
+    "profiles": [
+      "mini-cpu",
+      "mini-webgpu",
+      "sml-quantized",
+      "organism-cell"
+    ],
+    "benchmark": "benchmarks/sovereign_organism_trial.py"
+  }
 }
