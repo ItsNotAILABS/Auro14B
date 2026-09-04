@@ -281,7 +281,12 @@ def _try_import_mesie_model_config(preset: str) -> Optional[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 _FAMILY_META: Dict[str, Dict[str, Any]] = {
+    "Auro-156K": dict(tier="atomic", parameter_target=156_000),
+    "Auro-320M": dict(tier="atomic", parameter_target=320_000_000),
+    "Auro-640M": dict(tier="atomic", parameter_target=640_000_000),
+    "Auro-1B": dict(tier="micro", parameter_target=1_000_000_000),
     "Auro-2B": dict(tier="edge", parameter_target=2_000_000_000),
+    "Auro-3B": dict(tier="micro", parameter_target=3_000_000_000),
     "Auro-4B": dict(tier="specialist", parameter_target=4_000_000_000),
     "Auro-8B": dict(tier="general", parameter_target=8_000_000_000),
     "Auro-14B": dict(tier="orchestrator", parameter_target=14_000_000_000),
@@ -290,8 +295,15 @@ _FAMILY_META: Dict[str, Dict[str, Any]] = {
 
 # (mesie_preset_name, optional dim overrides on top of preset)
 _FAMILY_DEV: Dict[str, Dict[str, Any]] = {
+    # First-six local ladder: executable profiles for mini/SML hardware.
+    # parameter_target is the family identity; live parameter mass is reported separately.
+    "Auro-156K": dict(mesie_preset="spectral_gpt_tiny", hidden_dim=64, num_layers=2, num_heads=2, head_dim=32, ffn_dim=128, vocab_size=2048, max_seq_len=256, num_experts=1, top_k_experts=1, use_moe=False),
+    "Auro-320M": dict(mesie_preset="spectral_gpt_tiny", hidden_dim=256, num_layers=4, num_heads=4, head_dim=64, ffn_dim=1024, vocab_size=8192, max_seq_len=512, num_experts=4, top_k_experts=1),
+    "Auro-640M": dict(mesie_preset="spectral_gpt_small", hidden_dim=384, num_layers=6, num_heads=6, head_dim=64, ffn_dim=1536, vocab_size=16384, max_seq_len=1024, num_experts=4, top_k_experts=2),
+    "Auro-1B": dict(mesie_preset="spectral_gpt_small", hidden_dim=512, num_layers=8, num_heads=8, head_dim=64, ffn_dim=2048, vocab_size=16384, max_seq_len=1024, num_experts=4, top_k_experts=2),
     # Edge: MESIE tiny + MoE arsenal
     "Auro-2B": dict(mesie_preset="spectral_gpt_tiny", **_MESIE_PRESETS["spectral_gpt_tiny"]),
+    "Auro-3B": dict(mesie_preset="spectral_gpt_small", hidden_dim=640, num_layers=10, num_heads=10, head_dim=64, ffn_dim=2560, vocab_size=24576, max_seq_len=2048, num_experts=6, top_k_experts=2),
     # Specialist: MESIE small
     "Auro-4B": dict(mesie_preset="spectral_gpt_small", **_MESIE_PRESETS["spectral_gpt_small"]),
     # General: mid (between small and base)
