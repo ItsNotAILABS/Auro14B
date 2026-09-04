@@ -33,8 +33,12 @@ _FAMILY_DIR = _REPO_ROOT / "native_llm" / "configs" / "family"
 CANONICAL_MODEL_ORDER = (
     "Auro-156K",
     "Auro-250M",
+    "Auro-320M",
     "Auro-500M",
+    "Auro-640M",
+    "Auro-1B",
     "Auro-2B",
+    "Auro-3B",
     "Auro-4B",
     "Auro-8B",
     "Auro-14B",
@@ -42,7 +46,10 @@ CANONICAL_MODEL_ORDER = (
 )
 
 _BUILTIN_ARCHITECTURE: Dict[str, ArchitectureSpec] = {
-    "Auro-156K": ArchitectureSpec(64, 2, 4, 2, 64, 1024, 1024, experts=8, top_k=2, moe_every=2),
+    "Auro-156K": ArchitectureSpec(64, 2, 2, 2, 128, 256, 2048, experts=1, top_k=1, moe_every=0),
+    "Auro-320M": ArchitectureSpec(256, 4, 4, 4, 1024, 512, 8192, experts=4, top_k=1, moe_every=2),
+    "Auro-640M": ArchitectureSpec(384, 6, 6, 6, 1536, 1024, 16384, experts=4, top_k=2, moe_every=2),
+    "Auro-1B": ArchitectureSpec(512, 8, 8, 8, 2048, 1024, 16384, experts=4, top_k=2, moe_every=2),
     "Auro-250M": ArchitectureSpec(768, 16, 12, 4, 2048, 4096, 64000, experts=8, top_k=2, moe_every=2),
     "Auro-500M": ArchitectureSpec(1024, 24, 16, 4, 4096, 8192, 64000, experts=8, top_k=2, moe_every=2),
     "Auro-2B": ArchitectureSpec(2048, 24, 16, 4, 5632, 8192, 128000, experts=8, top_k=2, moe_every=2),
@@ -55,8 +62,12 @@ _BUILTIN_ARCHITECTURE: Dict[str, ArchitectureSpec] = {
 _BUILTIN_ROLES: Dict[str, List[str]] = {
     "Auro-156K": ["routing_seed", "classifier", "json_repair", "tool_selection"],
     "Auro-250M": ["intent_extract", "retrieval_filter", "structured_transform", "code_triage", "memory_consolidation", "semantic_outline"],
+    "Auro-320M": ["intent_extract", "retrieval_filter", "structured_transform", "semantic_outline"],
+    "Auro-640M": ["code_triage", "code_patch", "evidence_review", "local_worker"],
+    "Auro-1B": ["tool_execution_plan", "expert_consensus", "text_expansion"],
     "Auro-500M": ["tool_execution_plan", "code_patch", "evidence_review", "local_worker", "expert_consensus", "text_expansion"],
     "Auro-2B": ["router", "tool_call", "embed_fast", "spectral_triage"],
+    "Auro-3B": ["code_edit", "json_struct", "tool_plan"],
     "Auro-4B": ["code_edit", "spectral_match", "json_struct", "tool_plan"],
     "Auro-8B": ["reason", "plan", "critique", "spectral_explain"],
     "Auro-14B": ["orchestrator", "council_chair", "instruct_dev", "multi_agent_router"],
@@ -66,8 +77,12 @@ _BUILTIN_ROLES: Dict[str, List[str]] = {
 _BUILTIN_EMBEDDABLE: Dict[str, List[str]] = {
     "Auro-156K": [],
     "Auro-250M": [],
+    "Auro-320M": [],
     "Auro-500M": [],
+    "Auro-640M": [],
+    "Auro-1B": [],
     "Auro-2B": ["atomic"],
+    "Auro-3B": ["atomic", "edge"],
     "Auro-4B": ["atomic", "edge"],
     "Auro-8B": ["atomic", "edge", "specialist"],
     "Auro-14B": ["atomic", "edge", "specialist", "general"],
