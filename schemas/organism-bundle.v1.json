@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ItsNotAILABS/Auro14B/blob/main/schemas/organism-bundle.v1.json",
+  "title": "AURO Organism Bundle v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "identity",
+    "artifacts",
+    "runtime_modes",
+    "receipt"
+  ],
+  "properties": {
+    "schema": {
+      "const": "auro.organism-bundle.v1"
+    },
+    "identity": {
+      "type": "object",
+      "required": [
+        "lane_id",
+        "family",
+        "version"
+      ],
+      "properties": {
+        "lane_id": {
+          "type": "string"
+        },
+        "family": {
+          "const": "AURO"
+        },
+        "version": {
+          "type": "string"
+        },
+        "base_parameter_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "base_weights_verified": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "object",
+      "required": [
+        "base_checkpoint",
+        "synaptic_state",
+        "routing_state",
+        "memory_state"
+      ],
+      "properties": {
+        "base_checkpoint": {
+          "$ref": "#/$defs/artifact"
+        },
+        "synaptic_state": {
+          "$ref": "#/$defs/artifact"
+        },
+        "routing_state": {
+          "$ref": "#/$defs/artifact"
+        },
+        "memory_state": {
+          "$ref": "#/$defs/artifact"
+        },
+        "organism_bundle": {
+          "$ref": "#/$defs/artifact"
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtime_modes": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "frozen",
+          "adaptive",
+          "organism"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "receipt": {
+      "type": "object",
+      "required": [
+        "parent_state_hash",
+        "event_hash",
+        "result_state_hash",
+        "replayable"
+      ],
+      "properties": {
+        "parent_state_hash": {
+          "type": "string"
+        },
+        "event_hash": {
+          "type": "string"
+        },
+        "result_state_hash": {
+          "type": "string"
+        },
+        "replayable": {
+          "type": "boolean"
+        },
+        "rollback_parent": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "kind",
+        "version",
+        "sha256"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "checkpoint",
+            "synaptic-state",
+            "routing-state",
+            "memory-state",
+            "organism-runtime"
+          ]
+        },
+        "version": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "mutable": {
+          "type": "boolean"
+        },
+        "provenance": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
