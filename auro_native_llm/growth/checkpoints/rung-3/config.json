@@ -1,0 +1,13 @@
+{
+  "d": 64,
+  "experts": 2,
+  "ffn": 128,
+  "head_dim": 32,
+  "heads": 2,
+  "kv_heads": 2,
+  "layers": 16,
+  "moe_layers": [],
+  "seed": 0,
+  "seq": 64,
+  "vocab": 512
+}

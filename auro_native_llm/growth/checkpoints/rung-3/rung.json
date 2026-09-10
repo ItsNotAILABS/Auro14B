@@ -1,0 +1,17 @@
+{
+  "claim": "growth-mechanics checkpoint on synthetic data; not a capability claim",
+  "data_provenance": "synthetic-structured-v1 (modular-arithmetic chain + copy motifs + noise)",
+  "growth_plan": "depth",
+  "model_id": "Auro-156K-growth-r3",
+  "params": 692288,
+  "parent": {
+    "model_id": "Auro-156K-growth-r2",
+    "params": 362560,
+    "plan": "depth",
+    "rung": 2
+  },
+  "preservation_max_abs_diff": 0.0,
+  "rung": 3,
+  "steps": 250,
+  "tokens_seen": 512000
+}

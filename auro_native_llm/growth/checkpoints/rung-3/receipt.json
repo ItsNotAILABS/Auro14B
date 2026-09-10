@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "Mechanics receipt for progressive-growth training on synthetic data. Proves the growth operators preserved the function at growth time, the training budget spent, and the loss trajectory observed. NOT a claim of capability, intelligence, or downstream-task gains: loss on synthetic data measures optimization mechanics only.",
+  "config": {
+    "d": 64,
+    "experts": 2,
+    "ffn": 128,
+    "head_dim": 32,
+    "heads": 2,
+    "kv_heads": 2,
+    "layers": 16,
+    "moe_layers": [],
+    "seed": 0,
+    "seq": 64,
+    "vocab": 512
+  },
+  "config_sha256": "cbd3c002af036ebfef6508e57f48ae1fbae61050967ccef437b0b1778f20bd2b",
+  "data_provenance": "synthetic-structured-v1 (modular-arithmetic chain + copy motifs + noise)",
+  "elapsed_s": 1232.435,
+  "finished_unix": 1789068131,
+  "growth_plan": "depth",
+  "kind": "growth-rung",
+  "loss_curve": [
+    3.421011447906494,
+    3.575252056121826,
+    3.462125301361084,
+    3.3465559482574463,
+    3.5077877044677734,
+    3.39723539352417
+  ],
+  "loss_decreased": true,
+  "loss_first": 3.421011447906494,
+  "loss_last": 3.39723539352417,
+  "model_id": "Auro-156K-growth-r3",
+  "params": 692288,
+  "parent": {
+    "model_id": "Auro-156K-growth-r2",
+    "params": 362560,
+    "plan": "depth",
+    "rung": 2
+  },
+  "peak_rss_mb": 1375.05,
+  "preservation_max_abs_diff": 0.0,
+  "receipt_sha256": "f65ebe782fbbcc8932c7d312d352a8e9d82b46d27c6eaf5ed241888dd06ac900",
+  "rung": 3,
+  "schema": "auro.growth.rung_receipt.v1",
+  "steps": 250,
+  "tokens_seen": 512000,
+  "weights_sha256": "578501b92aea2fd1f0ec38efbfed214565dc6c75180fc0e2e67e6e742f042534"
+}
