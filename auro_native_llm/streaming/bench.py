@@ -57,6 +57,7 @@ def run_bench(
     seq_len: int = 16,
     budget_mb: float = 1.0,
     prefetch: bool = True,
+    evict_policy: str = "lru",
     seed: int = 0,
     store_dir: str | None = None,
 ) -> Tuple[Dict[str, Any], ExpertPager, List[MixtureOfExperts]]:
@@ -75,6 +76,7 @@ def run_bench(
         "prefetch": bool(prefetch),
         "prefetch_predictor": "temporal-locality(previous-token-fired)",
         "prefetch_policy": "never-evicts-demand-loaded-experts",
+        "eviction_policy": evict_policy,
         "shared_expert": "pinned-resident-always-active",
         "seed": seed,
     }
@@ -100,7 +102,7 @@ def run_bench(
         for e in moe.experts:
             del e.gate_proj, e.up_proj, e.down_proj
 
-    pager = ExpertPager(store, config["budget_bytes"])
+    pager = ExpertPager(store, config["budget_bytes"], policy=evict_policy)
     run = StreamingRun(config)
 
     t0 = time.perf_counter()
@@ -185,6 +187,7 @@ def main() -> None:
     ap.add_argument("--budget-mb", type=float, default=1.0)
     ap.add_argument("--prefetch", dest="prefetch", action="store_true", default=True)
     ap.add_argument("--no-prefetch", dest="prefetch", action="store_false")
+    ap.add_argument("--evict-policy", choices=["lru", "tinylfu"], default="lru")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="streaming_receipt.json")
     args = ap.parse_args()
@@ -198,6 +201,7 @@ def main() -> None:
         seq_len=args.seq_len,
         budget_mb=args.budget_mb,
         prefetch=args.prefetch,
+        evict_policy=args.evict_policy,
         seed=args.seed,
     )
     path = save_receipt(receipt, args.out)

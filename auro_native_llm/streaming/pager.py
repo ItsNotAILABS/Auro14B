@@ -38,30 +38,65 @@ class PagerStats:
     hot_bytes: int = 0
     peak_hot_bytes: int = 0
     over_budget_loads: int = 0
+    admission_rejections: int = 0
 
 
 class ExpertPager:
-    """LRU hot set over an ``ExpertColdStore`` with a byte budget.
+    """Hot set over an ``ExpertColdStore`` with a byte budget.
 
-    Measured finding (2026-09-10, ``test_lru_thrashes_on_cyclic_scan``): LRU
-    pathologically misses on cyclic expert-firing patterns longer than the
-    hot set. That is an honest measurement, not a bug -- and it is why the
-    eviction policy is the next thing to beat, e.g. with a TinyLFU-style
-    frequency-sketch admission filter. The bench exists to measure that race.
+    Two eviction policies:
+
+    * ``lru`` -- textbook default. Measured finding (2026-09-10,
+      ``test_lru_thrashes_on_cyclic_scan``): pathologically misses on cyclic
+      expert-firing patterns longer than the hot set.
+    * ``tinylfu`` -- TinyLFU-style admission filter over a frequency sketch.
+      On a demand miss that would require an eviction, the newcomer is only
+      admitted if it has fired more often than the LRU victim; otherwise its
+      weights are loaded transiently for the forward pass but not kept hot.
+      This pins genuinely hot experts and beats LRU on skewed patterns
+      (``test_tinylfu_pins_hot_expert``).
+
+    Prefetch never evicts under either policy: it only spends headroom.
     """
 
-    def __init__(self, store: ExpertColdStore, budget_bytes: int):
+    # How many demand accesses between frequency-sketch aging halves. Aging
+    # keeps the sketch adaptive: yesterday's hot expert does not pin forever.
+    SKETCH_RESET_INTERVAL = 1024
+
+    def __init__(self, store: ExpertColdStore, budget_bytes: int, policy: str = "lru"):
         if budget_bytes <= 0:
             raise ValueError("budget_bytes must be positive")
+        if policy not in ("lru", "tinylfu"):
+            raise ValueError(f"unknown eviction policy: {policy}")
         self.store = store
         self.budget_bytes = int(budget_bytes)
+        self.policy = policy
         self._hot: Dict[Key, _HotEntry] = {}
+        self._freq: Dict[Key, int] = {}
+        self._freq_ops = 0
         self._tick = 0
         self.stats = PagerStats()
 
     def _touch(self, key: Key) -> None:
         self._tick += 1
         self._hot[key].last_used = self._tick
+
+    def _record_use(self, key: Key) -> None:
+        """Count a demand access in the frequency sketch, aging periodically."""
+        self._freq[key] = self._freq.get(key, 0) + 1
+        self._freq_ops += 1
+        if self._freq_ops >= self.SKETCH_RESET_INTERVAL:
+            self._freq = {k: v // 2 for k, v in self._freq.items() if v // 2}
+            self._freq_ops = 0
+
+    def _admit(self, key: Key, need: int) -> bool:
+        """TinyLFU admission: admit if it fits, else only if hotter than the victim."""
+        if self.stats.hot_bytes + need <= self.budget_bytes:
+            return True
+        if self.policy != "tinylfu":
+            return True
+        victim = min(self._hot.items(), key=lambda kv: kv[1].last_used)[0]
+        return self._freq.get(key, 0) > self._freq.get(victim, 0)
 
     def _evict_until_fits(self, need: int) -> None:
         while self._hot and self.stats.hot_bytes + need > self.budget_bytes:
@@ -75,28 +110,41 @@ class ExpertPager:
             self.stats.hot_bytes -= entry.nbytes
             self.stats.evictions += 1
 
-    def _load_cold(self, layer: int, expert: int, prefetched: bool) -> _HotEntry:
+    def _load_cold(self, layer: int, expert: int, prefetched: bool) -> _HotEntry | Dict[str, np.ndarray]:
         t0 = time.perf_counter()
         weights = self.store.load(layer, expert, mmap=True)
         stall_ms = (time.perf_counter() - t0) * 1000.0
         nbytes = self.store.expert_nbytes(layer, expert)
+        key = (layer, expert)
+        if not prefetched and not self._admit(key, nbytes):
+            # Admission rejected: weights are still needed for this forward
+            # pass, so serve them transiently without caching. Bytes moved and
+            # stall are counted honestly; the hot set stays clean.
+            self.stats.misses += 1
+            self.stats.bytes_moved += nbytes
+            self.stats.demand_stall_ms += stall_ms
+            self.stats.admission_rejections += 1
+            return weights
         self._evict_until_fits(nbytes)
         if self.stats.hot_bytes + nbytes > self.budget_bytes:
             self.stats.over_budget_loads += 1
         entry = _HotEntry(weights=weights, nbytes=nbytes, prefetched=prefetched)
-        self._hot[(layer, expert)] = entry
-        self._touch((layer, expert))
+        self._hot[key] = entry
+        self._touch(key)
         self.stats.hot_bytes += nbytes
         self.stats.bytes_moved += nbytes
         self.stats.peak_hot_bytes = max(self.stats.peak_hot_bytes, self.stats.hot_bytes)
         if not prefetched:
             self.stats.misses += 1
             self.stats.demand_stall_ms += stall_ms
+        else:
+            self.stats.prefetch_issued += 1
         return entry
 
     def acquire(self, layer: int, expert: int) -> Dict[str, np.ndarray]:
         """Get an expert's weights, paging it in on miss. Returns the arrays."""
         key = (layer, expert)
+        self._record_use(key)
         entry = self._hot.get(key)
         if entry is not None:
             self.stats.hits += 1
@@ -105,14 +153,24 @@ class ExpertPager:
                 entry.prefetched = False
             self._touch(key)
             return entry.weights
-        return self._load_cold(layer, expert, prefetched=False).weights
+        loaded = self._load_cold(layer, expert, prefetched=False)
+        if isinstance(loaded, _HotEntry):
+            return loaded.weights
+        return loaded
 
     def prefetch(self, layer: int, expert: int) -> bool:
-        """Warm an expert ahead of demand. Returns True if it caused a load."""
+        """Warm an expert ahead of demand. Returns True if it caused a load.
+
+        Prefetch never evicts: it only spends headroom, so a wrong prediction
+        wastes bytes but cannot thrash the hot set.
+        """
         if (layer, expert) in self._hot:
             return False
-        self._load_cold(layer, expert, prefetched=True)
-        self.stats.prefetch_issued += 1
+        need = self.store.expert_nbytes(layer, expert)
+        if self.stats.hot_bytes + need > self.budget_bytes:
+            return False
+        loaded = self._load_cold(layer, expert, prefetched=True)
+        assert isinstance(loaded, _HotEntry)
         return True
 
     def snapshot(self) -> Dict[str, object]:
@@ -120,11 +178,12 @@ class ExpertPager:
         total_demand = s.hits + s.misses
         return {
             "budget_bytes": self.budget_bytes,
-            "eviction_policy": "lru",
+            "eviction_policy": self.policy,
             "hits": s.hits,
             "misses": s.misses,
             "hit_rate": (s.hits / total_demand) if total_demand else 0.0,
             "evictions": s.evictions,
+            "admission_rejections": s.admission_rejections,
             "bytes_moved": s.bytes_moved,
             "prefetch_issued": s.prefetch_issued,
             "prefetch_hits": s.prefetch_hits,

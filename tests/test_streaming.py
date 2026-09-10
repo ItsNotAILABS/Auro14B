@@ -134,6 +134,38 @@ def test_lru_thrashes_on_cyclic_scan(tmp_path):
     assert snap["eviction_policy"] == "lru"
 
 
+def test_tinylfu_pins_hot_expert(tmp_path):
+    """TinyLFU admission filter pins the genuinely hot expert where LRU thrashes.
+
+    Skewed cycle: expert 0 fires 2x per 9-pattern, the rest 1x. LRU scores ~0
+    (documented in test_lru_thrashes_on_cyclic_scan); TinyLFU's frequency
+    sketch admits 0, pins it, and serves a third of accesses from hot set --
+    while moving fewer bytes overall.
+    """
+    def make(policy):
+        store = ExpertColdStore(tmp_path / policy)
+        rng = np.random.default_rng(0)
+        for e in range(8):
+            store.save_expert(0, e, {"gate_proj": rng.standard_normal((8, 8)),
+                                     "up_proj": rng.standard_normal((8, 8)),
+                                     "down_proj": rng.standard_normal((8, 8))})
+        one = store.expert_nbytes(0, 0)
+        pager = ExpertPager(store, budget_bytes=int(one * 2.5), policy=policy)
+        pattern = [0, 1, 2, 3, 0, 4, 5, 6, 7]
+        for _ in range(30):
+            for e in pattern:
+                pager.acquire(0, e)
+        return pager
+
+    lru = make("lru")
+    tiny = make("tinylfu")
+    assert lru.snapshot()["hit_rate"] < 0.05
+    tsnap = tiny.snapshot()
+    assert tsnap["hit_rate"] > 0.25
+    assert tsnap["admission_rejections"] > 0
+    assert tsnap["bytes_moved"] < lru.snapshot()["bytes_moved"]
+
+
 def test_streaming_run_truncation():
     run = StreamingRun({"x": 1})
     for i in range(5000):
