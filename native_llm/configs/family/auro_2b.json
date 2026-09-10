@@ -3,7 +3,9 @@
   "model_id": "Auro-2B",
   "family_id": "Auro",
   "status": "development-target-not-trained-checkpoint",
-  "parameter_target": 2000000000,
+  "parameter_target": 4251025408,
+  "active_parameters_target": 1497464832,
+  "parameter_accounting": "exact count from architecture dims (hidden 2048, 24 layers, 16/4 heads, 5632 intermediate, 8 experts top-2, MoE every 2 layers, vocab 128k); verified 2026-09-10",
   "tier": "edge",
   "model_class": "micro",
   "architecture": {
