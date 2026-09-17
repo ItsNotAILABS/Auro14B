@@ -1,5 +1,19 @@
 # AGENTS.md
 
+## RAH (Recursive Agent Harnesses)
+
+Auro leaves are **full sub-agent harnesses** (`auro_native_llm.rah.run_rah`), same doctrine as POCKET RAH:
+
+- Independent goals fan out in parallel (cap 8)
+- Receipts land under `~/.auro/rah/<run_id>/`
+- Roles: CODE_EDIT · SPECTRAL_MATCH · PLAN · REASON
+- Pocket wires `mode=auro` RAH leaves through `pocket.rah` → `AuroModel.express`
+
+```python
+from auro_native_llm.rah import run_rah
+run_rah("split the work", leaves=["embed the corpus", "match two PSDs", "plan the next train"])
+```
+
 ## Cursor Cloud specific instructions
 
 MESIE is a polyglot monorepo. The **primary product is the Python engine** (`mesie/`,

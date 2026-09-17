@@ -135,6 +135,13 @@ class Handler(BaseHTTPRequestHandler):
                 gstat = _get_envelope().surfaces()
             except Exception:
                 gstat = {"ok": False}
+            host_ok = False
+            try:
+                from auro_native_llm.host_control import status as host_status
+
+                host_ok = bool(host_status().get("ok"))
+            except Exception:
+                pass
             _json_response(
                 self,
                 200,
@@ -145,6 +152,8 @@ class Handler(BaseHTTPRequestHandler):
                     "native": True,
                     "chrome": _CHROME.health(),
                     "model_id": _AGENT.model_id,
+                    "host_control": host_ok,
+                    "tools": "/v1/tools",
                     "portal": "/portal",
                     "workspace": "/workspace",
                     "google_envelope": gstat.get("envelope_id") or gstat,
@@ -155,9 +164,31 @@ class Handler(BaseHTTPRequestHandler):
                         "polyglot",
                         "google_envelope",
                         "collab_workspace",
+                        "host_control",
                     ],
                 },
             )
+            return
+        if path in ("/v1/tools", "/v1/host/tools", "/tools"):
+            from auro_native_llm.host_control import tool_catalog
+
+            _json_response(
+                self,
+                200,
+                {
+                    "ok": True,
+                    "product": "Auro14B/RO14B host tools",
+                    "for": ["claude", "grok", "codex", "auro", "him"],
+                    "tools": tool_catalog(),
+                    "invoke": "POST /v1/host/invoke {name, arguments}",
+                    "pocket": "http://127.0.0.1:8787",
+                },
+            )
+            return
+        if path in ("/v1/host", "/v1/host/status", "/host"):
+            from auro_native_llm.host_control import status as host_status
+
+            _json_response(self, 200, host_status())
             return
         if path in ("/v1/models",):
             data = [
@@ -300,6 +331,78 @@ class Handler(BaseHTTPRequestHandler):
                 _json_response(self, 500, {"ok": False, "error": str(exc)})
             return
 
+        # --- Host OS control (POCKET powers → RO14B / Claude / Grok) ---
+        if path in ("/v1/host", "/v1/host/status", "/host"):
+            from auro_native_llm.host_control import status as host_status
+
+            _json_response(self, 200, host_status())
+            return
+        if path in ("/v1/host/tools", "/v1/tools", "/tools"):
+            from auro_native_llm.host_control import tool_catalog
+
+            _json_response(
+                self,
+                200,
+                {
+                    "ok": True,
+                    "product": "Auro14B/RO14B host tools",
+                    "for": ["claude", "grok", "codex", "auro", "him"],
+                    "tools": tool_catalog(),
+                    "invoke": "POST /v1/host/invoke {name, arguments}",
+                },
+            )
+            return
+        if path in ("/v1/host/invoke", "/v1/tools/call", "/host/invoke"):
+            from auro_native_llm.host_control import invoke
+
+            name = body.get("name") or body.get("tool") or body.get("function") or ""
+            args = body.get("arguments") or body.get("args") or body.get("parameters") or {}
+            out = invoke(str(name), args if isinstance(args, dict) else {})
+            _json_response(self, 200 if out.get("ok", True) else 400, out)
+            return
+        if path in ("/v1/host/open", "/host/open"):
+            from auro_native_llm.host_control import open_app
+
+            _json_response(self, 200, open_app(str(body.get("app") or "explorer")))
+            return
+        if path in ("/v1/host/sense", "/host/sense", "/v1/host/page"):
+            from auro_native_llm.host_control import sense_page
+
+            _json_response(
+                self,
+                200,
+                sense_page(str(body.get("prompt") or ""), int(body.get("max_ui") or 400)),
+            )
+            return
+        if path in ("/v1/host/screenshot", "/host/screenshot"):
+            from auro_native_llm.host_control import screenshot
+
+            _json_response(self, 200, screenshot(str(body.get("prompt") or "")))
+            return
+        if path in ("/v1/host/dispatch", "/host/dispatch"):
+            from auro_native_llm.host_control import dispatch
+
+            _json_response(
+                self,
+                200,
+                dispatch(str(body.get("agent") or "ARCHON"), str(body.get("message") or body.get("prompt") or "")),
+            )
+            return
+        if path in ("/v1/host/ms", "/v1/host/microsoft"):
+            from auro_native_llm.host_control import ms_protocol
+
+            _json_response(
+                self,
+                200,
+                ms_protocol(
+                    str(body.get("action") or "status"),
+                    app=body.get("app") or "explorer",
+                    cmd=body.get("cmd") or "",
+                    prompt=body.get("prompt") or "",
+                ),
+            )
+            return
+
         # Google virtual envelope + collab
         if path in ("/v1/google/act", "/google/act", "/v1/workspace/act"):
             try:
@@ -392,11 +495,13 @@ class Handler(BaseHTTPRequestHandler):
             from auro_native_llm.organism.family import build_mind
             from auro_native_llm.embedded.portal import build_portal
 
-            global _MIND, _PORTAL
-            if _MIND is None:
-                _MIND = build_mind(body.get("model", "Auro-2B"), lite=True, chrome_mock=True)
+            # Module-level _MIND / _PORTAL (set via helpers — avoid mid-function global)
+            mind = _get_mind()
+            if mind is None:
+                mind = build_mind(body.get("model", "Auro-2B"), lite=True, chrome_mock=True)
+            global _PORTAL
             if _PORTAL is None or body.get("action") == "spin":
-                _PORTAL = build_portal(_MIND, chrome_mock=bool(body.get("chrome_mock", True)))
+                _PORTAL = build_portal(mind, chrome_mock=bool(body.get("chrome_mock", True)))
             portal = _PORTAL
             action = body.get("action", "manifest")
             if action == "spin":

@@ -1,0 +1,186 @@
+{
+  "schema": "auro.ghost.receipt_chain.v1",
+  "chain_id": "power-stack",
+  "tip_hash": "5409da211c6f99d10919932a23e484d31ecef118f5c0d2ee79ff8b26a2c95d39",
+  "n_receipts": 8,
+  "verify": {
+    "ok": true,
+    "n": 8,
+    "tip": "5409da211c6f99d10919932a23e484d31ecef118f5c0d2ee79ff8b26a2c95d39",
+    "chain_id": "power-stack"
+  },
+  "custody": {
+    "who_initiated": null,
+    "actors": [
+      "engine.econ",
+      "engine.physics",
+      "operator",
+      "orchestra"
+    ],
+    "policy": {},
+    "tools_models": {
+      "tools": [
+        "deep_physics",
+        "economic_engine",
+        "deep_physics",
+        "economic_engine"
+      ],
+      "models": []
+    },
+    "kinds_sequence": [
+      "intent",
+      "mesie",
+      "tool",
+      "validate",
+      "intent",
+      "mesie",
+      "tool",
+      "validate"
+    ],
+    "what_changed": [
+      "physics_multi_engine_step",
+      "econ_market_step",
+      "coupled_stack_tick",
+      "physics_multi_engine_step",
+      "econ_market_step",
+      "coupled_stack_tick"
+    ],
+    "validated": true,
+    "replayable": true,
+    "tip_hash": "5409da211c6f99d10919932a23e484d31ecef118f5c0d2ee79ff8b26a2c95d39"
+  },
+  "receipts": [
+    {
+      "receipt_id": "r-acdbb5e309",
+      "kind": "intent",
+      "parent_hash": null,
+      "payload": {
+        "prompt": "HIM: use skills and spectral tools to explain MESIE and plan next training step :: round 1"
+      },
+      "ts": 1784338171.5960777,
+      "actor": "operator",
+      "model_id": null,
+      "ok": true,
+      "content_hash": "ed8917606582d506923d316f6f87f3eee4e602be7b5d4e8e82baaa8801222160"
+    },
+    {
+      "receipt_id": "r-72915017ce",
+      "kind": "mesie",
+      "parent_hash": "ed8917606582d506923d316f6f87f3eee4e602be7b5d4e8e82baaa8801222160",
+      "payload": {
+        "engine": "deep_physics",
+        "energy": 0.20877753001935648,
+        "coupling": 0.30076549883418685,
+        "magnetization": -0.09375,
+        "change": "physics_multi_engine_step"
+      },
+      "ts": 1784338171.597078,
+      "actor": "engine.physics",
+      "model_id": null,
+      "ok": true,
+      "content_hash": "f784813cd7ffd298d4ab0faa6286500f27750c7415472364402b78e4865ff747"
+    },
+    {
+      "receipt_id": "r-02224c9948",
+      "kind": "tool",
+      "parent_hash": "f784813cd7ffd298d4ab0faa6286500f27750c7415472364402b78e4865ff747",
+      "payload": {
+        "tool": "economic_engine",
+        "wealth": 1.0016936375557135,
+        "utility": 0.07739386902922075,
+        "free_energy": -2.2205313745174604,
+        "excess": 3.7211218779149466,
+        "change": "econ_market_step"
+      },
+      "ts": 1784338171.597078,
+      "actor": "engine.econ",
+      "model_id": null,
+      "ok": true,
+      "content_hash": "67d986267e3352295fc8a3fba3cc72eb8ae210d3ae9575ba8318b8340495826a"
+    },
+    {
+      "receipt_id": "r-6e354ba093",
+      "kind": "validate",
+      "parent_hash": "67d986267e3352295fc8a3fba3cc72eb8ae210d3ae9575ba8318b8340495826a",
+      "payload": {
+        "route": "mesie_then_optional_llm",
+        "score": 0.4023395867763469,
+        "ot_cost": 0.10661459059461045,
+        "match_cost": 0.7956650572574289,
+        "transformer": "auro_lm_spectral_gpt",
+        "change": "coupled_stack_tick"
+      },
+      "ts": 1784338172.5305636,
+      "actor": "orchestra",
+      "model_id": null,
+      "ok": true,
+      "content_hash": "3f54fe3f06f02ffe21c6375795b55b61f2f080fd841eba6a0799b68f20c6ab02"
+    },
+    {
+      "receipt_id": "r-3eb86ea572",
+      "kind": "intent",
+      "parent_hash": "3f54fe3f06f02ffe21c6375795b55b61f2f080fd841eba6a0799b68f20c6ab02",
+      "payload": {
+        "prompt": "HIM: use skills and spectral tools to explain MESIE and plan next training step :: round 2"
+      },
+      "ts": 1784338172.5310733,
+      "actor": "operator",
+      "model_id": null,
+      "ok": true,
+      "content_hash": "41d87b6589b76bed15a8adb3df4f6a001aaaddd89b7b289d0401814785e7f1b6"
+    },
+    {
+      "receipt_id": "r-9ff5a1a993",
+      "kind": "mesie",
+      "parent_hash": "41d87b6589b76bed15a8adb3df4f6a001aaaddd89b7b289d0401814785e7f1b6",
+      "payload": {
+        "engine": "deep_physics",
+        "energy": 0.24069876941004456,
+        "coupling": 0.30153742400412586,
+        "magnetization": 0.28125,
+        "change": "physics_multi_engine_step"
+      },
+      "ts": 1784338172.5310733,
+      "actor": "engine.physics",
+      "model_id": null,
+      "ok": true,
+      "content_hash": "43bcc9cd749a7eb909e3a9849d6bc1ca6c995c3af383b893120391c9a6e5df80"
+    },
+    {
+      "receipt_id": "r-5fbe9ae166",
+      "kind": "tool",
+      "parent_hash": "43bcc9cd749a7eb909e3a9849d6bc1ca6c995c3af383b893120391c9a6e5df80",
+      "payload": {
+        "tool": "economic_engine",
+        "wealth": 1.0039512779078226,
+        "utility": 0.07848548408806699,
+        "free_energy": -1.8308933392929085,
+        "excess": 3.7378978671290244,
+        "change": "econ_market_step"
+      },
+      "ts": 1784338172.5340765,
+      "actor": "engine.econ",
+      "model_id": null,
+      "ok": true,
+      "content_hash": "b47605a08f412dd2827704bba6faee09ad46eb0a5a33abb2dd0b98b8455b359d"
+    },
+    {
+      "receipt_id": "r-14cc7ff7ad",
+      "kind": "validate",
+      "parent_hash": "b47605a08f412dd2827704bba6faee09ad46eb0a5a33abb2dd0b98b8455b359d",
+      "payload": {
+        "route": "mesie_then_optional_llm",
+        "score": 0.4027572255729087,
+        "ot_cost": 0.11582699376651023,
+        "match_cost": 0.7801183088141643,
+        "transformer": "auro_lm_spectral_gpt",
+        "change": "coupled_stack_tick"
+      },
+      "ts": 1784338173.4511693,
+      "actor": "orchestra",
+      "model_id": null,
+      "ok": true,
+      "content_hash": "5409da211c6f99d10919932a23e484d31ecef118f5c0d2ee79ff8b26a2c95d39"
+    }
+  ]
+}

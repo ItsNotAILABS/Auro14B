@@ -1,0 +1,552 @@
+{
+  "name": "THESIS Monad HQ Platform",
+  "version": "2.0.0",
+  "description": "Full-Stack DeFi Company OS — Monad EVM ↔ Solana SVM Cross-Chain Suite with 12 Production Tools, 8 First-Party AI Models & 19 Platform Engines",
+  "firstPartyModels": [
+    {
+      "id": "thesis-ai/Thesis-Monad-Solana-CrossVM-Arbitrage-7B",
+      "name": "Thesis-Monad-Solana-CrossVM-Arbitrage-7B",
+      "version": "v1.0",
+      "hfRepo": "https://huggingface.co/thesis-ai/Thesis-Monad-Solana-CrossVM-Arbitrage-7B",
+      "contextWindowTokens": 262144,
+      "specialty": "Monad EVM ↔ Solana SVM Dual-VM Parallel Arbitrage & ALT Converter",
+      "status": "ready_for_release"
+    },
+    {
+      "id": "thesis-ai/Thesis-Monad-HFT-Reasoning-7B",
+      "name": "Thesis-Monad-HFT-Reasoning-7B",
+      "version": "v1.0",
+      "hfRepo": "https://huggingface.co/thesis-ai/Thesis-Monad-HFT-Reasoning-7B",
+      "contextWindowTokens": 131072,
+      "specialty": "Monad 400ms Parallel Block Execution & EIP-2930 Arbitrage",
+      "status": "ready_for_release"
+    },
+    {
+      "id": "thesis-ai/Thesis-Sovereign-Vault-Quant-3B",
+      "name": "Thesis-Sovereign-Vault-Quant-3B",
+      "version": "v1.0",
+      "hfRepo": "https://huggingface.co/thesis-ai/Thesis-Sovereign-Vault-Quant-3B",
+      "contextWindowTokens": 131072,
+      "specialty": "Gauntlet 99% VaR, Max Drawdown & Delta-Neutral Hedging",
+      "status": "ready_for_release"
+    },
+    {
+      "id": "thesis-ai/Thesis-Dual-Law-Governance-7B",
+      "name": "Thesis-Dual-Law-Governance-7B",
+      "version": "v1.0",
+      "hfRepo": "https://huggingface.co/thesis-ai/Thesis-Dual-Law-Governance-7B",
+      "contextWindowTokens": 262144,
+      "specialty": "NOMOS Dual-Law Stack & Proposal Verification Engine",
+      "status": "ready_for_release"
+    },
+    {
+      "id": "thesis-ai/Thesis-Monad-Gas-Reserve-1B",
+      "name": "Thesis-Monad-Gas-Reserve-1B",
+      "version": "v1.0",
+      "hfRepo": "https://huggingface.co/thesis-ai/Thesis-Monad-Gas-Reserve-1B",
+      "contextWindowTokens": 65536,
+      "specialty": "Opcode Cost Predictor & Reserve Balance Optimization",
+      "status": "ready_for_release"
+    },
+    {
+      "id": "thesis-ai/Thesis-Solana-MEV-Jito-Detector-3B",
+      "name": "Thesis-Solana-MEV-Jito-Detector-3B",
+      "version": "v1.0",
+      "hfRepo": "https://huggingface.co/thesis-ai/Thesis-Solana-MEV-Jito-Detector-3B",
+      "contextWindowTokens": 131072,
+      "specialty": "Solana Jito Bundle MEV Detection, Sandwich Attack Analysis & Backrun Opportunity Scoring",
+      "status": "ready_for_release"
+    },
+    {
+      "id": "thesis-ai/Thesis-DeFi-Strategy-Backtester-7B",
+      "name": "Thesis-DeFi-Strategy-Backtester-7B",
+      "version": "v1.0",
+      "hfRepo": "https://huggingface.co/thesis-ai/Thesis-DeFi-Strategy-Backtester-7B",
+      "contextWindowTokens": 262144,
+      "specialty": "DeFi Strategy Simulation, Alpha Generation & Sharpe Ratio Optimization",
+      "status": "ready_for_release"
+    },
+    {
+      "id": "thesis-ai/Thesis-CrossChain-Bridge-Monitor-1B",
+      "name": "Thesis-CrossChain-Bridge-Monitor-1B",
+      "version": "v1.0",
+      "hfRepo": "https://huggingface.co/thesis-ai/Thesis-CrossChain-Bridge-Monitor-1B",
+      "contextWindowTokens": 65536,
+      "specialty": "Wormhole VAA & LayerZero DVN Bridge Health Monitoring & Stuck Message Recovery",
+      "status": "ready_for_release"
+    }
+  ],
+  "primitives": [
+    {
+      "id": "crossvm-bridge",
+      "name": "Monad ↔ Solana Cross-VM Bridge",
+      "category": "Interoperability",
+      "description": "EVM ↔ SVM state synchronizer, EIP-2930 to Solana ALT translator & low-latency liquidity router",
+      "status": "active"
+    },
+    {
+      "id": "identity",
+      "name": "Identity & Wallet Twin",
+      "category": "Core OS",
+      "description": "Link wallet accounts, sync balances, manage permissions & agent twins",
+      "status": "active"
+    },
+    {
+      "id": "law",
+      "name": "Dual Law Stack",
+      "category": "Governance",
+      "description": "Dual law stack, evaluate smart contracts, verify governance proposals",
+      "status": "active"
+    },
+    {
+      "id": "market",
+      "name": "Monad Parallel Market",
+      "category": "DeFi Engine",
+      "description": "High-frequency orderbook, sub-second marks, parallel arbitrage execution",
+      "status": "active"
+    },
+    {
+      "id": "capital-gate",
+      "name": "Capital Gate & Vaults",
+      "category": "Security",
+      "description": "SovereignVault execution path, delta-neutral hedging & multi-sig asset protection",
+      "status": "active"
+    },
+    {
+      "id": "gas-reserve",
+      "name": "Gas & Reserve Controller",
+      "category": "Infrastructure",
+      "description": "Monad dynamic base fee curve, reserve balance calculation & limit optimizer",
+      "status": "active"
+    },
+    {
+      "id": "session-keys",
+      "name": "EIP-7702 Session Delegation",
+      "category": "Account Abstraction",
+      "description": "Gasless transaction batching & delegated session key manager for trading bots",
+      "status": "active"
+    },
+    {
+      "id": "ai-node",
+      "name": "AI Agent Node",
+      "category": "Intelligence",
+      "description": "Sandboxed AI agent with wallet twin & autonomous decision loop",
+      "status": "active"
+    },
+    {
+      "id": "company-os",
+      "name": "Company OS",
+      "category": "Management",
+      "description": "DeFi company departments, operational missions, and HQ telemetry",
+      "status": "active"
+    },
+    {
+      "id": "forge",
+      "name": "Forge",
+      "category": "Developer Tools",
+      "description": "Pipeline builder transforming modules into installable packages",
+      "status": "active"
+    },
+    {
+      "id": "local-ai",
+      "name": "Local AI Runtime",
+      "category": "Runtime",
+      "description": "Browser Transformers.js runtime, IndexedDB vector memory & PDF export",
+      "status": "active"
+    },
+    {
+      "id": "portfolio-tracker",
+      "name": "Unified Portfolio Tracker",
+      "category": "Analytics",
+      "description": "Cross-chain position tracking, PnL calculation & risk concentration metrics for Monad + Solana",
+      "status": "active"
+    },
+    {
+      "id": "flash-loan",
+      "name": "Flash Loan Composer",
+      "category": "DeFi Engine",
+      "description": "Multi-step atomic flash loan strategy builder with cross-VM roundtrip support",
+      "status": "active"
+    },
+    {
+      "id": "contract-auditor",
+      "name": "Dual-Chain Auditor",
+      "category": "Security",
+      "description": "Solidity + Rust/Anchor parallel bytecode threat analyzer with cross-chain safety evaluation",
+      "status": "active"
+    },
+    {
+      "id": "bridge-monitor",
+      "name": "Bridge Monitor",
+      "category": "Infrastructure",
+      "description": "Wormhole VAA & LayerZero DVN real-time relay dashboard with stuck-message recovery",
+      "status": "active"
+    },
+    {
+      "id": "yield-aggregator",
+      "name": "Yield Aggregator",
+      "category": "DeFi Engine",
+      "description": "Cross-chain APY optimizer with auto-rebalancing across Monad + Solana protocols",
+      "status": "active"
+    },
+    {
+      "id": "parallel-simulator",
+      "name": "Parallel Execution Simulator",
+      "category": "Developer Tools",
+      "description": "Monad tx batch conflict analyzer & EIP-2930 access list optimizer",
+      "status": "active"
+    },
+    {
+      "id": "compute-optimizer",
+      "name": "Solana Compute Optimizer",
+      "category": "Infrastructure",
+      "description": "CU limit/price optimizer & Address Lookup Table pre-compiler",
+      "status": "active"
+    },
+    {
+      "id": "token-launchpad",
+      "name": "Token Launchpad",
+      "category": "DeFi Engine",
+      "description": "ERC-20/ERC-404 factory with Kuru CLOB listing & optional Solana SPL mirror",
+      "status": "active"
+    },
+    {
+      "id": "onchain-agent",
+      "name": "On-Chain AI Agent",
+      "category": "Intelligence",
+      "description": "Autonomous DeFi agent with EIP-7702 session keys & Squads multi-sig signing",
+      "status": "active"
+    },
+    {
+      "id": "governance-center",
+      "name": "Governance Command Center",
+      "category": "Governance",
+      "description": "NOMOS + Solana Realms unified voting with AI-powered proposal analysis",
+      "status": "active"
+    },
+    {
+      "id": "mev-scanner",
+      "name": "Cross-Chain MEV Scanner",
+      "category": "DeFi Engine",
+      "description": "Monad parallel MEV + Solana Jito bundle opportunity detector",
+      "status": "active"
+    },
+    {
+      "id": "backtester",
+      "name": "Strategy Backtester",
+      "category": "Analytics",
+      "description": "Historical DeFi strategy simulator with Sharpe ratio, drawdown & equity curve analysis",
+      "status": "active"
+    }
+  ],
+  "apps": [
+    {
+      "id": "crossvm-hft-desk",
+      "name": "Monad ↔ Solana Cross-VM Desk",
+      "category": "Cross-Chain DeFi",
+      "icon": "🌐",
+      "description": "Dual-VM orderbook, cross-chain parallel arbitrage, and Wormhole/LayerZero 400ms bridge execution",
+      "route": "/apps/crossvm-hft-desk"
+    },
+    {
+      "id": "hft-trading-desk",
+      "name": "Monad HFT Trading Desk",
+      "category": "DeFi & HFT",
+      "icon": "⚡",
+      "description": "Sub-second swap execution, orderbook visualizer, and 800ms finality execution via eth_sendRawTransactionSync",
+      "route": "/apps/hft-trading-desk"
+    },
+    {
+      "id": "parallel-arbitrage",
+      "name": "Parallel Arbitrage Scanner",
+      "category": "DeFi & HFT",
+      "icon": "📊",
+      "description": "Real-time cross-DEX price spread scanner taking advantage of Monad parallel execution engine",
+      "route": "/apps/parallel-arbitrage"
+    },
+    {
+      "id": "gas-reserve-optimizer",
+      "name": "Monad Gas & Reserve Optimizer",
+      "category": "Infrastructure",
+      "icon": "⛽",
+      "description": "Monad-tuned gas price controller, limit overcharge protection, and reserve balance checker",
+      "route": "/apps/gas-reserve-optimizer"
+    },
+    {
+      "id": "sovereign-vaults",
+      "name": "SovereignVault Yield Engine",
+      "category": "Asset Management",
+      "icon": "💎",
+      "description": "Delta-neutral liquidity farming, impermanent loss calculator, and automated rebalancing",
+      "route": "/apps/sovereign-vaults"
+    },
+    {
+      "id": "eip7702-manager",
+      "name": "EIP-7702 Session & Batch Manager",
+      "category": "Account Abstraction",
+      "icon": "🔑",
+      "description": "Gasless transaction batching, paymaster delegation, and automated trading bot keys",
+      "route": "/apps/eip7702-manager"
+    },
+    {
+      "id": "trading-desk",
+      "name": "Standard Swap Desk",
+      "category": "Markets",
+      "icon": "📈",
+      "description": "AMMs swap execution, token pair analytics, and liquidity routing",
+      "route": "/apps/trading-desk"
+    },
+    {
+      "id": "wallets",
+      "name": "Wallets & Identity",
+      "category": "Identity",
+      "icon": "👛",
+      "description": "Multi-wallet identity aggregator and balance tracking twin",
+      "route": "/apps/wallets"
+    },
+    {
+      "id": "ai-node-app",
+      "name": "AI Node Twin",
+      "category": "Agents",
+      "icon": "🤖",
+      "description": "Autonomous AI agent control panel with execution sandboxing",
+      "route": "/apps/ai-node"
+    },
+    {
+      "id": "company-hq",
+      "name": "Company HQ",
+      "category": "Management",
+      "icon": "🏛️",
+      "description": "Departmental status, treasury overview, and company mission logs",
+      "route": "/apps/company-hq"
+    },
+    {
+      "id": "studio-forge",
+      "name": "Studio Forge",
+      "category": "Build",
+      "icon": "⚒️",
+      "description": "Smart contract compilation pipelines and package packaging studio",
+      "route": "/apps/studio-forge"
+    },
+    {
+      "id": "academy",
+      "name": "Academy",
+      "category": "Education",
+      "icon": "🎓",
+      "description": "Monad EVM optimization courses, coding quests, and certifications",
+      "route": "/apps/academy"
+    },
+    {
+      "id": "daily-seatbelt",
+      "name": "Daily Seatbelt",
+      "category": "Security",
+      "icon": "🛡️",
+      "description": "Daily automated vulnerability scanner and risk audit suite",
+      "route": "/apps/daily-seatbelt"
+    },
+    {
+      "id": "nomos-arena",
+      "name": "NOMOS Arena",
+      "category": "Governance",
+      "icon": "⚔️",
+      "description": "Dual law stack simulation and governance proposal voting arena",
+      "route": "/apps/nomos-arena"
+    },
+    {
+      "id": "tools",
+      "name": "Developer Tools",
+      "category": "Build",
+      "icon": "🛠️",
+      "description": "Monad gas estimator, ABI encoder/decoder, and bytecode inspector",
+      "route": "/apps/tools"
+    },
+    {
+      "id": "portfolio-app",
+      "name": "Portfolio Tracker",
+      "category": "Analytics",
+      "icon": "📊",
+      "description": "Unified Monad + Solana wallet position tracker with PnL, concentration risk & delta exposure",
+      "route": "/apps/portfolio"
+    },
+    {
+      "id": "flashloan-app",
+      "name": "Flash Loan Composer",
+      "category": "DeFi",
+      "icon": "⚡",
+      "description": "Drag-and-drop multi-step flash loan strategy builder with cross-VM atomic execution",
+      "route": "/apps/flashloan"
+    },
+    {
+      "id": "auditor-app",
+      "name": "Contract Auditor",
+      "category": "Security",
+      "icon": "🔍",
+      "description": "Solidity + Rust/Anchor side-by-side bytecode threat analyzer",
+      "route": "/apps/auditor"
+    },
+    {
+      "id": "bridge-app",
+      "name": "Bridge Monitor",
+      "category": "Infrastructure",
+      "icon": "🌉",
+      "description": "Wormhole/LayerZero real-time bridge health dashboard with stuck-message alerts",
+      "route": "/apps/bridge"
+    },
+    {
+      "id": "yield-app",
+      "name": "Yield Aggregator",
+      "category": "DeFi",
+      "icon": "🌾",
+      "description": "Best APY across Monad + Solana with auto-rebalancing",
+      "route": "/apps/yield"
+    },
+    {
+      "id": "parallel-sim-app",
+      "name": "Parallel Execution Sim",
+      "category": "Developer Tools",
+      "icon": "🔀",
+      "description": "Monad tx batch parallel conflict analyzer",
+      "route": "/apps/parallel-sim"
+    },
+    {
+      "id": "compute-app",
+      "name": "Compute Optimizer",
+      "category": "Infrastructure",
+      "icon": "⚙️",
+      "description": "Solana CU budget optimizer & ALT compiler",
+      "route": "/apps/compute"
+    },
+    {
+      "id": "launchpad-app",
+      "name": "Token Launchpad",
+      "category": "DeFi",
+      "icon": "🚀",
+      "description": "1-click Monad ERC-20/ERC-404 token factory with Kuru CLOB listing",
+      "route": "/apps/launchpad"
+    },
+    {
+      "id": "agent-app",
+      "name": "On-Chain AI Agent",
+      "category": "Intelligence",
+      "icon": "🤖",
+      "description": "Autonomous DeFi agent with session key signing & emergency stop",
+      "route": "/apps/agent"
+    },
+    {
+      "id": "governance-app",
+      "name": "Governance Center",
+      "category": "Governance",
+      "icon": "🏛️",
+      "description": "NOMOS + Realms unified governance voting with AI proposal analysis",
+      "route": "/apps/governance"
+    },
+    {
+      "id": "mev-app",
+      "name": "MEV Scanner",
+      "category": "DeFi",
+      "icon": "👁️",
+      "description": "Cross-chain MEV opportunity detector (Monad parallel + Jito bundles)",
+      "route": "/apps/mev"
+    },
+    {
+      "id": "backtester-app",
+      "name": "Strategy Backtester",
+      "category": "Analytics",
+      "icon": "📈",
+      "description": "DeFi strategy backtester with Sharpe ratio & equity curves",
+      "route": "/apps/backtester"
+    }
+  ],
+  "engines": [
+    {
+      "id": "crossvm-engine",
+      "name": "Monad ↔ Solana Cross-VM Engine",
+      "description": "Dual-VM RPC relayer & Address Lookup Table (ALT) generator",
+      "status": "online"
+    },
+    {
+      "id": "chain-rpc",
+      "name": "Chain Engine (Monad RPC)",
+      "description": "Real-time block streaming & eth_sendRawTransactionSync proxy (400ms block target)",
+      "status": "online"
+    },
+    {
+      "id": "gas-engine",
+      "name": "Gas Engine & Reserve Controller",
+      "description": "Monad base fee controller and reserve balance optimizer",
+      "status": "online"
+    },
+    {
+      "id": "hft-engine",
+      "name": "Parallel HFT Engine",
+      "description": "Cross-contract parallel order matcher and slippage optimizer",
+      "status": "online"
+    },
+    {
+      "id": "law-engine",
+      "name": "Law Engine",
+      "description": "Dual law stack validator and contract verification worker",
+      "status": "online"
+    },
+    {
+      "id": "research-engine",
+      "name": "Research Engine",
+      "description": "DeFi market data indexer and quantitative strategy generator",
+      "status": "online"
+    },
+    {
+      "id": "index-engine",
+      "name": "Index Engine",
+      "description": "HyperIndex event stream consumer and database syncer",
+      "status": "online"
+    },
+    {
+      "id": "security-engine",
+      "name": "Security Engine",
+      "description": "Bytecode threat analyzer and contract permission monitor",
+      "status": "online"
+    },
+    {
+      "id": "portfolio-engine",
+      "name": "Portfolio Analytics Engine",
+      "description": "Cross-chain position aggregator & PnL calculator",
+      "status": "online"
+    },
+    {
+      "id": "flashloan-engine",
+      "name": "Flash Loan Execution Engine",
+      "description": "Atomic multi-step flash loan simulator & executor",
+      "status": "online"
+    },
+    {
+      "id": "audit-engine",
+      "name": "Smart Contract Audit Engine",
+      "description": "Solidity + Rust bytecode threat analyzer",
+      "status": "online"
+    },
+    {
+      "id": "bridge-engine",
+      "name": "Bridge Monitoring Engine",
+      "description": "Wormhole VAA & LayerZero DVN real-time tracker",
+      "status": "online"
+    },
+    {
+      "id": "yield-engine",
+      "name": "Yield Aggregation Engine",
+      "description": "Cross-chain APY optimizer & rebalancer",
+      "status": "online"
+    },
+    {
+      "id": "mev-engine",
+      "name": "MEV Detection Engine",
+      "description": "Parallel MEV + Jito bundle scanner",
+      "status": "online"
+    },
+    {
+      "id": "backtest-engine",
+      "name": "Backtesting Engine",
+      "description": "Historical DeFi strategy simulator",
+      "status": "online"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "auro.coding_intelligence.v1",
+  "summary": {
+    "tasks": 3,
+    "passed": 3,
+    "pass_rate": 1.0,
+    "usable": true
+  },
+  "results": [
+    {
+      "task_id": "add",
+      "passed": true,
+      "attempts": 1,
+      "method": "synthesizer",
+      "source": "def solution(a, b):\n    return a + b\n",
+      "stdout": "",
+      "stderr": "",
+      "source_sha256": "1c89d51e75239800a209ad037935a884e7e5d90209dc36d508ea709ceb0dd5ae"
+    },
+    {
+      "task_id": "reverse",
+      "passed": true,
+      "attempts": 1,
+      "method": "synthesizer",
+      "source": "def solution(s):\n    return s[::-1]\n",
+      "stdout": "",
+      "stderr": "",
+      "source_sha256": "e51ab08f6abd653a10f0dffab3b5630cbdec450748446563d18250a673ce4a9a"
+    },
+    {
+      "task_id": "fibonacci",
+      "passed": true,
+      "attempts": 1,
+      "method": "synthesizer",
+      "source": "def solution(n):\n    if n <= 0:\n        return 0\n    if n == 1:\n        return 1\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n",
+      "stdout": "",
+      "stderr": "",
+      "source_sha256": "ed1531da80e0f263d614864997920329b51daaec0c04e25cc1a4dc333846091e"
+    }
+  ],
+  "compute_plane": "MESIE+PythonOrchestrator",
+  "native": true,
+  "receipt_sha256": "5461707cb61253b6a6886f04cbd6617e36e51114ec8b4eb25ef6c5be50445070"
+}

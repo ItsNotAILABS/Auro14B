@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: thesis-monad-hq
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd client && npm install && npm run build && cd ../server && npm install
+    startCommand: node server/index.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: MONAD_RPC_URL
+        sync: false
+      - key: CORS_ORIGIN
+        value: "*"

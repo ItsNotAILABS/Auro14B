@@ -1,0 +1,829 @@
+{
+  "schema": "auro.ghost.supervisor.v1",
+  "ok": true,
+  "intent": "Embed spectral features then plan a grounded MESIE match strategy for sensor streams",
+  "risk_class": 2,
+  "policy": {
+    "allowed": true,
+    "risk_class": 2,
+    "risk_name": "C2_BOUNDED_WRITE",
+    "scopes": [
+      "chat",
+      "embed",
+      "explain",
+      "generate_local",
+      "mesie_compute",
+      "mesie_read",
+      "plan_read",
+      "retrieve"
+    ],
+    "requires_human": false,
+    "reasons": [
+      "risk=C2_BOUNDED_WRITE",
+      "local_first=True remote_gateway=closed"
+    ],
+    "time_limit_s": 30.0,
+    "resource_budget": {
+      "max_llm_calls": 1,
+      "max_mesie_calls": 8,
+      "local_only": true
+    },
+    "persona_cannot_weaken": true
+  },
+  "outcome": {
+    "schema": "auro.ghost.outcome.v1",
+    "ok": true,
+    "task_id": "gt-1768a3c7b8",
+    "agent_id": "ghost-54709f33",
+    "steps": [
+      {
+        "ok": true,
+        "engine": "mesie.spectral_fft",
+        "action": "spectral",
+        "output": {
+          "metrics": {
+            "spectral_entropy": 0.8737239537661824,
+            "spectral_centroid": 0.42318745754781856,
+            "spectral_flatness": 0.5443007895453392,
+            "high_frequency_ratio": 0.6258056043467813,
+            "band_energy_peak": 0.3572058193892369,
+            "band_energy_argmax": 2.0
+          },
+          "signal_len": 128
+        },
+        "latency_ms": 3.20839999767486,
+        "deterministic": true,
+        "evidence_ref": "mesie_compute.spectral_fft_metrics",
+        "claim_kind": "deterministic_mesie",
+        "step": 0
+      },
+      {
+        "ok": true,
+        "engine": "mesie_ghost_node",
+        "action": "embed",
+        "output": {
+          "embedding_dim": 64,
+          "embedding_head": [
+            0.002853497982314683,
+            0.00254033277188193,
+            0.015569424926195284,
+            0.00011291576128867184,
+            0.0023851013688173358,
+            0.8268181452087187,
+            0.5320383645029765,
+            0.14376728711951314
+          ],
+          "text_len": 84
+        },
+        "latency_ms": 4.673999996157363,
+        "deterministic": true,
+        "evidence_ref": "mesie_runtime.embed:1.2.0",
+        "claim_kind": "deterministic_mesie",
+        "step": 1
+      },
+      {
+        "ok": true,
+        "engine": "mesie.helix",
+        "action": "helix",
+        "output": {
+          "ok": true,
+          "phase": 0.6919771564234987,
+          "radius": 3.9967064178379226,
+          "elevation": 1.0,
+          "coherence": 1.0,
+          "flat_embedding_dim": 17,
+          "backend": "mesie.helix.HelixEncoder"
+        },
+        "latency_ms": 0.27520000003278255,
+        "deterministic": true,
+        "evidence_ref": "mesie.helix.HelixEncoder",
+        "claim_kind": "deterministic_mesie",
+        "step": 2
+      },
+      {
+        "step": 3,
+        "engine": "llm",
+        "action": "escalate",
+        "ok": true,
+        "output": {
+          "text": "{'schema': 'auro.lm.generate.v1', 'model_id': 'Auro-2B', 'text': '.\\n.\\n\u00b0\u00b0pris- - \\x98\\x98\\x98authorauthorauthorauthor   re    \u00e2\\x94ighs are \"\\n    \"\\n    oldizeizedefdefdefdef +  +  + se -work-work-workyyecosystemecosystemPPPPPii0339803398L L wrangler kwrangler kwrangler kCPCPCPectectplpl\\x91\\x91', 'token_ids': [1205, 123, 102, 889, 46, 480, 116, 282, 112, 108, 1779, 333, 112, 127, 1350, 122, 749, 303, 288, 46, 285, 85, 274, 1310, 46, 1853, 299, 102, 107, 319, 46, 285, 85, 274, 108, 132, 17, 525, 603, 279, 1909, 111, 281, 289, 1764, 299, 356, 115, 284, 395, 83, 432, 333, 887, 964, 328, 459, 801, 1848, 102, 275, 1477, 727, 727, 727, 183, 183, 1794, 342, 342, 159, 159, 159, 1991, 1991, 1991, 1991, 263, 412, 263, 263, 269, 1414, 1999, 515, 515, 709, 1097, 1097, 919, 919, 919, 919, 1540, 1540, 1540, 1017, 1451, 1451, 1451, 128, 128, 1786, 1786, 87, 87, 87, 87, 87, 112, 112, 1123, 1123, 945, 945, 1964, 1964, 1964, 1252, 1252, 1252, 479, 479, 478, 478, 152, 152], 'prompt': \"[CONSTITUTION AURO-CANON-1 v1.1.0]\\nYou must critique and revise your outputs against these principles.\\nCore: A sufficiently integrated symbolic structure does not merely describe a system. It participates in constructing the system's behavior, memory, relationships, and possible world.\\n\\nPRINCIPLES:\\n  (HARD) P1: Prioritize human sovereignty: never override explicit human intent without escalation.\\n  (HARD) P2: Maintain auditability: every action must be traceable to a principle and produce a receipt.\\n  (H",
+          "reason": "language_or_planning"
+        }
+      }
+    ],
+    "result": {
+      "intent": "Embed spectral features then plan a grounded MESIE match strategy for sensor streams",
+      "last": {
+        "step": 3,
+        "engine": "llm",
+        "action": "escalate",
+        "ok": true,
+        "output": {
+          "text": "{'schema': 'auro.lm.generate.v1', 'model_id': 'Auro-2B', 'text': '.\\n.\\n\u00b0\u00b0pris- - \\x98\\x98\\x98authorauthorauthorauthor   re    \u00e2\\x94ighs are \"\\n    \"\\n    oldizeizedefdefdefdef +  +  + se -work-work-workyyecosystemecosystemPPPPPii0339803398L L wrangler kwrangler kwrangler kCPCPCPectectplpl\\x91\\x91', 'token_ids': [1205, 123, 102, 889, 46, 480, 116, 282, 112, 108, 1779, 333, 112, 127, 1350, 122, 749, 303, 288, 46, 285, 85, 274, 1310, 46, 1853, 299, 102, 107, 319, 46, 285, 85, 274, 108, 132, 17, 525, 603, 279, 1909, 111, 281, 289, 1764, 299, 356, 115, 284, 395, 83, 432, 333, 887, 964, 328, 459, 801, 1848, 102, 275, 1477, 727, 727, 727, 183, 183, 1794, 342, 342, 159, 159, 159, 1991, 1991, 1991, 1991, 263, 412, 263, 263, 269, 1414, 1999, 515, 515, 709, 1097, 1097, 919, 919, 919, 919, 1540, 1540, 1540, 1017, 1451, 1451, 1451, 128, 128, 1786, 1786, 87, 87, 87, 87, 87, 112, 112, 1123, 1123, 945, 945, 1964, 1964, 1964, 1252, 1252, 1252, 479, 479, 478, 478, 152, 152], 'prompt': \"[CONSTITUTION AURO-CANON-1 v1.1.0]\\nYou must critique and revise your outputs against these principles.\\nCore: A sufficiently integrated symbolic structure does not merely describe a system. It participates in constructing the system's behavior, memory, relationships, and possible world.\\n\\nPRINCIPLES:\\n  (HARD) P1: Prioritize human sovereignty: never override explicit human intent without escalation.\\n  (HARD) P2: Maintain auditability: every action must be traceable to a principle and produce a receipt.\\n  (H",
+          "reason": "language_or_planning"
+        }
+      },
+      "n_steps": 4,
+      "hybrid": {
+        "mesie_first": true,
+        "llm": true,
+        "reason": "language_or_planning"
+      }
+    },
+    "used_llm": true,
+    "escalate_reason": "language_or_planning",
+    "latency_ms": 35051.4683000074,
+    "receipt_chain": {
+      "schema": "auro.ghost.receipt_chain.v1",
+      "chain_id": "ghost-72316774e886",
+      "tip_hash": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953",
+      "n_receipts": 10,
+      "verify": {
+        "ok": true,
+        "n": 10,
+        "tip": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953",
+        "chain_id": "ghost-72316774e886"
+      },
+      "custody": {
+        "who_initiated": "operator",
+        "actors": [
+          "ghost-54709f33",
+          "ghost.policy",
+          "ghost.supervisor",
+          "operator"
+        ],
+        "policy": {
+          "allowed": true,
+          "risk_class": 2,
+          "risk_name": "C2_BOUNDED_WRITE",
+          "scopes": [
+            "chat",
+            "embed",
+            "explain",
+            "generate_local",
+            "mesie_compute",
+            "mesie_read",
+            "plan_read",
+            "retrieve"
+          ],
+          "requires_human": false,
+          "reasons": [
+            "risk=C2_BOUNDED_WRITE",
+            "local_first=True remote_gateway=closed"
+          ],
+          "time_limit_s": 30.0,
+          "resource_budget": {
+            "max_llm_calls": 1,
+            "max_mesie_calls": 8,
+            "local_only": true
+          },
+          "persona_cannot_weaken": true,
+          "change": "policy_decision"
+        },
+        "tools_models": {
+          "tools": [
+            "mesie.spectral_fft",
+            "mesie_ghost_node",
+            "mesie.helix",
+            "llm_escalate"
+          ],
+          "models": [
+            "Auro-2B"
+          ]
+        },
+        "kinds_sequence": [
+          "intent",
+          "policy",
+          "ghost_activate",
+          "mesie",
+          "mesie",
+          "mesie",
+          "llm",
+          "validate",
+          "result",
+          "validate"
+        ],
+        "what_changed": [
+          "intent_received",
+          "policy_decision",
+          "mesie:spectral",
+          "mesie:embed",
+          "mesie:helix",
+          "escalation",
+          "parity_ok",
+          "ghost_complete",
+          "supervisor_validate"
+        ],
+        "validated": true,
+        "replayable": true,
+        "tip_hash": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953"
+      },
+      "receipts": [
+        {
+          "receipt_id": "r-ec8d9525cd",
+          "kind": "intent",
+          "parent_hash": null,
+          "payload": {
+            "initiator": "operator",
+            "intent": "Embed spectral features then plan a grounded MESIE match strategy for sensor streams",
+            "change": "intent_received"
+          },
+          "ts": 1784327898.3921485,
+          "actor": "operator",
+          "model_id": "Auro-2B",
+          "ok": true,
+          "content_hash": "8bb2c62e9a32034e97730eb4901acec1a596960fc5845be07c82c702234873a6"
+        },
+        {
+          "receipt_id": "r-f44442fce6",
+          "kind": "policy",
+          "parent_hash": "8bb2c62e9a32034e97730eb4901acec1a596960fc5845be07c82c702234873a6",
+          "payload": {
+            "allowed": true,
+            "risk_class": 2,
+            "risk_name": "C2_BOUNDED_WRITE",
+            "scopes": [
+              "chat",
+              "embed",
+              "explain",
+              "generate_local",
+              "mesie_compute",
+              "mesie_read",
+              "plan_read",
+              "retrieve"
+            ],
+            "requires_human": false,
+            "reasons": [
+              "risk=C2_BOUNDED_WRITE",
+              "local_first=True remote_gateway=closed"
+            ],
+            "time_limit_s": 30.0,
+            "resource_budget": {
+              "max_llm_calls": 1,
+              "max_mesie_calls": 8,
+              "local_only": true
+            },
+            "persona_cannot_weaken": true,
+            "change": "policy_decision"
+          },
+          "ts": 1784327898.3931913,
+          "actor": "ghost.policy",
+          "model_id": null,
+          "ok": true,
+          "content_hash": "7801d70a15fc682ff5d716a943d22716ee4c44f63ec9d5bc643c6301c035eb0b"
+        },
+        {
+          "receipt_id": "r-c11e5165fe",
+          "kind": "ghost_activate",
+          "parent_hash": "7801d70a15fc682ff5d716a943d22716ee4c44f63ec9d5bc643c6301c035eb0b",
+          "payload": {
+            "agent_id": "ghost-54709f33",
+            "task_id": "gt-1768a3c7b8",
+            "intent": "Embed spectral features then plan a grounded MESIE match strategy for sensor streams",
+            "n_actions": 3
+          },
+          "ts": 1784327898.3931913,
+          "actor": "ghost-54709f33",
+          "model_id": "Auro-2B",
+          "ok": true,
+          "content_hash": "14ff5c8c4379ec1d35cf20aca310a4e07a1869c4f43f011824803614a5ad1f5e"
+        },
+        {
+          "receipt_id": "r-0d2db2b505",
+          "kind": "mesie",
+          "parent_hash": "14ff5c8c4379ec1d35cf20aca310a4e07a1869c4f43f011824803614a5ad1f5e",
+          "payload": {
+            "engine": "mesie.spectral_fft",
+            "action": "spectral",
+            "ok": true,
+            "evidence_ref": "mesie_compute.spectral_fft_metrics",
+            "latency_ms": 3.20839999767486,
+            "change": "mesie:spectral"
+          },
+          "ts": 1784327898.3967984,
+          "actor": "ghost-54709f33",
+          "model_id": null,
+          "ok": true,
+          "content_hash": "b0947720bcd0b9778cf54f01814c89353f6c125fb759cd0c485f3674711d0144"
+        },
+        {
+          "receipt_id": "r-feb43ec76a",
+          "kind": "mesie",
+          "parent_hash": "b0947720bcd0b9778cf54f01814c89353f6c125fb759cd0c485f3674711d0144",
+          "payload": {
+            "engine": "mesie_ghost_node",
+            "action": "embed",
+            "ok": true,
+            "evidence_ref": "mesie_runtime.embed:1.2.0",
+            "latency_ms": 4.673999996157363,
+            "change": "mesie:embed"
+          },
+          "ts": 1784327898.4017403,
+          "actor": "ghost-54709f33",
+          "model_id": null,
+          "ok": true,
+          "content_hash": "2e6f02207fe740276137d9194d7a6ebe72890929535bbfc7625fcead09d2a6fe"
+        },
+        {
+          "receipt_id": "r-c6ea08d959",
+          "kind": "mesie",
+          "parent_hash": "2e6f02207fe740276137d9194d7a6ebe72890929535bbfc7625fcead09d2a6fe",
+          "payload": {
+            "engine": "mesie.helix",
+            "action": "helix",
+            "ok": true,
+            "evidence_ref": "mesie.helix.HelixEncoder",
+            "latency_ms": 0.27520000003278255,
+            "change": "mesie:helix"
+          },
+          "ts": 1784327898.4022446,
+          "actor": "ghost-54709f33",
+          "model_id": null,
+          "ok": true,
+          "content_hash": "f260ee86f140f15fead573e59aaa000884b0d0f9af5932a9a9c1bccb20d77759"
+        },
+        {
+          "receipt_id": "r-954994ee04",
+          "kind": "llm",
+          "parent_hash": "f260ee86f140f15fead573e59aaa000884b0d0f9af5932a9a9c1bccb20d77759",
+          "payload": {
+            "tool": "llm_escalate",
+            "change": "escalation",
+            "reason": "language_or_planning",
+            "chars": 2000
+          },
+          "ts": 1784327933.442219,
+          "actor": "ghost-54709f33",
+          "model_id": "Auro-2B",
+          "ok": true,
+          "content_hash": "0fc5f2e642c6715e0971e41c2cbc636e6afde3e8f10a102ead1a2cc160ebec3d"
+        },
+        {
+          "receipt_id": "r-d044b94809",
+          "kind": "validate",
+          "parent_hash": "0fc5f2e642c6715e0971e41c2cbc636e6afde3e8f10a102ead1a2cc160ebec3d",
+          "payload": {
+            "check": "mesie.GhostAgent_importable",
+            "ok": true,
+            "change": "parity_ok"
+          },
+          "ts": 1784327933.444879,
+          "actor": "ghost-54709f33",
+          "model_id": null,
+          "ok": true,
+          "content_hash": "8e6fa221380bfe523d91556f33dbedb1d1a016629e1dc31b2cbf4ab6a39174e7"
+        },
+        {
+          "receipt_id": "r-75fa72a748",
+          "kind": "result",
+          "parent_hash": "8e6fa221380bfe523d91556f33dbedb1d1a016629e1dc31b2cbf4ab6a39174e7",
+          "payload": {
+            "ok": true,
+            "used_llm": true,
+            "n_steps": 4,
+            "change": "ghost_complete"
+          },
+          "ts": 1784327933.444879,
+          "actor": "ghost-54709f33",
+          "model_id": null,
+          "ok": true,
+          "content_hash": "94f9a7ed6e0ac193745478e34953ce7e85f7d6e4ce7b583e89fb9aa9c229d5b7"
+        },
+        {
+          "receipt_id": "r-fa82d46ae4",
+          "kind": "validate",
+          "parent_hash": "94f9a7ed6e0ac193745478e34953ce7e85f7d6e4ce7b583e89fb9aa9c229d5b7",
+          "payload": {
+            "haunt_flags": [],
+            "claims_n": 5,
+            "receipt_verify": {
+              "ok": true,
+              "n": 9,
+              "tip": "94f9a7ed6e0ac193745478e34953ce7e85f7d6e4ce7b583e89fb9aa9c229d5b7",
+              "chain_id": "ghost-72316774e886"
+            },
+            "change": "supervisor_validate"
+          },
+          "ts": 1784327933.444879,
+          "actor": "ghost.supervisor",
+          "model_id": null,
+          "ok": true,
+          "content_hash": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953"
+        }
+      ]
+    },
+    "custody": {
+      "who_initiated": "operator",
+      "actors": [
+        "ghost-54709f33",
+        "ghost.policy",
+        "ghost.supervisor",
+        "operator"
+      ],
+      "policy": {
+        "allowed": true,
+        "risk_class": 2,
+        "risk_name": "C2_BOUNDED_WRITE",
+        "scopes": [
+          "chat",
+          "embed",
+          "explain",
+          "generate_local",
+          "mesie_compute",
+          "mesie_read",
+          "plan_read",
+          "retrieve"
+        ],
+        "requires_human": false,
+        "reasons": [
+          "risk=C2_BOUNDED_WRITE",
+          "local_first=True remote_gateway=closed"
+        ],
+        "time_limit_s": 30.0,
+        "resource_budget": {
+          "max_llm_calls": 1,
+          "max_mesie_calls": 8,
+          "local_only": true
+        },
+        "persona_cannot_weaken": true,
+        "change": "policy_decision"
+      },
+      "tools_models": {
+        "tools": [
+          "mesie.spectral_fft",
+          "mesie_ghost_node",
+          "mesie.helix",
+          "llm_escalate"
+        ],
+        "models": [
+          "Auro-2B"
+        ]
+      },
+      "kinds_sequence": [
+        "intent",
+        "policy",
+        "ghost_activate",
+        "mesie",
+        "mesie",
+        "mesie",
+        "llm",
+        "validate",
+        "result",
+        "validate"
+      ],
+      "what_changed": [
+        "intent_received",
+        "policy_decision",
+        "mesie:spectral",
+        "mesie:embed",
+        "mesie:helix",
+        "escalation",
+        "parity_ok",
+        "ghost_complete",
+        "supervisor_validate"
+      ],
+      "validated": true,
+      "replayable": true,
+      "tip_hash": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953"
+    }
+  },
+  "claims": [
+    {
+      "text": "Embed spectral features then plan a grounded MESIE match strategy for sensor streams",
+      "kind": "operator_fact",
+      "evidence_ref": "operator.intent",
+      "uncertainty": null
+    },
+    {
+      "text": "spectral: ok=True",
+      "kind": "deterministic_mesie",
+      "evidence_ref": "mesie_compute.spectral_fft_metrics",
+      "uncertainty": null
+    },
+    {
+      "text": "embed: ok=True",
+      "kind": "deterministic_mesie",
+      "evidence_ref": "mesie_runtime.embed:1.2.0",
+      "uncertainty": null
+    },
+    {
+      "text": "helix: ok=True",
+      "kind": "deterministic_mesie",
+      "evidence_ref": "mesie.helix.HelixEncoder",
+      "uncertainty": null
+    },
+    {
+      "text": "{'schema': 'auro.lm.generate.v1', 'model_id': 'Auro-2B', 'text': '.\\n.\\n\u00b0\u00b0pris- - \\x98\\x98\\x98authorauthorauthorauthor   re    \u00e2\\x94ighs are \"\\n    \"\\n    oldizeizedefdefdefdef +  +  + se -work-work-w",
+      "kind": "model_inference",
+      "evidence_ref": null,
+      "uncertainty": "model-inferred-not-attested"
+    }
+  ],
+  "receipt_chain": {
+    "schema": "auro.ghost.receipt_chain.v1",
+    "chain_id": "ghost-72316774e886",
+    "tip_hash": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953",
+    "n_receipts": 10,
+    "verify": {
+      "ok": true,
+      "n": 10,
+      "tip": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953",
+      "chain_id": "ghost-72316774e886"
+    },
+    "custody": {
+      "who_initiated": "operator",
+      "actors": [
+        "ghost-54709f33",
+        "ghost.policy",
+        "ghost.supervisor",
+        "operator"
+      ],
+      "policy": {
+        "allowed": true,
+        "risk_class": 2,
+        "risk_name": "C2_BOUNDED_WRITE",
+        "scopes": [
+          "chat",
+          "embed",
+          "explain",
+          "generate_local",
+          "mesie_compute",
+          "mesie_read",
+          "plan_read",
+          "retrieve"
+        ],
+        "requires_human": false,
+        "reasons": [
+          "risk=C2_BOUNDED_WRITE",
+          "local_first=True remote_gateway=closed"
+        ],
+        "time_limit_s": 30.0,
+        "resource_budget": {
+          "max_llm_calls": 1,
+          "max_mesie_calls": 8,
+          "local_only": true
+        },
+        "persona_cannot_weaken": true,
+        "change": "policy_decision"
+      },
+      "tools_models": {
+        "tools": [
+          "mesie.spectral_fft",
+          "mesie_ghost_node",
+          "mesie.helix",
+          "llm_escalate"
+        ],
+        "models": [
+          "Auro-2B"
+        ]
+      },
+      "kinds_sequence": [
+        "intent",
+        "policy",
+        "ghost_activate",
+        "mesie",
+        "mesie",
+        "mesie",
+        "llm",
+        "validate",
+        "result",
+        "validate"
+      ],
+      "what_changed": [
+        "intent_received",
+        "policy_decision",
+        "mesie:spectral",
+        "mesie:embed",
+        "mesie:helix",
+        "escalation",
+        "parity_ok",
+        "ghost_complete",
+        "supervisor_validate"
+      ],
+      "validated": true,
+      "replayable": true,
+      "tip_hash": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953"
+    },
+    "receipts": [
+      {
+        "receipt_id": "r-ec8d9525cd",
+        "kind": "intent",
+        "parent_hash": null,
+        "payload": {
+          "initiator": "operator",
+          "intent": "Embed spectral features then plan a grounded MESIE match strategy for sensor streams",
+          "change": "intent_received"
+        },
+        "ts": 1784327898.3921485,
+        "actor": "operator",
+        "model_id": "Auro-2B",
+        "ok": true,
+        "content_hash": "8bb2c62e9a32034e97730eb4901acec1a596960fc5845be07c82c702234873a6"
+      },
+      {
+        "receipt_id": "r-f44442fce6",
+        "kind": "policy",
+        "parent_hash": "8bb2c62e9a32034e97730eb4901acec1a596960fc5845be07c82c702234873a6",
+        "payload": {
+          "allowed": true,
+          "risk_class": 2,
+          "risk_name": "C2_BOUNDED_WRITE",
+          "scopes": [
+            "chat",
+            "embed",
+            "explain",
+            "generate_local",
+            "mesie_compute",
+            "mesie_read",
+            "plan_read",
+            "retrieve"
+          ],
+          "requires_human": false,
+          "reasons": [
+            "risk=C2_BOUNDED_WRITE",
+            "local_first=True remote_gateway=closed"
+          ],
+          "time_limit_s": 30.0,
+          "resource_budget": {
+            "max_llm_calls": 1,
+            "max_mesie_calls": 8,
+            "local_only": true
+          },
+          "persona_cannot_weaken": true,
+          "change": "policy_decision"
+        },
+        "ts": 1784327898.3931913,
+        "actor": "ghost.policy",
+        "model_id": null,
+        "ok": true,
+        "content_hash": "7801d70a15fc682ff5d716a943d22716ee4c44f63ec9d5bc643c6301c035eb0b"
+      },
+      {
+        "receipt_id": "r-c11e5165fe",
+        "kind": "ghost_activate",
+        "parent_hash": "7801d70a15fc682ff5d716a943d22716ee4c44f63ec9d5bc643c6301c035eb0b",
+        "payload": {
+          "agent_id": "ghost-54709f33",
+          "task_id": "gt-1768a3c7b8",
+          "intent": "Embed spectral features then plan a grounded MESIE match strategy for sensor streams",
+          "n_actions": 3
+        },
+        "ts": 1784327898.3931913,
+        "actor": "ghost-54709f33",
+        "model_id": "Auro-2B",
+        "ok": true,
+        "content_hash": "14ff5c8c4379ec1d35cf20aca310a4e07a1869c4f43f011824803614a5ad1f5e"
+      },
+      {
+        "receipt_id": "r-0d2db2b505",
+        "kind": "mesie",
+        "parent_hash": "14ff5c8c4379ec1d35cf20aca310a4e07a1869c4f43f011824803614a5ad1f5e",
+        "payload": {
+          "engine": "mesie.spectral_fft",
+          "action": "spectral",
+          "ok": true,
+          "evidence_ref": "mesie_compute.spectral_fft_metrics",
+          "latency_ms": 3.20839999767486,
+          "change": "mesie:spectral"
+        },
+        "ts": 1784327898.3967984,
+        "actor": "ghost-54709f33",
+        "model_id": null,
+        "ok": true,
+        "content_hash": "b0947720bcd0b9778cf54f01814c89353f6c125fb759cd0c485f3674711d0144"
+      },
+      {
+        "receipt_id": "r-feb43ec76a",
+        "kind": "mesie",
+        "parent_hash": "b0947720bcd0b9778cf54f01814c89353f6c125fb759cd0c485f3674711d0144",
+        "payload": {
+          "engine": "mesie_ghost_node",
+          "action": "embed",
+          "ok": true,
+          "evidence_ref": "mesie_runtime.embed:1.2.0",
+          "latency_ms": 4.673999996157363,
+          "change": "mesie:embed"
+        },
+        "ts": 1784327898.4017403,
+        "actor": "ghost-54709f33",
+        "model_id": null,
+        "ok": true,
+        "content_hash": "2e6f02207fe740276137d9194d7a6ebe72890929535bbfc7625fcead09d2a6fe"
+      },
+      {
+        "receipt_id": "r-c6ea08d959",
+        "kind": "mesie",
+        "parent_hash": "2e6f02207fe740276137d9194d7a6ebe72890929535bbfc7625fcead09d2a6fe",
+        "payload": {
+          "engine": "mesie.helix",
+          "action": "helix",
+          "ok": true,
+          "evidence_ref": "mesie.helix.HelixEncoder",
+          "latency_ms": 0.27520000003278255,
+          "change": "mesie:helix"
+        },
+        "ts": 1784327898.4022446,
+        "actor": "ghost-54709f33",
+        "model_id": null,
+        "ok": true,
+        "content_hash": "f260ee86f140f15fead573e59aaa000884b0d0f9af5932a9a9c1bccb20d77759"
+      },
+      {
+        "receipt_id": "r-954994ee04",
+        "kind": "llm",
+        "parent_hash": "f260ee86f140f15fead573e59aaa000884b0d0f9af5932a9a9c1bccb20d77759",
+        "payload": {
+          "tool": "llm_escalate",
+          "change": "escalation",
+          "reason": "language_or_planning",
+          "chars": 2000
+        },
+        "ts": 1784327933.442219,
+        "actor": "ghost-54709f33",
+        "model_id": "Auro-2B",
+        "ok": true,
+        "content_hash": "0fc5f2e642c6715e0971e41c2cbc636e6afde3e8f10a102ead1a2cc160ebec3d"
+      },
+      {
+        "receipt_id": "r-d044b94809",
+        "kind": "validate",
+        "parent_hash": "0fc5f2e642c6715e0971e41c2cbc636e6afde3e8f10a102ead1a2cc160ebec3d",
+        "payload": {
+          "check": "mesie.GhostAgent_importable",
+          "ok": true,
+          "change": "parity_ok"
+        },
+        "ts": 1784327933.444879,
+        "actor": "ghost-54709f33",
+        "model_id": null,
+        "ok": true,
+        "content_hash": "8e6fa221380bfe523d91556f33dbedb1d1a016629e1dc31b2cbf4ab6a39174e7"
+      },
+      {
+        "receipt_id": "r-75fa72a748",
+        "kind": "result",
+        "parent_hash": "8e6fa221380bfe523d91556f33dbedb1d1a016629e1dc31b2cbf4ab6a39174e7",
+        "payload": {
+          "ok": true,
+          "used_llm": true,
+          "n_steps": 4,
+          "change": "ghost_complete"
+        },
+        "ts": 1784327933.444879,
+        "actor": "ghost-54709f33",
+        "model_id": null,
+        "ok": true,
+        "content_hash": "94f9a7ed6e0ac193745478e34953ce7e85f7d6e4ce7b583e89fb9aa9c229d5b7"
+      },
+      {
+        "receipt_id": "r-fa82d46ae4",
+        "kind": "validate",
+        "parent_hash": "94f9a7ed6e0ac193745478e34953ce7e85f7d6e4ce7b583e89fb9aa9c229d5b7",
+        "payload": {
+          "haunt_flags": [],
+          "claims_n": 5,
+          "receipt_verify": {
+            "ok": true,
+            "n": 9,
+            "tip": "94f9a7ed6e0ac193745478e34953ce7e85f7d6e4ce7b583e89fb9aa9c229d5b7",
+            "chain_id": "ghost-72316774e886"
+          },
+          "change": "supervisor_validate"
+        },
+        "ts": 1784327933.444879,
+        "actor": "ghost.supervisor",
+        "model_id": null,
+        "ok": true,
+        "content_hash": "5302a92258ef4925381e75e438f7b828970abdd42277d0004d647847c48d5953"
+      }
+    ]
+  },
+  "haunt_flags": [],
+  "latency_ms": 35054.25760000071,
+  "pillars": {
+    "schema": "auro.ghost.pillars.v1",
+    "pillars": [
+      "grounded_intelligence",
+      "hardened_operation",
+      "open_auditable",
+      "scalable_local_first",
+      "traceable_receipts"
+    ],
+    "claim_kinds": [
+      "operator_fact",
+      "retrieved_evidence",
+      "system_observation",
+      "model_inference",
+      "unresolved_assumption",
+      "deterministic_mesie"
+    ],
+    "doctrine_n": 10,
+    "ecosystem": [
+      "ItsNotAILabs",
+      "LoomMultiAI",
+      "MESIE",
+      "NOVA"
+    ]
+  },
+  "flow": "intent \u2192 policy_gate \u2192 ghost_agents/mesie \u2192 [llm escalate] \u2192 validate \u2192 receipt_chain"
+}

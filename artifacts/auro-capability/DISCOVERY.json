@@ -1,0 +1,869 @@
+{
+  "schema": "auro.capability.discovery.v1",
+  "ok": true,
+  "repo_root": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B",
+  "elapsed_s": 7.821527004241943,
+  "claim": "Discovery precedes inability. Status is one of eight classes \u2014 never a bare 'I can't'.",
+  "anti_pattern": "Never collapse all failures into 'I can't'.",
+  "taxonomy": [
+    "AVAILABLE",
+    "AVAILABLE_BUT_UNDISCOVERED",
+    "NOT_CURRENTLY_CONFIGURED",
+    "UNSUPPORTED_BY_DEFAULT_TEMPLATE",
+    "PROHIBITED_BY_POLICY",
+    "BLOCKED_BY_PERMISSION",
+    "TECHNICALLY_UNAVAILABLE",
+    "UNTESTED",
+    "UNKNOWN"
+  ],
+  "by_status": {
+    "AVAILABLE": [
+      "repo.root",
+      "repo.auro_native_llm",
+      "repo.mesie",
+      "repo.checkpoints",
+      "repo.bindings",
+      "repo.scripts",
+      "repo.tests",
+      "repo.artifacts",
+      "repo.phantom_native",
+      "repo.auro_foundry",
+      "manifest.pyproject.toml",
+      "manifest.pyproject_readable",
+      "manifest.requirements.txt",
+      "manifest.Project.toml",
+      "manifest.AGENTS.md",
+      "manifest.README.md",
+      "manifest.julia:AuroCompute",
+      "runtime.python",
+      "runtime.git",
+      "runtime.gh",
+      "runtime.node",
+      "runtime.julia",
+      "runtime.cargo",
+      "runtime.rustc",
+      "pip.numpy",
+      "pip.mesie",
+      "pip.scipy",
+      "pip.pandas",
+      "pip.sklearn",
+      "pip.networkx",
+      "build.pyproject",
+      "build.tests",
+      "build.checkpoints",
+      "build.cuda_dockerfile",
+      "prior.auro-readiness",
+      "prior.auro-ghost",
+      "prior.auro-long-harness",
+      "prior.promotion_receipt",
+      "prior.physics_train",
+      "prior.specialize",
+      "probe.numpy_matmul",
+      "probe.mesie_import",
+      "probe.spectral_gpt_forward",
+      "probe.physics_dispersion",
+      "probe.auro_lm_config",
+      "probe.chrome_binary",
+      "probe.chrome_mock",
+      "probe.google_envelope",
+      "probe.ghost_policy",
+      "probe.julia_eval",
+      "discovery.complete"
+    ],
+    "AVAILABLE_BUT_UNDISCOVERED": [],
+    "NOT_CURRENTLY_CONFIGURED": [
+      "manifest.Cargo.toml",
+      "runtime.npm"
+    ],
+    "UNSUPPORTED_BY_DEFAULT_TEMPLATE": [
+      "manifest.package.json"
+    ],
+    "PROHIBITED_BY_POLICY": [],
+    "BLOCKED_BY_PERMISSION": [],
+    "TECHNICALLY_UNAVAILABLE": [
+      "runtime.ghc",
+      "runtime.zig",
+      "pip.torch",
+      "diagnosis.torch_win_arm",
+      "diagnosis.haskell"
+    ],
+    "UNTESTED": [],
+    "UNKNOWN": []
+  },
+  "available": [
+    "repo.root",
+    "repo.auro_native_llm",
+    "repo.mesie",
+    "repo.checkpoints",
+    "repo.bindings",
+    "repo.scripts",
+    "repo.tests",
+    "repo.artifacts",
+    "repo.phantom_native",
+    "repo.auro_foundry",
+    "manifest.pyproject.toml",
+    "manifest.pyproject_readable",
+    "manifest.requirements.txt",
+    "manifest.Project.toml",
+    "manifest.AGENTS.md",
+    "manifest.README.md",
+    "manifest.julia:AuroCompute",
+    "runtime.python",
+    "runtime.git",
+    "runtime.gh",
+    "runtime.node",
+    "runtime.julia",
+    "runtime.cargo",
+    "runtime.rustc",
+    "pip.numpy",
+    "pip.mesie",
+    "pip.scipy",
+    "pip.pandas",
+    "pip.sklearn",
+    "pip.networkx",
+    "build.pyproject",
+    "build.tests",
+    "build.checkpoints",
+    "build.cuda_dockerfile",
+    "prior.auro-readiness",
+    "prior.auro-ghost",
+    "prior.auro-long-harness",
+    "prior.promotion_receipt",
+    "prior.physics_train",
+    "prior.specialize",
+    "probe.numpy_matmul",
+    "probe.mesie_import",
+    "probe.spectral_gpt_forward",
+    "probe.physics_dispersion",
+    "probe.auro_lm_config",
+    "probe.chrome_binary",
+    "probe.chrome_mock",
+    "probe.google_envelope",
+    "probe.ghost_policy",
+    "probe.julia_eval",
+    "discovery.complete"
+  ],
+  "constraints": [
+    {
+      "name": "manifest.package.json",
+      "status": "UNSUPPORTED_BY_DEFAULT_TEMPLATE",
+      "evidence": "not at C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\package.json",
+      "step": 2,
+      "detail": {},
+      "meaning": "Default scaffold/template does not include it; custom path may still work."
+    },
+    {
+      "name": "manifest.Cargo.toml",
+      "status": "NOT_CURRENTLY_CONFIGURED",
+      "evidence": "not at C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\bindings\\rust\\Cargo.toml",
+      "step": 2,
+      "detail": {},
+      "meaning": "Software/runtime exists or can exist, but this project has not wired it yet."
+    },
+    {
+      "name": "runtime.npm",
+      "status": "NOT_CURRENTLY_CONFIGURED",
+      "evidence": "not found",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Program Files\\nodejs\\npm.CMD"
+      },
+      "meaning": "Software/runtime exists or can exist, but this project has not wired it yet."
+    },
+    {
+      "name": "runtime.ghc",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "not on PATH",
+      "step": 3,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "runtime.zig",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "not on PATH",
+      "step": 3,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "pip.torch",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "No module named 'torch'",
+      "step": 3,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "diagnosis.torch_win_arm",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "No torch wheel on this platform \u2014 MESIE numpy SpectralGPT + ChaosCUDA path is the real compute plane, not 'can't do ML'",
+      "step": 7,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "diagnosis.haskell",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "GHC not installed \u2014 bindings/haskell provides semantic AuroCompute.hs; not a total polyglot failure",
+      "step": 7,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    }
+  ],
+  "n_capabilities": 59,
+  "capabilities": [
+    {
+      "name": "repo.root",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B",
+      "step": 1,
+      "detail": {
+        "entries": 31
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.auro_native_llm",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\auro_native_llm",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.mesie",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\mesie",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.checkpoints",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\checkpoints",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.bindings",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\bindings",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.scripts",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\scripts",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.tests",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\tests",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.artifacts",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\artifacts",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.phantom_native",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\phantom_native",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "repo.auro_foundry",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\auro_foundry",
+      "step": 1,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "manifest.pyproject.toml",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\pyproject.toml",
+      "step": 2,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "manifest.pyproject_readable",
+      "status": "AVAILABLE",
+      "evidence": "2000 chars",
+      "step": 2,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "manifest.requirements.txt",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\requirements.txt",
+      "step": 2,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "manifest.package.json",
+      "status": "UNSUPPORTED_BY_DEFAULT_TEMPLATE",
+      "evidence": "not at C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\package.json",
+      "step": 2,
+      "detail": {},
+      "meaning": "Default scaffold/template does not include it; custom path may still work."
+    },
+    {
+      "name": "manifest.Cargo.toml",
+      "status": "NOT_CURRENTLY_CONFIGURED",
+      "evidence": "not at C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\bindings\\rust\\Cargo.toml",
+      "step": 2,
+      "detail": {},
+      "meaning": "Software/runtime exists or can exist, but this project has not wired it yet."
+    },
+    {
+      "name": "manifest.Project.toml",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\bindings\\julia\\AuroCompute\\Project.toml",
+      "step": 2,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "manifest.AGENTS.md",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\AGENTS.md",
+      "step": 2,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "manifest.README.md",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\README.md",
+      "step": 2,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "manifest.julia:AuroCompute",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\bindings\\julia\\AuroCompute\\Project.toml",
+      "step": 2,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "runtime.python",
+      "status": "AVAILABLE",
+      "evidence": "Python 3.11.6",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Users\\Medin\\AppData\\Local\\Programs\\Python\\Python311-arm64\\python.exe"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "runtime.git",
+      "status": "AVAILABLE",
+      "evidence": "git version 2.55.0.windows.2",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Program Files\\Git\\cmd\\git.EXE"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "runtime.gh",
+      "status": "AVAILABLE",
+      "evidence": "gh version 2.95.0 (2026-06-17)\nhttps://github.com/cli/cli/releases/tag/v2.95.0",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Program Files\\GitHub CLI\\gh.EXE"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "runtime.node",
+      "status": "AVAILABLE",
+      "evidence": "v24.14.1",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Program Files\\nodejs\\node.EXE"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "runtime.npm",
+      "status": "NOT_CURRENTLY_CONFIGURED",
+      "evidence": "not found",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Program Files\\nodejs\\npm.CMD"
+      },
+      "meaning": "Software/runtime exists or can exist, but this project has not wired it yet."
+    },
+    {
+      "name": "runtime.julia",
+      "status": "AVAILABLE",
+      "evidence": "julia version 1.12.6",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Users\\Medin\\AppData\\Local\\Microsoft\\WindowsApps\\julia.EXE"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "runtime.cargo",
+      "status": "AVAILABLE",
+      "evidence": "cargo 1.96.1 (356927216 2026-06-26)",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Users\\Medin\\.cargo\\bin\\cargo.EXE"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "runtime.rustc",
+      "status": "AVAILABLE",
+      "evidence": "rustc 1.96.1 (31fca3adb 2026-06-26)",
+      "step": 3,
+      "detail": {
+        "path": "C:\\Users\\Medin\\.cargo\\bin\\rustc.EXE"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "runtime.ghc",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "not on PATH",
+      "step": 3,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "runtime.zig",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "not on PATH",
+      "step": 3,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "pip.numpy",
+      "status": "AVAILABLE",
+      "evidence": "v2.4.6 @ C:\\Users\\Medin\\AppData\\Local\\Programs\\Python\\Python311-arm64\\Lib\\site-packages\\numpy\\__init__.py",
+      "step": 3,
+      "detail": {
+        "version": "2.4.6"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "pip.mesie",
+      "status": "AVAILABLE",
+      "evidence": "v0.4.0 @ C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\mesie\\__init__.py",
+      "step": 3,
+      "detail": {
+        "version": "0.4.0"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "pip.torch",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "No module named 'torch'",
+      "step": 3,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "pip.scipy",
+      "status": "AVAILABLE",
+      "evidence": "v1.17.1 @ C:\\Users\\Medin\\AppData\\Local\\Programs\\Python\\Python311-arm64\\Lib\\site-packages\\scipy\\__init__.py",
+      "step": 3,
+      "detail": {
+        "version": "1.17.1"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "pip.pandas",
+      "status": "AVAILABLE",
+      "evidence": "v3.0.3 @ C:\\Users\\Medin\\AppData\\Local\\Programs\\Python\\Python311-arm64\\Lib\\site-packages\\pandas\\__init__.py",
+      "step": 3,
+      "detail": {
+        "version": "3.0.3"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "pip.sklearn",
+      "status": "AVAILABLE",
+      "evidence": "v1.9.0 @ C:\\Users\\Medin\\AppData\\Local\\Programs\\Python\\Python311-arm64\\Lib\\site-packages\\sklearn\\__init__.py",
+      "step": 3,
+      "detail": {
+        "version": "1.9.0"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "pip.networkx",
+      "status": "AVAILABLE",
+      "evidence": "v3.6.1 @ C:\\Users\\Medin\\AppData\\Local\\Programs\\Python\\Python311-arm64\\Lib\\site-packages\\networkx\\__init__.py",
+      "step": 3,
+      "detail": {
+        "version": "3.6.1"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "build.pyproject",
+      "status": "AVAILABLE",
+      "evidence": "present",
+      "step": 4,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "build.tests",
+      "status": "AVAILABLE",
+      "evidence": "95 test_*.py",
+      "step": 4,
+      "detail": {
+        "n": 95
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "build.checkpoints",
+      "status": "AVAILABLE",
+      "evidence": "8 mind ckpts: Auro-2B, Auro-2B_1B, Auro-2B_autocycle, Auro-2B_chrome_symbolic, Auro-2B_continual, Auro-2B_physics, Auro-2B_power, Auro-2B_specialized",
+      "step": 4,
+      "detail": {
+        "names": [
+          "Auro-2B",
+          "Auro-2B_1B",
+          "Auro-2B_autocycle",
+          "Auro-2B_chrome_symbolic",
+          "Auro-2B_continual",
+          "Auro-2B_physics",
+          "Auro-2B_power",
+          "Auro-2B_specialized"
+        ]
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "build.cuda_dockerfile",
+      "status": "AVAILABLE",
+      "evidence": "runner/Dockerfile.cuda",
+      "step": 4,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "prior.auro-readiness",
+      "status": "AVAILABLE",
+      "evidence": "4 artifacts",
+      "step": 5,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "prior.auro-ghost",
+      "status": "AVAILABLE",
+      "evidence": "3 artifacts",
+      "step": 5,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "prior.auro-long-harness",
+      "status": "AVAILABLE",
+      "evidence": "0 artifacts",
+      "step": 5,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "prior.promotion_receipt",
+      "status": "AVAILABLE",
+      "evidence": "tier=M2",
+      "step": 5,
+      "detail": {
+        "keys": [
+          "schema",
+          "nova_aligned",
+          "promotion_model",
+          "readiness",
+          "coding_receipt",
+          "reasoning_receipt",
+          "generation_sample",
+          "generation_meta",
+          "organ_receipts",
+          "num_params_live",
+          "model_id",
+          "elapsed_s"
+        ]
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "prior.physics_train",
+      "status": "AVAILABLE",
+      "evidence": "ce 2.952714263853818\u21921.4995644280938776 scaffold=False",
+      "step": 5,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "prior.specialize",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\checkpoints\\auro_minds\\Auro-2B_specialized\\SPECIALIZE_REPORT.json",
+      "step": 5,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.numpy_matmul",
+      "status": "AVAILABLE",
+      "evidence": "4x4 eye@eye ok",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.mesie_import",
+      "status": "AVAILABLE",
+      "evidence": "v0.4.0",
+      "step": 6,
+      "detail": {
+        "path": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\mesie\\__init__.py"
+      },
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.spectral_gpt_forward",
+      "status": "AVAILABLE",
+      "evidence": "forward type=dict",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.physics_dispersion",
+      "status": "AVAILABLE",
+      "evidence": "\u03c9\u0304=1.8492",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.auro_lm_config",
+      "status": "AVAILABLE",
+      "evidence": "tiny dims keys=['hidden_dim', 'num_layers', 'num_heads', 'head_dim', 'ffn_dim', 'vocab_size']",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.chrome_binary",
+      "status": "AVAILABLE",
+      "evidence": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.chrome_mock",
+      "status": "AVAILABLE",
+      "evidence": "mock CDP ok",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.google_envelope",
+      "status": "AVAILABLE",
+      "evidence": "envelope=env-d019a016f2",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.ghost_policy",
+      "status": "AVAILABLE",
+      "evidence": "risk=C2_BOUNDED_WRITE allowed=True",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "probe.julia_eval",
+      "status": "AVAILABLE",
+      "evidence": "2",
+      "step": 6,
+      "detail": {},
+      "meaning": "Proven present and usable right now."
+    },
+    {
+      "name": "diagnosis.torch_win_arm",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "No torch wheel on this platform \u2014 MESIE numpy SpectralGPT + ChaosCUDA path is the real compute plane, not 'can't do ML'",
+      "step": 7,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "diagnosis.haskell",
+      "status": "TECHNICALLY_UNAVAILABLE",
+      "evidence": "GHC not installed \u2014 bindings/haskell provides semantic AuroCompute.hs; not a total polyglot failure",
+      "step": 7,
+      "detail": {},
+      "meaning": "Not present on this machine/platform (e.g. no wheel, no binary)."
+    },
+    {
+      "name": "discovery.complete",
+      "status": "AVAILABLE",
+      "evidence": "50/58 available-class; constraints classified not collapsed",
+      "step": 8,
+      "detail": {
+        "n_available": 50,
+        "n_total": 58
+      },
+      "meaning": "Proven present and usable right now."
+    }
+  ],
+  "steps": {
+    "1_inspect_repository": {
+      "root": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B",
+      "top_level": [
+        "AGENTS.md",
+        "CHANGELOG.md",
+        "CITATION.cff",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "MANIFEST.in",
+        "README.md",
+        "artifacts",
+        "auro_foundry",
+        "auro_native_llm",
+        "bindings",
+        "bridge",
+        "checkpoints",
+        "data",
+        "deliverables",
+        "docs",
+        "examples",
+        "figures",
+        "library",
+        "mesie",
+        "mesie-desktop",
+        "native_llm",
+        "phantom_native",
+        "production-grade-builder",
+        "pyproject.toml",
+        "requirements.txt",
+        "runner",
+        "scripts",
+        "spectral_engine.py",
+        "tests",
+        "workers"
+      ]
+    },
+    "2_read_manifests": {
+      "pyproject.toml": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\pyproject.toml",
+      "requirements.txt": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\requirements.txt",
+      "Project.toml": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\bindings\\julia\\AuroCompute\\Project.toml",
+      "AGENTS.md": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\AGENTS.md",
+      "README.md": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\README.md",
+      "julia:AuroCompute": "C:\\Users\\Medin\\Documents\\GitHub\\Auro14B\\bindings\\julia\\AuroCompute\\Project.toml"
+    },
+    "3_tools_runtimes": {
+      "platform": "Windows-10-10.0.26200-SP0",
+      "machine": "ARM64",
+      "python_version": "3.11.6",
+      "python_executable": "C:\\Users\\Medin\\AppData\\Local\\Programs\\Python\\Python311-arm64\\python.exe",
+      "python": "Python 3.11.6",
+      "git": "git version 2.55.0.windows.2",
+      "gh": "gh version 2.95.0 (2026-06-17)\nhttps://github.com/cli/cli/releases/tag/v2.95.0",
+      "node": "v24.14.1",
+      "julia": "julia version 1.12.6",
+      "cargo": "cargo 1.96.1 (356927216 2026-06-26)",
+      "rustc": "rustc 1.96.1 (31fca3adb 2026-06-26)"
+    },
+    "4_build_configuration": {
+      "pyproject_scripts": true,
+      "tests_dir": true,
+      "checkpoints": true,
+      "native_llm_configs": true,
+      "dockerfile": true,
+      "github_workflow": true
+    },
+    "5_prior_success": {
+      "auro-readiness": [
+        "coding-receipt.json",
+        "PROMOTION_RECEIPT.json",
+        "PROMOTION_RECEIPT.md",
+        "reasoning-receipt.json"
+      ],
+      "auro-ghost": [
+        "GHOST_ARCHITECTURE.md",
+        "last_ghost_run.json",
+        "last_receipt_chain.json"
+      ],
+      "auro-long-harness": []
+    },
+    "6_harmless_probes": {
+      "numpy": "ok",
+      "mesie": "0.4.0"
+    },
+    "7_failure_sources": {
+      "UNSUPPORTED_BY_DEFAULT_TEMPLATE": [
+        "manifest.package.json"
+      ],
+      "NOT_CURRENTLY_CONFIGURED": [
+        "manifest.Cargo.toml",
+        "runtime.npm"
+      ],
+      "TECHNICALLY_UNAVAILABLE": [
+        "runtime.ghc",
+        "runtime.zig",
+        "pip.torch"
+      ]
+    },
+    "8_report": {
+      "n_available_class": 50,
+      "n_total": 59,
+      "constraint_classes": {
+        "UNSUPPORTED_BY_DEFAULT_TEMPLATE": [
+          "manifest.package.json"
+        ],
+        "NOT_CURRENTLY_CONFIGURED": [
+          "manifest.Cargo.toml",
+          "runtime.npm"
+        ],
+        "TECHNICALLY_UNAVAILABLE": [
+          "runtime.ghc",
+          "runtime.zig",
+          "pip.torch"
+        ]
+      }
+    }
+  }
+}

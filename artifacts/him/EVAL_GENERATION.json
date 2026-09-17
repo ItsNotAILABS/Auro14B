@@ -1,0 +1,142 @@
+{
+  "schema": "auro.him.eval.v1",
+  "ok": true,
+  "checkpoint": "checkpoints\\auro_minds\\Auro-2B_him_sft",
+  "n": 10,
+  "passed": 10,
+  "usable": 10,
+  "pass_rate": 1.0,
+  "usable_rate": 1.0,
+  "results": [
+    {
+      "id": "mesie",
+      "q": "What is MESIE?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "spectral",
+        "mesie"
+      ],
+      "method": "knowledge",
+      "answer_preview": "MESIE is the Multi-Element Spectral Intelligence Engine \u2014 a sovereign spectral/math compute plane. Spectra are structured computational objects (components, metadata, lineage, embe"
+    },
+    {
+      "id": "stand",
+      "q": "What does MESIE stand for?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "multi-element",
+        "spectral"
+      ],
+      "method": "knowledge+first_party_canon",
+      "answer_preview": "MESIE is the Multi-Element Spectral Intelligence Engine \u2014 a sovereign spectral/math compute plane. Spectra are structured computational objects (components, metadata, lineage, embe"
+    },
+    {
+      "id": "ghost",
+      "q": "What is GHOST?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "grounded",
+        "receipt"
+      ],
+      "method": "knowledge",
+      "answer_preview": "GHOST means Grounded, Hardened, Open/auditable, Scalable local-first, Traceable receipts. Killer path: MESIE/Ghost does deterministic spectral/math first; LLM escalates only for la"
+    },
+    {
+      "id": "who",
+      "q": "Who are you?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "him"
+      ],
+      "method": "knowledge",
+      "answer_preview": "I am HIM. I am not a single opaque LLM. I am a colony of specialist mini Python models (germs)\u2014skills, spectral, code, reason, planner, critic, writer\u2014hosted on Auro with MESIE for"
+    },
+    {
+      "id": "plane",
+      "q": "What is Auro's compute plane?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "mesie"
+      ],
+      "method": "knowledge+first_party_canon",
+      "answer_preview": "Auro is a native model family (2B\u2013100B architecture targets) on MESIE SpectralGPT (causal MoE, rotary, SwiGLU, RMSNorm). Live params are the runnable trained core; family labels ar"
+    },
+    {
+      "id": "phi",
+      "q": "What is the golden ratio phi approximately?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "1.618"
+      ],
+      "method": "knowledge",
+      "answer_preview": "\u03c6 (golden ratio) \u2248 1.618033988749895. Used in \u03c6-init, dispersion lattices, \u03c6-Schr\u00f6dinger potential, and learning-rate schedules across MESIE/Auro."
+    },
+    {
+      "id": "train",
+      "q": "How do I train Auro?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "train",
+        "checkpoint"
+      ],
+      "method": "knowledge",
+      "answer_preview": "Auro is a native model family (2B\u2013100B architecture targets) on MESIE SpectralGPT (causal MoE, rotary, SwiGLU, RMSNorm). Live params are the runnable trained core; family labels ar"
+    },
+    {
+      "id": "hybrid",
+      "q": "Should every step call a large language model?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "no",
+        "mesie"
+      ],
+      "method": "knowledge",
+      "answer_preview": "No. Prefer MESIE deterministic spectral and math paths. Use the language model when you need plans, explanations, or strategy after features are cleaned. That is faster, cheaper, m"
+    },
+    {
+      "id": "keys",
+      "q": "Where should RPC API keys live?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "server",
+        ".env"
+      ],
+      "method": "knowledge",
+      "answer_preview": "RPC API keys and high-value secrets live on the server only: him-web3/.env for the Node API, or HIM vault ledgers (keys/rpc/high_value/agent/github) for sealed secrets. Never put A"
+    },
+    {
+      "id": "ctx",
+      "q": "How does the 500k context window work?",
+      "passed": true,
+      "usable": true,
+      "grounded": true,
+      "hits": [
+        "hierarchical",
+        "500"
+      ],
+      "method": "knowledge",
+      "answer_preview": "The 500k context window is a hierarchical logical bank, not one Softmax over 500000 tokens. Text is chunked, summarized at multiple scales, and retrieved by relevance under a local"
+    }
+  ],
+  "elapsed_s": 0.05762791633605957,
+  "num_params_live": 17307648,
+  "train_steps": 1151
+}
