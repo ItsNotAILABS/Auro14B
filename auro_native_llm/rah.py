@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from auro_native_llm.subagents import MultiEmbeddedSubAgentRouter
-from auro_native_llm.types import SubAgentRole
+from auro_native_llm.auro_types import SubAgentRole
 
 ROOT = Path.home() / ".auro" / "rah"
 ROOT.mkdir(parents=True, exist_ok=True)

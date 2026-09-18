@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 from auro_native_llm.mesie_compute import MESIEComputePlane, get_compute_plane
 from auro_native_llm.native_model import AuroNativeFamily, AuroNativeModel, NativeGeneration
 from auro_native_llm.subagents import MultiEmbeddedSubAgentRouter
-from auro_native_llm.types import SubAgentDispatch, SubAgentRole
+from auro_native_llm.auro_types import SubAgentDispatch, SubAgentRole
 
 
 @dataclass

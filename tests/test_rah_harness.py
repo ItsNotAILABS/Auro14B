@@ -1,5 +1,5 @@
 from auro_native_llm.rah import SCHEMA, PROTOCOL, _role_for, plan_fanout, run_rah
-from auro_native_llm.types import SubAgentRole
+from auro_native_llm.auro_types import SubAgentRole
 
 
 def test_rah_schema_and_roles():

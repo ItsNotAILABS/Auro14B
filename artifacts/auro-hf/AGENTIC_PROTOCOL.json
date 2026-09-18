@@ -1,0 +1,67 @@
+{
+  "title": "Auro14B HuggingFace Agentic Protocol Specification",
+  "version": "2.0.0",
+  "card": {
+    "language": [
+      "en"
+    ],
+    "license": "mit",
+    "tags": [
+      "agent",
+      "web3",
+      "monad",
+      "solana",
+      "defi",
+      "huggingface-agentic-protocol",
+      "auro14b"
+    ],
+    "model_name": "auro-ai/Auro14B-Monad-v2",
+    "pipeline_tag": "text-generation",
+    "inference": {
+      "parameters": {
+        "temperature": 0.2,
+        "max_new_tokens": 1024,
+        "top_p": 0.95
+      }
+    },
+    "agentic_protocol": {
+      "tools": [
+        "monad_simulate_transaction",
+        "solana_inspect_program",
+        "cross_vm_flash_loan",
+        "mev_bundle_analyzer",
+        "spectral_psd_match",
+        "huggingface_hub_agentic_call"
+      ],
+      "frameworks": [
+        "smolagents",
+        "langchain",
+        "transformers-agent"
+      ],
+      "execution_mode": "dual-vm-parallel"
+    }
+  },
+  "supported_models": [
+    {
+      "id": "auro-ai/Auro14B-Monad-v2",
+      "role": "Orchestrator & EVM Execution"
+    },
+    {
+      "id": "auro-ai/Solana-Turbo-Auro",
+      "role": "SVM Execution & Rust Auditor"
+    },
+    {
+      "id": "auro-ai/Crypto-Reasoning-v2",
+      "role": "Risk & Strategy Backtester"
+    },
+    {
+      "id": "auro-ai/HuggingFace-Agentic-Bridge",
+      "role": "Hub Tool Protocol Gateway"
+    }
+  ],
+  "hf_hub_integration": {
+    "repo": "https://huggingface.co/auro-ai/Auro14B-Monad-v2",
+    "api_endpoint": "https://api-inference.huggingface.co/models/auro-ai/Auro14B-Monad-v2",
+    "smolagents_code": "from smolagents import CodeAgent, HfApiModel\nmodel = HfApiModel('auro-ai/Auro14B-Monad-v2')\nagent = CodeAgent(tools=[], model=model)"
+  }
+}

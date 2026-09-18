@@ -15,7 +15,7 @@ import uuid
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 from auro_native_llm.family import load_family
-from auro_native_llm.types import (
+from auro_native_llm.auro_types import (
     FAMILY_CONTRACT_VERSION,
     ROLE_DEFAULT_TIER,
     TIER_RANK,

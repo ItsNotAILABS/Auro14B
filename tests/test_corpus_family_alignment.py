@@ -8,7 +8,7 @@ from auro_native_llm.family import (
     validate_family,
 )
 from auro_native_llm.model.auro4b_architecture import FULL_ARCHITECTURE
-from auro_native_llm.types import (
+from auro_native_llm.auro_types import (
     AURO_2B_SPECIALIST_TRIAD,
     CANONICAL_CLAIM_BOUNDARIES,
     FAMILY_CONTRACT_VERSION,

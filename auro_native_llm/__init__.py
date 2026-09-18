@@ -45,7 +45,7 @@ from auro_native_llm.work import WorkAgent, WorkResult
 from auro_native_llm.organism import AuroMind, FAMILY_IDS, build_family, build_mind, load_mind, save_mind
 from auro_native_llm.organism.value_train import ValueTrainConfig, run_value_training
 from auro_native_llm.subagents import MultiEmbeddedSubAgentRouter, route_role
-from auro_native_llm.types import (
+from auro_native_llm.auro_types import (
     FAMILY_CONTRACT_VERSION,
     FAMILY_ID,
     FAMILY_PARAMETER_TARGETS,

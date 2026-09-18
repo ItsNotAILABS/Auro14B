@@ -258,7 +258,7 @@ class ScripturalSubstrate:
         child_id = ""
         try:
             from auro_native_llm.subagents import MultiEmbeddedSubAgentRouter
-            from auro_native_llm.types import SubAgentRole
+            from auro_native_llm.auro_types import SubAgentRole
 
             router = MultiEmbeddedSubAgentRouter(parent_model_id=parent_model_id)
             try:

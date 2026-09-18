@@ -10,7 +10,7 @@ from auro_native_llm.family import emit_family_receipt, list_model_ids, load_fam
 from auro_native_llm.mesie_compute import get_compute_plane
 from auro_native_llm.native_runtime import AuroNativeRuntime
 from auro_native_llm.subagents import MultiEmbeddedSubAgentRouter
-from auro_native_llm.types import SubAgentRole
+from auro_native_llm.auro_types import SubAgentRole
 
 
 def main(argv: list[str] | None = None) -> int:

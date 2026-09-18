@@ -20,7 +20,7 @@ from auro_native_llm.mesie_compute import (
     get_compute_plane,
     profile_from_lane,
 )
-from auro_native_llm.types import ModelLane, ModelTier, SubAgentRole
+from auro_native_llm.auro_types import ModelLane, ModelTier, SubAgentRole
 
 
 @dataclass

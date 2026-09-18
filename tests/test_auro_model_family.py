@@ -15,7 +15,7 @@ from auro_native_llm.family import (
     get_lane,
 )
 from auro_native_llm.subagents import MultiEmbeddedSubAgentRouter, route_role
-from auro_native_llm.types import (
+from auro_native_llm.auro_types import (
     FAMILY_ID,
     FAMILY_PARAMETER_TARGETS,
     ModelTier,

@@ -4,8 +4,8 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: cd client && npm install && npm run build && cd ../server && npm install
-    startCommand: node server/index.js
+    buildCommand: npm install && npm run build:client
+    startCommand: npm start
     envVars:
       - key: PORT
         value: 10000
@@ -15,3 +15,4 @@ services:
         sync: false
       - key: CORS_ORIGIN
         value: "*"
+

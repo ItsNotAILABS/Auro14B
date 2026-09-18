@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from auro_native_llm.receipt import emit_receipt, load_json_config
-from auro_native_llm.types import (
+from auro_native_llm.auro_types import (
     ATOMIC_MODEL_IDS,
     AURO_2B_SPECIALIST_TRIAD,
     CANONICAL_CLAIM_BOUNDARIES,
@@ -120,7 +120,7 @@ def _default_composition() -> Dict[str, Any]:
 
 
 def model_id_to_tier_safe(model_id: str) -> ModelTier:
-    from auro_native_llm.types import MODEL_ID_TO_TIER
+    from auro_native_llm.auro_types import MODEL_ID_TO_TIER
 
     if model_id in MODEL_ID_TO_TIER:
         return MODEL_ID_TO_TIER[model_id]
