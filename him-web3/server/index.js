@@ -648,13 +648,14 @@ app.post("/platform/crosschain/swap", (req, res) => {
   });
 });
 
-// ---------- V2 Platform Routes (12 Feature Endpoints) ----------
+// ---------- V2 Platform Routes (12 Feature Endpoints + IOChain WebGPU) ----------
 import { attachV2Routes } from "./platform_v2.js";
 attachV2Routes(app);
 
 // Serve built React client if present
 const clientDist = path.resolve(__dirname, "../client/dist");
 app.use(express.static(clientDist));
+
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api") || req.path.startsWith("/platform") || req.path.startsWith("/engines")) return next();
   const index = path.join(clientDist, "index.html");

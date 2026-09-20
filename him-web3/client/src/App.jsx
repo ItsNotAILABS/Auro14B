@@ -13,6 +13,7 @@ import {
   GovernancePanel,
   MEVScannerPanel,
   BacktesterPanel,
+  IOChainWebGPUPanel,
 } from "./FeaturePanels.jsx";
 
 async function api(path, opts = {}) {
@@ -418,6 +419,12 @@ export default function App() {
 
       {/* --- NAVIGATION TABS --- */}
       <nav className="tabs">
+        <button
+          className={`tab-btn ${activeTab === "iochain" ? "active" : ""}`}
+          onClick={() => setActiveTab("iochain")}
+        >
+          ⚡ IOChain WebGPU DeAI (Solana)
+        </button>
         <button
           className={`tab-btn ${activeTab === "defi" ? "active" : ""}`}
           onClick={() => setActiveTab("defi")}
@@ -1172,6 +1179,7 @@ export default function App() {
           </div>
         )}
         {/* --- V2 FEATURE PANELS --- */}
+        {activeTab === "iochain" && <IOChainWebGPUPanel />}
         {activeTab === "portfolio" && <PortfolioPanel state={featureState} />}
         {activeTab === "flashloan" && <FlashLoanPanel state={featureState} />}
         {activeTab === "auditor" && <AuditorPanel state={featureState} />}

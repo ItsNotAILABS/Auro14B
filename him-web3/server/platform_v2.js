@@ -412,6 +412,99 @@ router.get('/platform/backtester/strategies', (req, res) => {
   });
 });
 
+// ==========================================
+// 13. IOChain DeAI WebGPU & Solana Marketplace
+// ==========================================
+router.get('/platform/iochain/manifest', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      headline: 'AI is racing to build new data centres while the GPUs we already have sit at 5% utilisation.',
+      mission: 'IOChain turns that idle hardware into a trustable AI inference infrastructure, settled on Solana.',
+      features: [
+        'Developers publish models with automated Solana royalty streams',
+        'Deployers run browser WebGPU or native GPU nodes & earn yields',
+        'Investors hold fractional shares ($IO-MODEL SPL tokens) in backing models',
+        'Pay-per-call, on-chain, peer-to-peer micro-settlement via Solana SVM',
+        'Multi-platform suite: WebGPU Browser Engine, CLI, Tauri Desktop, TS & Python SDKs'
+      ],
+      sdks: {
+        cli: 'npx @iochain/cli node start --webgpu',
+        tauri: 'https://github.com/iochain-ai/iochain-desktop',
+        typescript: 'npm install @iochain/sdk',
+        python: 'pip install iochain-sdk'
+      },
+      stats: {
+        idleGpusConverted: 14820,
+        activeUtilisationPct: 88.4,
+        solanaMicropaymentsProcessed: 1845020,
+        totalModelValueUsd: 12450000.0
+      }
+    }
+  });
+});
+
+router.get('/platform/iochain/models', (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 'io-model-1', name: 'DeepSeek-R1-WebGPU-Distill', category: 'LLM Reasoning', publisher: '0x356...c355', costPerCallSol: 0.00005, costPerCallUsd: 0.0075, totalCalls: 482910, fractionalSharePriceSol: 1.25, totalShares: 10000, holderApyPct: 28.4, webgpuCompatible: true },
+      { id: 'io-model-2', name: 'Auro14B-Crypto-Reasoning-v2', category: 'Web3 & Quant Risk', publisher: '0x835...1000', costPerCallSol: 0.0001, costPerCallUsd: 0.015, totalCalls: 891200, fractionalSharePriceSol: 3.80, totalShares: 50000, holderApyPct: 34.2, webgpuCompatible: true },
+      { id: 'io-model-3', name: 'Llama-3.3-70B-Instruct-Quant', category: 'General Intelligence', publisher: '0x1c0...2b1c', costPerCallSol: 0.0002, costPerCallUsd: 0.030, totalCalls: 1240500, fractionalSharePriceSol: 5.50, totalShares: 100000, holderApyPct: 22.8, webgpuCompatible: false },
+      { id: 'io-model-4', name: 'Flux-1-Schnell-WebGPU-Vision', category: 'Image Generation', publisher: '0x5c4...5c4d', costPerCallSol: 0.00015, costPerCallUsd: 0.0225, totalCalls: 310400, fractionalSharePriceSol: 2.10, totalShares: 25000, holderApyPct: 41.5, webgpuCompatible: true }
+    ]
+  });
+});
+
+router.get('/platform/iochain/nodes', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      activeNodes: 1248,
+      webgpuBrowserNodes: 842,
+      nativeGpuClusters: 406,
+      averageUtilizationPct: 88.4,
+      totalComputeFlops: '14.8 PFLOPS',
+      solanaProgramId: 'IOCHAiN111111111111111111111111111111111111',
+      recentTransactions: [
+        { txHash: '5K3R1...V3b1', model: 'Auro14B-Crypto-Reasoning-v2', caller: '8xN2...m4Pq', feeSol: 0.0001, nodeProvider: 'WebGPU-Browser-Node-482' },
+        { txHash: '3M8v6...N8m6', model: 'DeepSeek-R1-WebGPU-Distill', caller: '4pK1...b9Vx', feeSol: 0.00005, nodeProvider: 'NVIDIA-H100-Cluster-12' }
+      ]
+    }
+  });
+});
+
+router.post('/platform/iochain/inference', (req, res) => {
+  const { modelId, prompt, computeMode } = req.body;
+  res.json({
+    success: true,
+    data: {
+      modelId: modelId || 'Auro14B-Crypto-Reasoning-v2',
+      computeMode: computeMode || 'WebGPU-Local-Shader',
+      solanaReceiptTx: '5K3R1G8d6V4p2M7m9L8k4J6h2N4b3V9c7X5z1M8v6B4n2C7x9V3b1N8m6L4k2J',
+      feeSettledSol: 0.0001,
+      latencyMs: computeMode === 'WebGPU-Local-Shader' ? 42 : 185,
+      response: `[IOChain WebGPU Settlement Verified] Processed inference query: '${prompt || 'Run DeAI model'}' on WebGPU compute pipeline settled via Solana P2P Program account.`
+    }
+  });
+});
+
+router.post('/platform/iochain/invest', (req, res) => {
+  const { modelId, sharesCount } = req.body;
+  res.json({
+    success: true,
+    data: {
+      status: 'Shares Purchased',
+      modelId: modelId || 'io-model-1',
+      sharesPurchased: Number(sharesCount) || 10,
+      splTokenMint: 'IOCHAiN_MODEL_SHARE_TOKEN_MINT_SPL',
+      solanaTxHash: '4pK1B9Vx5K3R1G8d6V4p2M7m9L8k4J6h2N4b3V9c7X5z1M8v6B4n2C7x9V3b1N8',
+      projectedAnnualYieldSol: 0.355
+    }
+  });
+});
+
 export function attachV2Routes(app) {
   app.use(router);
 }
+
