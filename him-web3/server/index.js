@@ -655,6 +655,7 @@ attachV2Routes(app);
 // Serve built React client if present
 const clientDist = path.resolve(__dirname, "../client/dist");
 app.use(express.static(clientDist));
+app.use("/web3", express.static(clientDist));
 
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api") || req.path.startsWith("/platform") || req.path.startsWith("/engines")) return next();
